@@ -1,50 +1,85 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: (plantilla sin ratificar) → 1.0.0
+- Modified principles: n/a (adopción inicial)
+- Added sections: Principios fundamentales (I–V), Calidad y pruebas,
+  Flujo de trabajo (Git Flow), Gobernanza
+- Removed sections: ninguna
+- Follow-up TODOs: ninguno
+-->
 
-## Core Principles
+# Constitución de Foodware
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+## Principios fundamentales
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### I. Simplicidad ante todo
+Ante dos soluciones válidas, se elige siempre la más simple. Esta es la versión 1:
+no se añade complejidad anticipada (capas, abstracciones o configuración "por si
+acaso"). Cualquier complejidad extra MUST justificarse contra un requisito real y
+vigente de la spec.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Rationale**: el producto debe ser fácil de entender y mantener por 4 personas;
+añadir complejidad que aún no se necesita hace el proyecto más lento y frágil.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Idioma y mercado: español de España y euro
+Todo el producto visible para el usuario (textos, etiquetas, mensajes, tickets)
+MUST estar en español de España. La moneda es el euro (€). Los formatos de fecha y
+número siguen la convención española.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+**Rationale**: el público objetivo es un restaurante español; cualquier otro idioma
+o moneda rompe la experiencia y la confianza.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### III. Cero alcance fantasma
+Solo se implementa lo que está escrito y aprobado en la spec. Toda idea nueva MUST
+proponerse y documentarse, nunca construirse por iniciativa propia. Ninguna
+funcionalidad se añade "de paso".
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**Rationale**: protege el alcance de la versión 1 y evita trabajo no pedido ni
+verificado.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### IV. Verificable por una persona no técnica
+Cada criterio de éxito MUST poder comprobarse usando la aplicación, sin leer código.
+Si una persona no técnica no puede verificarlo desde la interfaz, el criterio no es
+válido.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**Rationale**: si no se puede demostrar en la app, no se puede afirmar que funciona.
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+### V. Datos del usuario con respeto
+Se piden solo los datos imprescindibles para cada funcionalidad. No se recogen ni
+guardan datos personales innecesarios. Está prohibido introducir claves,
+contraseñas, tokens o cualquier secreto en el código o en el repositorio.
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+**Rationale**: respeta a las personas usuarias y evita riesgos de seguridad básicos.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+## Calidad y pruebas
+
+Toda funcionalidad MUST incluir sus propias pruebas automatizadas antes de
+considerarse terminada: sin pruebas, la funcionalidad no está completa. Las pruebas
+se escriben junto al desarrollo de la funcionalidad, no después.
+
+## Flujo de trabajo (Git Flow)
+
+El equipo (4 personas) trabaja con Git Flow:
+
+- Ramas: `main` (producción), `develop` (integración), `feature/*`, `release/*`,
+  `hotfix/*`.
+- Prohibido hacer push directo a `main` y a `develop`: todo cambio entra por Pull
+  Request.
+- Cada feature parte de `develop` y vuelve a `develop`.
+- Todo Pull Request MUST ser revisado y aprobado por al menos otra persona del
+  equipo antes de fusionarse.
+
+## Gobernanza
+
+Esta constitución prevalece sobre cualquier otra práctica del proyecto. Quien
+revise un Pull Request MUST comprobar el cumplimiento de estos principios.
+
+Enmiendas: se proponen por Pull Request, requieren la aprobación de al menos otra
+persona del equipo y quedan registradas en este documento con actualización de
+versión y fecha.
+
+Versionado: MAYOR si se elimina o redefine un principio; MENOR si se añade un
+principio o se amplía de forma material; PARCHE para aclaraciones o correcciones de
+redacción.
+
+**Version**: 1.0.0 | **Ratified**: 2026-10-06 | **Last Amended**: 2026-10-06
