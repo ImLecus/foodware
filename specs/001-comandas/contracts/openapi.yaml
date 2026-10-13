@@ -1,0 +1,264 @@
+openapi: 3.0.3
+info:
+  title: Foodware — API de comandas (historia 001)
+  version: 1.0.0
+  description: >
+    Contrato de la API necesaria para abrir una mesa, tomar la comanda plato a plato, agruparla por
+    partidas y confirmarla. Los importes se expresan en céntimos enteros. Todas las peticiones
+    requieren la identificación del camarero (sesión existente; ver research.md §8).
+
+servers:
+  - url: /api
+
+paths:
+  /mesas:
+    get:
+      summary: Lista las mesas con su estado
+      operationId: listarMesas
+      responses:
+        '200':
+          description: Lista de mesas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Mesa' }
+
+  /mesas/{mesaId}/abrir:
+    post:
+      summary: Abre una mesa (la marca ocupada e inicia la comanda)
+      operationId: abrirMesa
+      parameters:
+        - $ref: '#/components/parameters/mesaId'
+      responses:
+        '201':
+          description: Comanda en curso creada para la mesa
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comanda' }
+        '409':
+          description: La mesa ya tiene una comanda en curso (FR-005)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /platos:
+    get:
+      summary: Devuelve la carta vigente (platos disponibles)
+      operationId: listarPlatos
+      responses:
+        '200':
+          description: Platos disponibles de la carta
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Plato' }
+
+  /comandas/{comandaId}:
+    get:
+      summary: Devuelve una comanda con sus líneas agrupadas por partidas
+      operationId: obtenerComanda
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+      responses:
+        '200':
+          description: Comanda
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comanda' }
+        '404':
+          description: Comanda no encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /comandas/{comandaId}/lineas:
+    post:
+      summary: Añade un plato a la comanda en curso
+      operationId: anadirLinea
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NuevaLinea' }
+      responses:
+        '201':
+          description: Línea creada (con el precio fijado en el momento de pedir)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LineaComanda' }
+        '400':
+          description: Datos inválidos (p. ej. cantidad < 1)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: La comanda no está en curso
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /comandas/{comandaId}/lineas/{lineaId}:
+    patch:
+      summary: Modifica la cantidad de una línea
+      operationId: modificarLinea
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+        - $ref: '#/components/parameters/lineaId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LineaPatch' }
+      responses:
+        '200':
+          description: Línea actualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LineaComanda' }
+        '409':
+          description: La comanda no está en curso
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      summary: Retira un plato de la comanda en curso
+      operationId: retirarLinea
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+        - $ref: '#/components/parameters/lineaId'
+      responses:
+        '204':
+          description: Línea retirada
+        '409':
+          description: La comanda no está en curso
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /comandas/{comandaId}/confirmar:
+    post:
+      summary: Confirma la comanda y devuelve el pedido agrupado por partidas
+      operationId: confirmarComanda
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+      responses:
+        '200':
+          description: Comanda enviada con el pedido agrupado por partidas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PedidoConfirmado' }
+        '409':
+          description: No se puede confirmar (comanda vacía o ya enviada) (FR-014)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  parameters:
+    mesaId:
+      name: mesaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    comandaId:
+      name: comandaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    lineaId:
+      name: lineaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+    Partida:
+      type: string
+      enum: [entrantes, principales, postres]
+
+    Mesa:
+      type: object
+      required: [id, identificador, estado]
+      properties:
+        id: { type: string, format: uuid }
+        identificador: { type: string, example: 'Mesa 5' }
+        estado: { type: string, enum: [libre, ocupada] }
+        comanda_en_curso_id: { type: string, format: uuid, nullable: true }
+
+    Plato:
+      type: object
+      required: [id, nombre, partida, precio_centimos, disponible]
+      properties:
+        id: { type: string, format: uuid }
+        nombre: { type: string }
+        partida: { $ref: '#/components/schemas/Partida' }
+        precio_centimos: { type: integer, minimum: 1 }
+        disponible: { type: boolean }
+
+    LineaComanda:
+      type: object
+      required: [id, plato_id, cantidad, precio_centimos, partida]
+      properties:
+        id: { type: string, format: uuid }
+        plato_id: { type: string, format: uuid }
+        plato_nombre: { type: string }
+        cantidad: { type: integer, minimum: 1 }
+        precio_centimos: { type: integer, minimum: 1 }
+        partida: { $ref: '#/components/schemas/Partida' }
+
+    Comanda:
+      type: object
+      required: [id, mesa_id, estado, creada_en, lineas]
+      properties:
+        id: { type: string, format: uuid }
+        mesa_id: { type: string, format: uuid }
+        camarero_id: { type: string }
+        estado: { type: string, enum: [en_curso, enviada] }
+        creada_en: { type: string, format: date-time }
+        confirmada_en: { type: string, format: date-time, nullable: true }
+        lineas:
+          type: array
+          items: { $ref: '#/components/schemas/LineaComanda' }
+        por_partida:
+          $ref: '#/components/schemas/PedidoPorPartida'
+
+    PedidoPorPartida:
+      type: object
+      description: Líneas agrupadas por partida (FR-010, FR-016)
+      properties:
+        entrantes: { type: array, items: { $ref: '#/components/schemas/LineaComanda' } }
+        principales: { type: array, items: { $ref: '#/components/schemas/LineaComanda' } }
+        postres: { type: array, items: { $ref: '#/components/schemas/LineaComanda' } }
+
+    PedidoConfirmado:
+      type: object
+      required: [comanda_id, mesa, confirmada_en, por_partida]
+      properties:
+        comanda_id: { type: string, format: uuid }
+        mesa: { $ref: '#/components/schemas/Mesa' }
+        confirmada_en: { type: string, format: date-time }
+        por_partida: { $ref: '#/components/schemas/PedidoPorPartida' }
+
+    NuevaLinea:
+      type: object
+      required: [plato_id, cantidad]
+      properties:
+        plato_id: { type: string, format: uuid }
+        cantidad: { type: integer, minimum: 1, default: 1 }
+
+    LineaPatch:
+      type: object
+      minProperties: 1
+      properties:
+        cantidad: { type: integer, minimum: 1 }
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        detalle: { type: string, nullable: true }

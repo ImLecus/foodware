@@ -1,0 +1,234 @@
+openapi: 3.0.3
+info:
+  title: Foodware — API de edición de comandas (historia 002)
+  version: 1.0.0
+  description: >
+    Contrato de la API para editar una comanda ya enviada: bloqueo de edición, añadir/retirar/ajustar
+    líneas, corregir indicaciones y enviar los cambios a cocina de forma explícita. Amplía la API de
+    la historia 001. Los importes se expresan en céntimos enteros.
+
+servers:
+  - url: /api
+
+paths:
+  /comandas/{comandaId}:
+    get:
+      summary: Devuelve la comanda con su estado de modificación y bloqueo
+      operationId: obtenerComanda
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+      responses:
+        '200':
+          description: Comanda actualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comanda' }
+        '404':
+          description: Comanda no encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /comandas/{comandaId}/editar:
+    post:
+      summary: Toma el bloqueo de edición de una comanda enviada
+      operationId: abrirParaEditar
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+      responses:
+        '200':
+          description: Bloqueo adquirido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comanda' }
+        '409':
+          description: La comanda no admite edición (p. ej. cerrada) (FR-012)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423':
+          description: La comanda está siendo editada por otro camarero (FR-015)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      summary: Libera el bloqueo de edición
+      operationId: terminarEdicion
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+      responses:
+        '204':
+          description: Bloqueo liberado
+
+  /comandas/{comandaId}/lineas:
+    post:
+      summary: Añade un plato a la comanda (en curso o enviada)
+      operationId: anadirLinea
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NuevaLinea' }
+      responses:
+        '201':
+          description: Línea creada (precio fijado en el momento de pedir)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LineaComanda' }
+        '409':
+          description: La comanda no admite cambios
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /comandas/{comandaId}/lineas/{lineaId}:
+    patch:
+      summary: Modifica la cantidad o las indicaciones de una línea
+      operationId: modificarLinea
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+        - $ref: '#/components/parameters/lineaId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LineaPatch' }
+      responses:
+        '200':
+          description: Línea actualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LineaComanda' }
+        '409':
+          description: La comanda no admite cambios
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      summary: Retira un plato de la comanda (sin dejarla vacía)
+      operationId: retirarLinea
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+        - $ref: '#/components/parameters/lineaId'
+      responses:
+        '204':
+          description: Línea retirada
+        '409':
+          description: La operación dejaría la comanda sin platos (FR-011)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /comandas/{comandaId}/enviar-cambios:
+    post:
+      summary: Comunica a cocina los cambios pendientes de la comanda
+      operationId: enviarCambios
+      parameters:
+        - $ref: '#/components/parameters/comandaId'
+      responses:
+        '200':
+          description: Cambios enviados; comanda marcada como modificada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PedidoConfirmado' }
+        '409':
+          description: No hay cambios pendientes o la comanda no admite cambios
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  parameters:
+    comandaId:
+      name: comandaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    lineaId:
+      name: lineaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+    Partida:
+      type: string
+      enum: [entrantes, principales, postres]
+
+    Mesa:
+      type: object
+      required: [id, identificador, estado]
+      properties:
+        id: { type: string, format: uuid }
+        identificador: { type: string, example: 'Mesa 5' }
+        estado: { type: string, enum: [libre, ocupada] }
+
+    LineaComanda:
+      type: object
+      required: [id, plato_id, cantidad, precio_centimos, partida]
+      properties:
+        id: { type: string, format: uuid }
+        plato_id: { type: string, format: uuid }
+        plato_nombre: { type: string }
+        cantidad: { type: integer, minimum: 1 }
+        precio_centimos: { type: integer, minimum: 1 }
+        indicaciones: { type: string, nullable: true }
+        partida: { $ref: '#/components/schemas/Partida' }
+
+    Comanda:
+      type: object
+      required: [id, mesa_id, estado, modificada, cambios_pendientes, lineas]
+      properties:
+        id: { type: string, format: uuid }
+        mesa_id: { type: string, format: uuid }
+        estado: { type: string, enum: [en_curso, enviada, cerrada] }
+        modificada: { type: boolean }
+        cambios_pendientes: { type: boolean }
+        cambios_enviados_en: { type: string, format: date-time, nullable: true }
+        editando_por: { type: string, nullable: true }
+        lineas:
+          type: array
+          items: { $ref: '#/components/schemas/LineaComanda' }
+        por_partida:
+          $ref: '#/components/schemas/PedidoPorPartida'
+
+    PedidoPorPartida:
+      type: object
+      description: Líneas agrupadas por partida (FR-010, FR-016)
+      properties:
+        entrantes: { type: array, items: { $ref: '#/components/schemas/LineaComanda' } }
+        principales: { type: array, items: { $ref: '#/components/schemas/LineaComanda' } }
+        postres: { type: array, items: { $ref: '#/components/schemas/LineaComanda' } }
+
+    PedidoConfirmado:
+      type: object
+      required: [comanda_id, mesa, por_partida]
+      properties:
+        comanda_id: { type: string, format: uuid }
+        mesa: { $ref: '#/components/schemas/Mesa' }
+        modificada: { type: boolean }
+        por_partida: { $ref: '#/components/schemas/PedidoPorPartida' }
+
+    NuevaLinea:
+      type: object
+      required: [plato_id, cantidad]
+      properties:
+        plato_id: { type: string, format: uuid }
+        cantidad: { type: integer, minimum: 1, default: 1 }
+        indicaciones: { type: string, nullable: true }
+
+    LineaPatch:
+      type: object
+      minProperties: 1
+      properties:
+        cantidad: { type: integer, minimum: 1 }
+        indicaciones: { type: string, nullable: true }
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        detalle: { type: string, nullable: true }

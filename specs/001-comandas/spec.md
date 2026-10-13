@@ -11,7 +11,6 @@
 ### Session 2026-10-13
 
 - Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
-- Q: ¿Cómo debe entenderse que una comanda confirmada "no admite cambios directos"? → A: La comanda confirmada puede editarse directamente en cualquier momento, sin una acción previa de reapertura (el detalle de la edición corresponde a la historia 02).
 - Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar la comanda y no cambia después.
 
 ## User Scenarios & Testing _(mandatory)_
@@ -89,11 +88,10 @@ que la comanda queda registrada como enviada, vinculada a la mesa y agrupada por
 - **FR-013**: El sistema DEBE permitir al camarero confirmar la comanda.
 - **FR-014**: El sistema DEBE impedir confirmar una comanda que no contenga ningún plato.
 - **FR-015**: El sistema DEBE registrar la comanda como enviada al confirmarla.
-- **FR-016**: El sistema DEBE remitir el pedido agrupado por partidas al confirmar la comanda.
+- **FR-016**: El sistema DEBE dejar el pedido agrupado por partidas disponible para el resto del
+  sistema (la API interna que consumirá la vista de cocina) al confirmar la comanda.
 - **FR-017**: El sistema DEBE mantener la comanda vinculada a su mesa tras la confirmación.
-- **FR-018**: El sistema DEBE permitir modificar una comanda ya confirmada directamente, sin una
-  acción previa de reapertura (el detalle de la edición corresponde a la historia 02).
-- **FR-019**: El sistema DEBE fijar el precio de cada plato en el momento de pedirlo, de modo que
+- **FR-018**: El sistema DEBE fijar el precio de cada plato en el momento de pedirlo, de modo que
   un cambio posterior del precio en la carta no altere el importe de la comanda.
 
 ### Key Entities _(include if feature involves data)_
