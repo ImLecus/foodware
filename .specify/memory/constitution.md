@@ -1,9 +1,11 @@
 <!--
 Sync Impact Report
-- Version change: (plantilla sin ratificar) → 1.0.0
-- Modified principles: n/a (adopción inicial)
-- Added sections: Principios fundamentales (I–V), Calidad y pruebas,
-  Flujo de trabajo (Git Flow), Gobernanza
+- Version change: 1.0.0 → 1.2.0
+- Modified principles: n/a (no se redefinió ningún principio)
+- Added principles: VI. Conventional Commits obligatorios; VII. Desarrollo en
+  equipo
+- Added sections: Tecnología obligatoria (React, Chakra UI, ExpressJS);
+  Contenedores (Docker); regla de parada por tarea en Flujo de trabajo (Git Flow)
 - Removed sections: ninguna
 - Follow-up TODOs: ninguno
 -->
@@ -51,6 +53,51 @@ contraseñas, tokens o cualquier secreto en el código o en el repositorio.
 
 **Rationale**: respeta a las personas usuarias y evita riesgos de seguridad básicos.
 
+### VI. Conventional Commits obligatorios
+Todo commit MUST seguir la especificación Conventional Commits
+(`tipo(alcance): descripción`), con tipos como `feat`, `fix`, `docs`, `refactor`,
+`test`, `chore`, `style` o `perf`. La descripción se escribe en español de España,
+en imperativo y en minúscula. Los cambios incompatibles MUST marcarse con `!` o con
+el pie `BREAKING CHANGE:`. Los commits que no cumplan este formato MUST rechazarse
+en la revisión.
+
+**Rationale**: un historial uniforme y legible facilita la revisión, el historial
+de cambios y la generación automática de versiones.
+
+### VII. Desarrollo en equipo
+El proyecto se desarrolla en equipo, no de forma individual. El repositorio MUST
+estar preparado para el trabajo colaborativo: documentación clara de puesta en
+marcha, entorno reproducible y sin dependencias de configuración exclusiva de una
+máquina. Cualquier decisión que afecte al equipo (convenciones, estructura o
+herramientas) MUST quedar documentada en el repositorio.
+
+**Rationale**: que cualquier persona del equipo pueda incorporarse, entender y
+ejecutar el proyecto sin depender de conocimiento no escrito.
+
+## Tecnología obligatoria
+
+La versión 1 se construye exclusivamente sobre este stack, sin sustituirlo por
+alternativas ni añadir frameworks adicionales sin una enmienda previa:
+
+- **Frontend**: React (con Chakra UI como única biblioteca de componentes de
+  interfaz). El estilo y los componentes MUST resolverse con Chakra UI salvo
+  justificación documentada.
+- **Backend**: ExpressJS sobre Node.js, exponiendo una API HTTP.
+
+**Rationale**: fija una base técnica común y sencilla para el equipo de 4 personas,
+coherente con el principio de simplicidad.
+
+## Contenedores (Docker)
+
+La aplicación MUST estar preparada para ejecutarse con contenedores Docker. Debe
+incluir los `Dockerfile` y la configuración de orquestación (por ejemplo
+`docker-compose`) necesarios para levantar el frontend y el backend de forma
+reproducible. El comando de arranque documentado MUST funcionar igual en cualquier
+máquina del equipo.
+
+**Rationale**: un entorno reproducible reduce diferencias entre máquinas, agiliza
+la incorporación de personas al equipo y acerca desarrollo y despliegue.
+
 ## Calidad y pruebas
 
 Toda funcionalidad MUST incluir sus propias pruebas automatizadas antes de
@@ -68,6 +115,19 @@ El equipo (4 personas) trabaja con Git Flow:
 - Cada feature parte de `develop` y vuelve a `develop`.
 - Todo Pull Request MUST ser revisado y aprobado por al menos otra persona del
   equipo antes de fusionarse.
+- Los commits MUST ser Conventional Commits antes de abrir o actualizar un Pull
+  Request.
+
+### Implementación de specs: parada por tarea
+
+Al implementar una spec (por ejemplo con `/speckit.implement`), el agente MUST
+detenerse al completar **cada** tarea del listado de tareas: no encadena tareas sin
+intervención. Tras terminar una tarea, MUST resumir lo hecho y esperar a que el
+usuario la revise y realice el commit correspondiente antes de continuar con la
+siguiente. Ninguna tarea se da por completada hasta que el usuario la ha revisado.
+
+**Rationale**: permite revisar y commitear cada incremento por separado, mantiene
+los commits atómicos y trazables y da al usuario control real sobre el avance.
 
 ## Gobernanza
 
@@ -82,4 +142,4 @@ Versionado: MAYOR si se elimina o redefine un principio; MENOR si se añade un
 principio o se amplía de forma material; PARCHE para aclaraciones o correcciones de
 redacción.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-06 | **Last Amended**: 2026-10-06
+**Version**: 1.2.0 | **Ratified**: 2026-10-06 | **Last Amended**: 2026-10-13
