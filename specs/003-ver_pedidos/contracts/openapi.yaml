@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: Foodware API — Ver pedidos pendientes en cocina
+  version: 1.0.0
+  description: >
+    Contratos REST de la vista de cocina (historia 03). La lista se devuelve ya ordenada por tiempo
+    de espera (más antiguo primero; desempate por orden de llegada). El refresco en vivo se
+    documenta en contracts/events.md (SSE).
+servers:
+  - url: /api
+paths:
+  /cocineros/{cocineroId}:
+    get:
+      summary: Partida asignada al cocinero (identidad reutilizada, sin login)
+      parameters:
+        - name: cocineroId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Datos del cocinero y su partida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  nombre: { type: string }
+                  partida: { type: string, enum: [entrantes, principales, postres], nullable: true }
+        "404":
+          description: Cocinero no encontrado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /partidas/{partidaId}/pedidos-pendientes:
+    get:
+      summary: Pedidos pendientes de una partida, ordenados por tiempo de espera
+      description: >
+        Devuelve solo pedidos con al menos una línea pendiente. Orden: enviadoEn ascendente y, a
+        igual enviadoEn, id ascendente. enviadoEn es el envío original y no se reinicia al editar.
+      parameters:
+        - name: partidaId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Lista ordenada de pedidos pendientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PedidoCocina" }
+        "404":
+          description: Partida no encontrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  schemas:
+    PedidoCocina:
+      type: object
+      required: [id, mesa, partida, enviadoEn, estado, lineas]
+      properties:
+        id: { type: string }
+        mesa: { type: integer, description: número de mesa (FR-016) }
+        partida: { type: string, enum: [entrantes, principales, postres] }
+        enviadoEn: { type: string, format: date-time, description: envío original (FR-005) }
+        modificadoEn: { type: string, format: date-time, nullable: true, description: marca de edición (historia 02) }
+        estado: { type: string, enum: [pendiente, completado] }
+        lineas:
+          type: array
+          items: { $ref: "#/components/schemas/LineaPedido" }
+    LineaPedido:
+      type: object
+      required: [id, nombrePlato, cantidad, estado]
+      properties:
+        id: { type: string }
+        nombrePlato: { type: string }
+        cantidad: { type: integer, minimum: 1 }
+        estado: { type: string, enum: [pendiente, listo] }
+        listoEn: { type: string, format: date-time, nullable: true }
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      properties:
+        codigo: { type: string }
+        mensaje: { type: string, description: mensaje en español de España }
