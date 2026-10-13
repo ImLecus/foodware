@@ -1,12 +1,12 @@
-# Implementation Plan: Señales de platos listos por mesa
+# Plan de Implementación: Señales de platos listos por mesa
 
-**Branch**: `005-senales-platos-listos` | **Date**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
+**Rama**: `005-senales-platos-listos` | **Fecha**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/005-senales-platos-listos/spec.md`
+**Entrada**: Especificación de la funcionalidad en `/specs/005-senales-platos-listos/spec.md`
 
-**Note**: This template is filled in by the `/speckit.plan` command; its definition describes the execution workflow.
+**Nota**: Este fichero lo genera el comando `/speckit.plan`; su definición describe el flujo de ejecución.
 
-## Summary
+## Resumen
 
 El camarero necesita ver, sin recargar, el estado (pendiente/listo) de los platos de
 todas las mesas abiertas y recibir un aviso perceptible cuando una mesa queda completa,
@@ -21,63 +21,63 @@ mesas son compartidas (FR-011). La aplicación exige conexión; al perderse mues
 indicador de "sin conexión", marca los datos como no actualizados y se resincroniza al
 recuperarla (FR-014).
 
-## Technical Context
+## Contexto Técnico
 
-**Language/Version**: JavaScript (ES2022) sobre Node.js 20 LTS; frontend React 18 (JSX).
+**Lenguaje/Versión**: JavaScript (ES2022) sobre Node.js 20 LTS; frontend React 18 (JSX).
 
-**Primary Dependencies**: React 18 + Chakra UI (única librería de componentes de UI),
-ExpressJS 4 (API HTTP), `EventSource` nativo del navegador para tiempo real, PostgreSQL 16
-con el cliente `pg`.
+**Dependencias principales**: React 18 + Chakra UI (única librería de componentes de UI),
+ExpressJS 4 (API HTTP), `EventSource` nativo del navegador para tiempo real, SQLite
+con el cliente `better-sqlite3`.
 
-**Storage**: PostgreSQL 16 en contenedor, consultado con SQL sencillo mediante `pg`;
+**Almacenamiento**: SQLite en fichero persistido en un volumen Docker, consultado con SQL sencillo mediante `better-sqlite3`;
 migraciones versionadas en el repositorio. Entidades de plato/pedido/mesa pertenecen a las
 historias 01–04; esta historia añade la tabla de avisos de mesa.
 
-**Testing**: Backend Jest + Supertest; Frontend Vitest + React Testing Library.
+**Pruebas**: Backend Vitest + Supertest; Frontend Vitest + React Testing Library.
 
-**Target Platform**: Aplicación web (navegador en tablet/PC de sala) más servidor Node;
+**Plataforma objetivo**: Aplicación web (navegador en tablet/PC de sala) más servidor Node;
 ejecución reproducible con Docker (Linux).
 
-**Project Type**: Aplicación web con frontend y backend separados.
+**Tipo de proyecto**: Aplicación web con frontend y backend separados.
 
-**Performance Goals**: un cambio de estado se ve en ≤ 5 s (SC-002/FR-004); resincronización
+**Objetivos de rendimiento**: un cambio de estado se ve en ≤ 5 s (SC-002/FR-004); resincronización
 tras reconexión en ≤ 10 s (SC-008); identificar los platos listos en ≤ 2 s (SC-001);
 descartar el aviso en ≤ 2 s (SC-005).
 
-**Constraints**: requiere conexión a la red del restaurante (FR-014); UI solo con Chakra UI;
+**Restricciones**: requiere conexión a la red del restaurante (FR-014); UI solo con Chakra UI;
 sin frameworks adicionales sin enmienda; todos los textos en español de España; arranque
 reproducible con Docker.
 
-**Scale/Scope**: un único restaurante; decenas de mesas abiertas y un puñado de pantallas
+**Escala/Alcance**: un único restaurante; decenas de mesas abiertas y un puñado de pantallas
 concurrentes (sala y cocina). Alcance de esta historia: una vista de sala con estado en vivo
 y avisos por mesa.
 
-## Constitution Check
+## Verificación de la Constitución
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-| Principio / regla | Evaluación | Estado |
+| Principio / regla | Comprobación | Estado |
 |-------------------|------------|--------|
-| I. Simplicidad ante todo | Vista + API + SSE; sin capas, ni gestor de estado global, ni ORM | PASA |
-| II. Español de España y euro | Todos los textos de la vista en español; sin importes en esta historia | PASA |
-| III. Cero alcance fantasma | Solo se implementa lo especificado (estado de platos, aviso, descarte, sin conexión) | PASA |
-| IV. Verificable por no técnico | Comprobable desde la interfaz (marcar en cocina → ver en sala; aviso; descarte) | PASA |
-| V. Datos con respeto | Sin datos personales más allá de la identidad ya existente; secretos por variables de entorno, nunca en el repo | PASA |
-| VI. Conventional Commits | Proceso de commits del equipo; no afecta al diseño | PASA |
-| VII. Desarrollo en equipo | Docker, README de arranque y decisiones documentadas en el repo | PASA |
-| Tecnología obligatoria | React + Chakra UI (frontend), ExpressJS sobre Node (backend); no se añaden frameworks | PASA |
-| Contenedores (Docker) | `docker-compose` levanta frontend, backend y base de datos | PASA |
-| Calidad y pruebas | Cada tarea incluye pruebas automatizadas junto al desarrollo | PASA |
-| Flujo de trabajo (Git Flow) | Feature parte de `develop` y vuelve por Pull Request | PASA |
+| I. Simplicidad ante todo | Vista + API + SSE; sin capas, ni gestor de estado global, ni ORM | Pasa |
+| II. Español de España y euro | Todos los textos de la vista en español; sin importes en esta historia | Pasa |
+| III. Cero alcance fantasma | Solo se implementa lo especificado (estado de platos, aviso, descarte, sin conexión) | Pasa |
+| IV. Verificable por no técnico | Comprobable desde la interfaz (marcar en cocina → ver en sala; aviso; descarte) | Pasa |
+| V. Datos con respeto | Sin datos personales más allá de la identidad ya existente; secretos por variables de entorno, nunca en el repo | Pasa |
+| VI. Conventional Commits | Proceso de commits del equipo; no afecta al diseño | Pasa |
+| VII. Desarrollo en equipo | Docker, README de arranque y decisiones documentadas en el repo | Pasa |
+| Tecnología obligatoria | React + Chakra UI (frontend), ExpressJS sobre Node (backend); no se añaden frameworks | Pasa |
+| Contenedores (Docker) | `docker-compose` levanta frontend y backend (SQLite en volumen) | Pasa |
+| Calidad y pruebas | Cada tarea incluye pruebas automatizadas junto al desarrollo | Pasa |
+| Flujo de trabajo (Git Flow) | Feature parte de `develop` y vuelve por Pull Request | Pasa |
 
 **Resultado (pre-diseño)**: sin violaciones. No se requiere Complexity Tracking.
 
-**Resultado (post-diseño, tras Fase 1)**: se mantiene sin violaciones; SSE y `pg` son
+**Resultado (post-diseño, tras Fase 1)**: se mantiene sin violaciones; SSE y `better-sqlite3` son
 librerías/nativos, no frameworks, por lo que no rompen la Tecnología obligatoria.
 
-## Project Structure
+## Estructura del Proyecto
 
-### Documentation (this feature)
+### Documentación (esta funcionalidad)
 
 ```text
 specs/005-senales-platos-listos/
@@ -90,14 +90,14 @@ specs/005-senales-platos-listos/
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
-### Source Code (repository root)
+### Código fuente (raíz del repositorio)
 
 ```text
 backend/
 ├── src/
 │   ├── app.js                 # Express app (middleware + rutas)
-│   ├── server.js              # Servidor HTTP + hub de eventos SSE
-│   ├── db.js                  # Pool de PostgreSQL (pg) + runner de migraciones
+│   ├── server.js              # Servidor HTTP; publica en el hub SSE compartido (`realtime/hub.js`)
+│   ├── db.js                  # Conexión a SQLite (better-sqlite3) + runner de migraciones
 │   ├── migrations/            # Migraciones SQL versionadas
 │   ├── routes/
 │   │   ├── sala.js            # GET /api/sala/mesas
@@ -130,22 +130,22 @@ frontend/
     ├── components/            # Distinción visual, estado vacío/carga, aviso
     └── integration/           # Flujo en vivo y sin conexión
 
-docker-compose.yml             # frontend + backend + PostgreSQL
+docker-compose.yml             # frontend + backend (SQLite en volumen)
 backend/Dockerfile
 frontend/Dockerfile
 ```
 
-**Structure Decision**: se elige la opción "Web application" (frontend + backend
+**Decisión de estructura**: se elige la opción "Web application" (frontend + backend
 separados), coherente con la Tecnología obligatoria de la constitución. El backend
 ExpressJS expone la API HTTP y la conexión SSE de sala; el frontend React + Chakra UI
-renderiza la vista del camarero y consume ambas. La base de datos PostgreSQL se
+renderiza la vista del camarero y consume ambas. La base de datos SQLite se
 aprovisiona con `docker-compose`. Esta feature añade a la API existente las rutas de sala
 y el flujo de eventos; las entidades Mesa/Plato/Pedido son propiedad de las historias
 01–04 y aquí solo se leen.
 
-## Complexity Tracking
+## Seguimiento de Complejidad
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+> **Rellena SOLO si la Verificación de la Constitución tiene violaciones que justificar**
 
 No hay violaciones: la solución usa únicamente el stack obligatorio y no introduce
 complejidad anticipada.

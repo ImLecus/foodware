@@ -21,11 +21,11 @@ no añade dependencias, se reconecta solo (apoya FR-014 y SC-008) y encaja con l
 
 ## 2. Persistencia del estado y de los avisos
 
-**Decisión**: PostgreSQL 16 en contenedor, accedido con SQL sencillo mediante `pg` y
+**Decisión**: SQLite en fichero persistido en un volumen Docker, accedido con SQL sencillo mediante `better-sqlite3` y
 migraciones versionadas en el repositorio.
 
 **Rationale**: el estado de los platos y los avisos deben sobrevivir a recargas y ser
-coherentes entre varias pantallas (cocina y sala). PostgreSQL es robusto para accesos
+coherentes entre varias pantallas (cocina y sala). SQLite es robusto para accesos
 concurrentes y encaja con el arranque en Docker. Usar SQL directo y migraciones mantiene
 la simplicidad y evita un ORM (que sería complejidad no exigida).
 
@@ -103,7 +103,7 @@ de la spec).
 
 ## 8. Pruebas automatizadas
 
-**Decisión**: backend con Jest + Supertest (contratos de API, completitud y ciclo del aviso);
+**Decisión**: backend con Vitest + Supertest (contratos de API, completitud y ciclo del aviso);
 frontend con Vitest + React Testing Library (distinción visual, estados vacío/carga, aviso y
 flujo sin conexión).
 

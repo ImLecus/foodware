@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Foodware — API de comandas (historia 001)
+  title: Foodware — API de pedidos (historia 001)
   version: 1.0.0
   description: >
-    Contrato de la API necesaria para abrir una mesa, tomar la comanda plato a plato, agruparla por
+    Contrato de la API necesaria para abrir una mesa, tomar el pedido plato a plato, agruparla por
     partidas y confirmarla. Los importes se expresan en céntimos enteros. Todas las peticiones
     requieren la identificación del camarero (sesión existente; ver research.md §8).
 
@@ -26,18 +26,18 @@ paths:
 
   /mesas/{mesaId}/abrir:
     post:
-      summary: Abre una mesa (la marca ocupada e inicia la comanda)
+      summary: Abre una mesa (la marca ocupada e inicia el pedido)
       operationId: abrirMesa
       parameters:
         - $ref: '#/components/parameters/mesaId'
       responses:
         '201':
-          description: Comanda en curso creada para la mesa
+          description: Pedido en curso creada para la mesa
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Comanda' }
+              schema: { $ref: '#/components/schemas/Pedido' }
         '409':
-          description: La mesa ya tiene una comanda en curso (FR-005)
+          description: La mesa ya tiene un pedido en curso (FR-005)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -55,30 +55,30 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/Plato' }
 
-  /comandas/{comandaId}:
+  /pedidos/{pedidoId}:
     get:
-      summary: Devuelve una comanda con sus líneas agrupadas por partidas
-      operationId: obtenerComanda
+      summary: Devuelve un pedido con sus líneas agrupadas por partidas
+      operationId: obtenerPedido
       parameters:
-        - $ref: '#/components/parameters/comandaId'
+        - $ref: '#/components/parameters/pedidoId'
       responses:
         '200':
-          description: Comanda
+          description: Pedido
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Comanda' }
+              schema: { $ref: '#/components/schemas/Pedido' }
         '404':
-          description: Comanda no encontrada
+          description: Pedido no encontrada
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /comandas/{comandaId}/lineas:
+  /pedidos/{pedidoId}/lineas:
     post:
-      summary: Añade un plato a la comanda en curso
+      summary: Añade un plato al pedido en curso
       operationId: anadirLinea
       parameters:
-        - $ref: '#/components/parameters/comandaId'
+        - $ref: '#/components/parameters/pedidoId'
       requestBody:
         required: true
         content:
@@ -89,24 +89,24 @@ paths:
           description: Línea creada (con el precio fijado en el momento de pedir)
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/LineaComanda' }
+              schema: { $ref: '#/components/schemas/LineaPedido' }
         '400':
           description: Datos inválidos (p. ej. cantidad < 1)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
         '409':
-          description: La comanda no está en curso
+          description: El pedido no está en curso
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /comandas/{comandaId}/lineas/{lineaId}:
+  /pedidos/{pedidoId}/lineas/{lineaId}:
     patch:
       summary: Modifica la cantidad de una línea
       operationId: modificarLinea
       parameters:
-        - $ref: '#/components/parameters/comandaId'
+        - $ref: '#/components/parameters/pedidoId'
         - $ref: '#/components/parameters/lineaId'
       requestBody:
         required: true
@@ -118,44 +118,55 @@ paths:
           description: Línea actualizada
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/LineaComanda' }
+              schema: { $ref: '#/components/schemas/LineaPedido' }
         '409':
-          description: La comanda no está en curso
+          description: El pedido no está en curso
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
     delete:
-      summary: Retira un plato de la comanda en curso
+      summary: Retira un plato del pedido en curso
       operationId: retirarLinea
       parameters:
-        - $ref: '#/components/parameters/comandaId'
+        - $ref: '#/components/parameters/pedidoId'
         - $ref: '#/components/parameters/lineaId'
       responses:
         '204':
           description: Línea retirada
         '409':
-          description: La comanda no está en curso
+          description: El pedido no está en curso
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /comandas/{comandaId}/confirmar:
+  /pedidos/{pedidoId}/confirmar:
     post:
-      summary: Confirma la comanda y devuelve el pedido agrupado por partidas
-      operationId: confirmarComanda
+      summary: Confirma el pedido y devuelve el pedido agrupado por partidas
+      operationId: confirmarPedido
       parameters:
-        - $ref: '#/components/parameters/comandaId'
+        - $ref: '#/components/parameters/pedidoId'
       responses:
         '200':
-          description: Comanda enviada con el pedido agrupado por partidas
+          description: Pedido enviado con el pedido agrupado por partidas
           content:
             application/json:
               schema: { $ref: '#/components/schemas/PedidoConfirmado' }
         '409':
-          description: No se puede confirmar (comanda vacía o ya enviada) (FR-014)
+          description: No se puede confirmar (pedido vacío o ya enviado) (FR-014)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+
+  /eventos:
+    get:
+      summary: Suscripción SSE a eventos de estado (tiempo real, hub compartido)
+      operationId: eventos
+      responses:
+        '200':
+          description: Stream `text/event-stream` con eventos de pedido (confirmado, modificado, actualizado)
+          content:
+            text/event-stream:
+              schema: { type: string }
 
 components:
   parameters:
@@ -164,8 +175,8 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
-    comandaId:
-      name: comandaId
+    pedidoId:
+      name: pedidoId
       in: path
       required: true
       schema: { type: string, format: uuid }
@@ -187,7 +198,7 @@ components:
         id: { type: string, format: uuid }
         identificador: { type: string, example: 'Mesa 5' }
         estado: { type: string, enum: [libre, ocupada] }
-        comanda_en_curso_id: { type: string, format: uuid, nullable: true }
+        pedido_en_curso_id: { type: string, format: uuid, nullable: true }
 
     Plato:
       type: object
@@ -199,7 +210,7 @@ components:
         precio_centimos: { type: integer, minimum: 1 }
         disponible: { type: boolean }
 
-    LineaComanda:
+    LineaPedido:
       type: object
       required: [id, plato_id, cantidad, precio_centimos, partida]
       properties:
@@ -210,7 +221,7 @@ components:
         precio_centimos: { type: integer, minimum: 1 }
         partida: { $ref: '#/components/schemas/Partida' }
 
-    Comanda:
+    Pedido:
       type: object
       required: [id, mesa_id, estado, creada_en, lineas]
       properties:
@@ -222,7 +233,7 @@ components:
         confirmada_en: { type: string, format: date-time, nullable: true }
         lineas:
           type: array
-          items: { $ref: '#/components/schemas/LineaComanda' }
+          items: { $ref: '#/components/schemas/LineaPedido' }
         por_partida:
           $ref: '#/components/schemas/PedidoPorPartida'
 
@@ -230,15 +241,15 @@ components:
       type: object
       description: Líneas agrupadas por partida (FR-010, FR-016)
       properties:
-        entrantes: { type: array, items: { $ref: '#/components/schemas/LineaComanda' } }
-        principales: { type: array, items: { $ref: '#/components/schemas/LineaComanda' } }
-        postres: { type: array, items: { $ref: '#/components/schemas/LineaComanda' } }
+        entrantes: { type: array, items: { $ref: '#/components/schemas/LineaPedido' } }
+        principales: { type: array, items: { $ref: '#/components/schemas/LineaPedido' } }
+        postres: { type: array, items: { $ref: '#/components/schemas/LineaPedido' } }
 
     PedidoConfirmado:
       type: object
-      required: [comanda_id, mesa, confirmada_en, por_partida]
+      required: [pedido_id, mesa, confirmada_en, por_partida]
       properties:
-        comanda_id: { type: string, format: uuid }
+        pedido_id: { type: string, format: uuid }
         mesa: { $ref: '#/components/schemas/Mesa' }
         confirmada_en: { type: string, format: date-time }
         por_partida: { $ref: '#/components/schemas/PedidoPorPartida' }

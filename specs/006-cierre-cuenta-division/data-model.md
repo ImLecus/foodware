@@ -1,7 +1,7 @@
 # Phase 1 — Data Model: Cierre y división de cuenta
 
 Este documento describe las entidades que la historia 006 necesita. La historia **lee** las
-mesas y las líneas de comanda de las historias 01–04, **escribe** la cuenta cerrada, sus
+mesas y las líneas de pedido de las historias 01–04, **escribe** la cuenta cerrada, sus
 partes y las asignaciones de consumo, y **cierra** la mesa. El ticket es un modelo derivado
 (no persistido).
 
@@ -20,9 +20,9 @@ partes y las asignaciones de consumo, y **cierra** la mesa. El ticket es un mode
 - Al confirmar el cobro, la historia 006 marca `abierta = false` (FR-011, FR-012); la
   apertura de la mesa es de la historia 01 y no se reabre en v1.
 
-### Consumo (línea de comanda; propiedad de las historias 01–04; aquí solo lectura)
+### Consumo (línea de pedido; propiedad de las historias 01–04; aquí solo lectura)
 
-Cada plato anotado en la comanda de la mesa, con el precio fijado en el momento de pedirlo.
+Cada plato anotado en el pedido de la mesa, con el precio fijado en el momento de pedirlo.
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
@@ -89,7 +89,7 @@ consumo.
 | `id` | entero | Identificador único de la asignación |
 | `cuenta_id` | entero | Cuenta a la que pertenece (FK) |
 | `parte_id` | entero | Parte de la división a la que se asigna (FK) |
-| `consumo_id` | entero | Consumo (línea de comanda) asignado (FK, solo lectura) |
+| `consumo_id` | entero | Consumo (línea de pedido) asignado (FK, solo lectura) |
 | `importe_cent` | entero | Porción del importe del consumo asignada a la parte |
 
 **Reglas**:

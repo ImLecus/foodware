@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Abrir mesa y tomar comanda
+# Specification Quality Checklist: Abrir mesa y tomar pedido
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-10-13

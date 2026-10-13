@@ -16,7 +16,7 @@
 - Q: Si la cuenta cambia después de iniciar la división, ¿se actualiza sola, se reinicia o se bloquean los cambios? → A: La división se reinicia al modificar la cuenta y el camarero debe rehacerla sobre el total actualizado.
 - Q: Cuando la cuenta no se puede repartir en partes exactamente iguales, ¿qué parte asume los céntimos sobrantes? → A: Los céntimos sobrantes se reparten de uno en uno entre las partes por orden, empezando por la primera, de modo que la suma siga coincidiendo con el total.
 - Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
-- Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar la comanda y no cambia después.
+- Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar el pedido y no cambia después.
 
 ## User Scenarios & Testing *(mandatory)*
 

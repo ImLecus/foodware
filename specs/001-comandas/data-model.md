@@ -1,9 +1,9 @@
-# Phase 1 — Data Model: Abrir mesa y tomar comanda
+# Phase 1 — Data Model: Abrir mesa y tomar pedido
 
 **Feature**: `001-comandas` | **Date**: 2026-10-13
 
 Modelo de datos derivado de las entidades clave de la spec. Los importes se guardan como enteros en
-céntimos. La base de datos es PostgreSQL 16.
+céntimos. La base de datos es SQLite.
 
 ## Partida (catálogo fijo)
 
@@ -16,7 +16,7 @@ Agrupación por la que se ordena el pedido.
 | `orden` | entero | Orden de presentación (1, 2, 3) |
 
 - **Reglas**: catálogo fijo; no se crean ni modifican partidas en esta versión (coherente con 008).
-- **Nota**: puede implementarse como tipo enumerado (`enum`) en PostgreSQL en lugar de tabla.
+- **Nota**: puede implementarse como una restricción CHECK en SQLite en lugar de tabla.
 
 ## Plato
 
@@ -30,7 +30,7 @@ Artículo de la carta que se puede pedir.
 | `precio_centimos` | entero | Obligatorio, > 0 |
 | `disponible` | booleano | Solo lectura en esta historia (lo gestiona 008) |
 
-- **Relaciones**: un `Plato` pertenece a una `Partida`; aparece en muchas `LineaComanda`.
+- **Relaciones**: un `Plato` pertenece a una `Partida`; aparece en muchas `LineaPedido`.
 - **Reglas**: en esta historia los platos se leen como "carta vigente"; su gestión (crear, precio,
   disponibilidad) pertenece a la historia 008.
 
@@ -45,9 +45,9 @@ Puesto del restaurante que el camarero abre.
 | `estado` | texto | `libre` o `ocupada` |
 
 - **Estados**: `libre` → `ocupada` al abrir la mesa. La vuelta a `libre` (cierre) pertenece a 006.
-- **Relaciones**: una `Mesa` puede tener una `Comanda` en curso (como máximo una).
+- **Relaciones**: una `Mesa` puede tener una `Pedido` en curso (como máximo una).
 
-## Comanda
+## Pedido
 
 Pedido tomado para una mesa.
 
@@ -57,23 +57,23 @@ Pedido tomado para una mesa.
 | `mesa_id` | Mesa (FK) | Obligatorio |
 | `camarero_id` | texto | Identificador del camarero que la toma (sesión) |
 | `estado` | texto | `en_curso` o `enviada` |
-| `creada_en` | timestamp | Se fija al crear la comanda |
+| `creada_en` | timestamp | Se fija al crear el pedido |
 | `confirmada_en` | timestamp (nullable) | Se fija al confirmar |
 
-- **Reglas de unicidad**: como máximo **una** comanda en estado `en_curso` por mesa
+- **Reglas de unicidad**: como máximo **una** pedido en estado `en_curso` por mesa
   (restricción única parcial sobre `mesa_id` donde `estado = 'en_curso'`).
 - **Estados**: `en_curso` → `enviada` al confirmar. La modificación posterior (`modificada`) es
   objeto de la historia 002.
-- **Relaciones**: una `Comanda` tiene muchas `LineaComanda`; pertenece a una `Mesa`.
+- **Relaciones**: una `Pedido` tiene muchas `LineaPedido`; pertenece a una `Mesa`.
 
-## LineaComanda
+## LineaPedido
 
-Cada plato anotado dentro de una comanda.
+Cada plato anotado dentro de un pedido.
 
 | Campo | Tipo | Reglas |
 |-------|------|--------|
 | `id` | UUID (PK) | Generado por el sistema |
-| `comanda_id` | Comanda (FK) | Obligatorio |
+| `pedido_id` | Pedido (FK) | Obligatorio |
 | `plato_id` | Plato (FK) | Obligatorio |
 | `cantidad` | entero | Obligatorio, ≥ 1 |
 | `precio_centimos` | entero | Copia del precio del plato **en el momento de pedirlo**; no se recalcula |
@@ -92,30 +92,35 @@ Cada plato anotado dentro de una comanda.
 
 ```text
 Mesa:     libre ──(abrir mesa)──▶ ocupada
-Comanda:  (crear) ──▶ en_curso ──(confirmar)──▶ enviada
+Pedido:  (crear) ──▶ en_curso ──(confirmar)──▶ enviada
 ```
 
 Reglas de validación asociadas a la transición:
 
-- No se puede abrir una mesa que ya tiene una comanda `en_curso` (FR-005).
-- No se puede confirmar una comanda sin líneas (FR-014).
-- Al confirmar, la comanda pasa a `enviada`, queda vinculada a su mesa (FR-017) y el pedido se
+- No se puede abrir una mesa que ya tiene un pedido `en_curso` (FR-005).
+- No se puede confirmar un pedido sin líneas (FR-014).
+- Al confirmar, el pedido pasa a `enviada`, queda vinculado a su mesa (FR-017) y el pedido se
   devuelve/expone agrupado por partidas (FR-016).
 - El precio de la línea se fija al añadirla (FR-018).
 
 ## Vista de pedido agrupado por partidas
 
-Estructura derivada (no persistida) que se genera al confirmar y al consultar una comanda enviada.
-Terminología: **comanda** es el registro persistido; **pedido agrupado por partidas** es esta vista
+Estructura derivada (no persistida) que se genera al confirmar y al consultar un pedido enviado.
+Terminología: **pedido** es el registro persistido; **pedido agrupado por partidas** es esta vista
 derivada que consumirá cocina.
 
 ```text
 Pedido
 ├── mesa: { id, identificador }
-├── comanda_id
+├── pedido_id
 ├── confirmada_en
 └── partidas:
     ├── entrantes:  [ { plato, cantidad, precio_centimos } ... ]
     ├── principales:[ { plato, cantidad, precio_centimos } ... ]
     └── postres:    [ { plato, cantidad, precio_centimos } ... ]
 ```
+
+## Eventos SSE
+
+El hub SSE compartido (`backend/src/realtime/hub.js`) emite eventos de estado; esta historia publica
+«pedido-confirmado» y el frontend se suscribe vía `GET /api/eventos`.

@@ -32,7 +32,7 @@ su justificación.
 - **Razón**: la spec declara esa dependencia y la fija el precio al pedir (historias 01 y 06); así
   el total del dashboard coincide con lo cobrado (SC-004).
 - **Alternativas consideradas**: recalcular con el precio actual de la carta (descartada: altera
-  importes ya cobrados); usar comandas enviadas en lugar de cuentas cerradas (descartada: incluiría
+  importes ya cobrados); usar pedidos enviados en lugar de cuentas cerradas (descartada: incluiría
   consumo no cobrado).
 
 ## D4. Diseño de la API

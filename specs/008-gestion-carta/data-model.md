@@ -74,5 +74,5 @@ CartaVigente = { platos : DisponibilidadPlato.ofrecible = true } agrupados por p
 - **Ingrediente.estado**: `disponible → agotado` (baja automática de los platos que lo usan) y
   `agotado → disponible` (los platos vuelven **solo si** `activo = true`, regla combinada FR-012,
   escenario 4 de la US3).
-- **Precio del plato**: puede cambiar en cualquier momento; no afecta a líneas de comanda ya
+- **Precio del plato**: puede cambiar en cualquier momento; no afecta a líneas de pedido ya
   tomadas ni a cuentas del pasado (FR-014). El precio fijado al pedir pertenece a la historia 01.

@@ -1,4 +1,4 @@
-# Phase 0 — Research: Abrir mesa y tomar comanda
+# Phase 0 — Research: Abrir mesa y tomar pedido
 
 **Feature**: `001-comandas` | **Date**: 2026-10-13
 
@@ -7,18 +7,18 @@ Este documento resuelve las incógnitas del *Technical Context* del plan. No que
 
 ## 1. Stack de aplicación
 
-- **Decision**: Frontend React 18 + Chakra UI (con Vite y TypeScript); backend ExpressJS 4 sobre
-  Node.js 20 (TypeScript).
+- **Decision**: Frontend React 18 + Chakra UI (con Vite y JavaScript); backend ExpressJS 4 sobre
+  Node.js 20 (JavaScript).
 - **Rationale**: es el stack obligatorio fijado por la constitución del proyecto; no admite
   alternativas sin enmienda previa.
 - **Alternatives considered**: ninguna (restricción de la constitución).
 
 ## 2. Persistencia
 
-- **Decision**: PostgreSQL 16 ejecutado como servicio Docker, accedido con `pg` (node-postgres) y
+- **Decision**: SQLite en fichero persistido en un volumen Docker, accedido con `better-sqlite3` (better-sqlite3) y
   migraciones SQL versionadas.
-- **Rationale**: los datos son relacionales (mesas, comandas, líneas, platos, partidas) y deben ser
-  compartidos entre varios dispositivos (sala y, más adelante, cocina); PostgreSQL en Docker cumple
+- **Rationale**: los datos son relacionales (mesas, pedidos, líneas, platos, partidas) y deben ser
+  compartidos entre varios dispositivos (sala y, más adelante, cocina); SQLite en un volumen Docker cumple
   el requisito de entorno reproducible. Se evita un ORM para mantener la simplicidad (SQL directo).
 - **Alternatives considered**: SQLite (más simple, pero menos adecuado para varios clientes
   concurrentes y para el crecimiento del sistema); Firebase/Firestore (propuesto en el enunciado,
@@ -34,35 +34,37 @@ Este documento resuelve las incógnitas del *Technical Context* del plan. No que
 
 ## 4. Fijado del precio al pedir
 
-- **Decision**: al añadir una línea de comanda se copia el precio vigente del plato en
-  `linea_comanda.precio_centimos`; ese valor no se recalcula después.
+- **Decision**: al añadir una línea de pedido se copia el precio vigente del plato en
+  `linea_pedido.precio_centimos`; ese valor no se recalcula después.
 - **Rationale**: decisión de clarificación de la spec (precio del momento de pedir); aísla la
-  comanda de los cambios de carta de la historia 08.
+  pedido de los cambios de carta de la historia 08.
 - **Alternatives considered**: usar siempre el precio actual del plato (descartado: altera lo ya
   pedido).
 
 ## 5. Partidas
 
 - **Decision**: las partidas son un catálogo fijo (entrantes, principales, postres) representado
-  como tipo enumerado en base de datos; el plato referencia una partida y la línea de comanda
+  como tipo enumerado en base de datos; el plato referencia una partida y la línea de pedido
   hereda la partida del plato.
 - **Rationale**: coincide con la spec 008 (partidas fijas) y simplifica la agrupación del pedido.
 - **Alternatives considered**: tabla de partidas gestionable (fuera de alcance en v1).
 
 ## 6. Tiempo real entre sala y cocina
 
-- **Decision**: en esta historia la confirmación persiste la comanda y expone el pedido agrupado por
-  partidas mediante la API; la difusión en vivo a las pantallas de cocina (historias 003–005) se
-  implementará en sus propias historias. El frontend de sala refresca el estado consultando la API.
-- **Rationale**: evita construir infraestructura de tiempo real (WebSocket/SSE) antes de que exista
-  la pantalla que la consume (principio de simplicidad y "cero alcance fantasma").
-- **Alternatives considered**: introducir WebSocket ya en la historia 01 (descartado por
-  complejidad anticipada).
+- **Decision**: se adopta Server-Sent Events (SSE) con un hub compartido del proyecto
+  (`backend/src/realtime/hub.js`). Al confirmar, la historia publica un evento con el pedido
+  agrupado por partidas y el frontend de sala se suscribe a `GET /api/eventos` para refrescar el
+  estado en vivo.
+- **Rationale**: SSE es unidireccional (servidor→cliente), nativo en el navegador y suficiente para
+  notificar cambios; un único hub compartido evita duplicar la capa de tiempo real en las historias
+  003–006.
+- **Alternatives considered**: WebSocket (bidireccional, innecesario); refresco por sondeo
+  (descartado por latencia).
 
 ## 7. Validación de entrada
 
 - **Decision**: validar las peticiones de la API con `zod` (esquemas por endpoint).
-- **Rationale**: validación declarativa, ligera y tipada con TypeScript; evita dependencias pesadas.
+- **Rationale**: validación declarativa, ligera y tipada con JavaScript; evita dependencias pesadas.
 - **Alternatives considered**: validación manual (más propensa a errores); class-validator
   (orientado a decoradores, más pesado).
 
@@ -78,10 +80,10 @@ Este documento resuelve las incógnitas del *Technical Context* del plan. No que
 ## 9. Pruebas
 
 - **Decision**: Vitest como runner común; React Testing Library para componentes de sala; Supertest
-  para la API; PostgreSQL real en contenedor para pruebas de integración.
+  para la API; SQLite real en fichero para pruebas de integración.
 - **Rationale**: un único runner para frontend y backend reduce configuración; pruebas de
-  integración contra PostgreSQL evitan divergencias con producción.
-- **Alternatives considered**: Jest + Testing Library (más configuración con Vite/ESM);
+  integración contra SQLite evitan divergencias con producción.
+- **Alternatives considered**: Vitest + Testing Library (más configuración con Vite/ESM);
   SQLite en memoria para tests (divergiría del motor real).
 
 ## 10. Estructura de repositorio

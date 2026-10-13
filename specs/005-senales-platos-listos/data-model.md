@@ -16,7 +16,7 @@ historias 01–04 y escribe únicamente el **aviso de mesa**.
 
 **Reglas**: la vista de sala solo incluye mesas con `abierta = true` (FR-001).
 
-### Plato de comanda / línea de pedido (propiedad de las historias 01–04; aquí solo lectura)
+### Plato de pedido / línea de pedido (propiedad de las historias 01–04; aquí solo lectura)
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
@@ -63,7 +63,7 @@ Agregado de solo lectura que alimenta la pantalla del camarero:
 ## Relaciones
 
 ```text
-Mesa 1 ──── N Plato de comanda     (una mesa agrupa varios platos)
+Mesa 1 ──── N Plato de pedido     (una mesa agrupa varios platos)
 Mesa 1 ──── N Aviso de mesa        (histórico; como máximo 1 vigente)
 Aviso N ─── 1 Mesa
 ```
@@ -82,7 +82,7 @@ Aviso N ─── 1 Mesa
 ## Transiciones de estado
 
 ```text
-Plato de comanda
+Plato de pedido
   pendiente ──(cocina marca listo)──▶ listo
   listo     ──(cocina deshace)──────▶ pendiente
 

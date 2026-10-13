@@ -1,80 +1,73 @@
-# Implementation Plan: Editar una comanda enviada
+# Plan de Implementación: Editar un pedido enviado
 
-**Branch**: `002-editar-comanda` | **Date**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
+**Rama**: `002-editar-comanda` | **Fecha**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/002-editar-comanda/spec.md`
+**Entrada**: Especificación de la funcionalidad en `/specs/002-editar-comanda/spec.md`
 
-**Note**: This template is filled in by the `/speckit.plan` command; its definition describes the execution workflow.
+**Nota**: Este fichero lo genera el comando `/speckit.plan`; su definición describe el flujo de ejecución.
 
-## Summary
+## Resumen
 
-El camarero reabre directamente una comanda ya enviada y la modifica sobre la marcha (añadir,
-retirar y ajustar platos e indicaciones), sin crear una comanda nueva. Los cambios se aplican sobre
-la comanda original, que queda **marcada como modificada** y vinculada a la misma mesa. Los cambios
+El camarero reabre directamente un pedido ya enviado y lo modifica sobre la marcha (añadir,
+retirar y ajustar platos e indicaciones), sin crear un pedido nuevo. Los cambios se aplican sobre
+el pedido original, que queda **marcado como modificado** y vinculada a la misma mesa. Los cambios
 no se comunican a cocina solos: el camarero debe ejecutar explícitamente **"enviar cambios"**.
-Mientras un camarero edita la comanda, esta queda **bloqueada** para los demás. El enfoque técnico
+Mientras un camarero edita el pedido, este queda **bloqueado** para los demás. El enfoque técnico
 reutiliza el stack y la infraestructura de la historia 001 (React + Chakra UI, ExpressJS,
-PostgreSQL, Docker) y añade el estado de modificación, el registro de cambios, el bloqueo de
-edición y el envío explícito de cambios.
+SQLite, Docker) y añade el estado de modificación, el registro de cambios, el bloqueo de
+edición y el envío explícito de cambios, que se publica por SSE (hub compartido del proyecto).
 
-## Technical Context
+## Contexto Técnico
 
-**Language/Version**: TypeScript 5.x sobre Node.js 20 (frontend y backend)
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 (frontend y backend)
 
-**Primary Dependencies**: Frontend: React 18, Chakra UI, Vite. Backend: ExpressJS 4, `pg`
-(node-postgres), `zod`, `cors`. Pruebas: Vitest, React Testing Library, Supertest. (Idénticas a la
-historia 001.)
+**Dependencias principales**: Frontend: React 18, Chakra UI, Vite. Backend: ExpressJS 4,
+`better-sqlite3`, `zod`, `cors`. Tiempo real: Server-Sent Events (`EventSource` / hub compartido).
+Pruebas: Vitest, React Testing Library, Supertest. (Idénticas a la historia 001.)
 
-**Storage**: PostgreSQL 16 (servicio en Docker), `pg`, migraciones SQL versionadas. Se amplía el
-esquema de la historia 001 (comanda, línea de comanda) y se añade la tabla de modificaciones.
+**Almacenamiento**: SQLite (fichero persistido en un volumen Docker), `better-sqlite3`, migraciones SQL versionadas. Se amplía el
+esquema de la historia 001 (pedido, línea de pedido) y se añade la tabla de modificaciones.
 
-**Testing**: Vitest (unitarias e integración), React Testing Library (sala) y Supertest (API).
+**Pruebas**: Vitest (unitarias e integración), React Testing Library (sala) y Supertest (API).
 
-**Target Platform**: Aplicación web en navegador (tabletas de sala) sobre la red local; backend
+**Plataforma objetivo**: Aplicación web en navegador (tabletas de sala) sobre la red local; backend
 Node.js en Docker.
 
-**Project Type**: Aplicación web (frontend + backend) en el mismo repositorio, **construida sobre
+**Tipo de proyecto**: Aplicación web (frontend + backend) en el mismo repositorio, **construida sobre
 la base de la historia 001**.
 
-**Performance Goals**: guardar una edición con retorno del servidor en < 1 s en la red local;
+**Objetivos de rendimiento**: guardar una edición con retorno del servidor en < 1 s en la red local;
 adquirir/liberar el bloqueo de edición en < 500 ms; "enviar cambios" en < 1 s.
 
-**Constraints**: Exige conexión (sin offline); interfaz en español de España y precios en euros;
+**Restricciones**: Exige conexión (sin offline); interfaz en español de España y precios en euros;
 entorno reproducible con Docker; ningún secreto en el repositorio.
 
-**Scale/Scope**: Un único restaurante; decenas de mesas; ~4 camareros; edición de comandas ya
+**Escala/Alcance**: Un único restaurante; decenas de mesas; ~4 camareros; edición de pedidos ya
 enviadas; versión 1.
 
-## Constitution Check
+## Verificación de la Constitución
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- **I. Simplicidad ante todo** — PASS. Se reutiliza la base de la 001; solo se añade lo necesario
-  (estado de modificación, registro de cambios, bloqueo y envío explícito), sin infraestructura de
-  tiempo real ni capas extra.
-- **II. Idioma y mercado: español de España y euro** — PASS. UI y mensajes en español de España;
-  importes en €.
-- **III. Cero alcance fantasma** — PASS. El plan cubre únicamente FR-001…FR-015 de la historia 02;
-  cocina (003), marcar listos (004), señales (005), cierre de cuenta (006), dashboard (007) y carta
-  (008) quedan fuera.
-- **IV. Verificable por una persona no técnica** — PASS. `quickstart.md` describe la validación
-  manual desde la interfaz.
-- **V. Datos del usuario con respeto** — PASS. Solo se guarda la identificación del camarero y los
-  datos de la comanda/modificación; configuración por variables de entorno (nunca en el repo).
-- **VI. Conventional Commits obligatorios** — PASS. Los commits seguirán Conventional Commits.
-- **VII. Desarrollo en equipo** — PASS. Estructura y arranque documentados y reproducibles con
-  Docker; decisiones recogidas en `research.md`.
-- **Tecnología obligatoria (React, Chakra UI, ExpressJS)** — PASS. Mismo stack que la 001.
-- **Contenedores (Docker)** — PASS. Se reutiliza el `docker-compose.yml` de la 001.
-- **Calidad y pruebas** — PASS. Pruebas automatizadas junto al desarrollo (Vitest/RTL/Supertest).
-- **Flujo de trabajo (Git Flow) y parada por tarea** — PASS. La implementación se detendrá al
-  completar cada tarea de `tasks.md` para revisión y commit del usuario.
+| Principio / regla | Comprobación | Estado |
+|-------------------|--------------|--------|
+| I. Simplicidad | Reutiliza la base de la 001; solo añade modificación, registro de cambios, bloqueo y envío explícito; sin capas extra | Pasa |
+| II. Español de España y euro | UI y mensajes en español; importes en € | Pasa |
+| III. Cero alcance fantasma | Solo FR-001…FR-015; cocina, listos, señales, cierre, dashboard y carta quedan fuera | Pasa |
+| IV. Verificable por no técnica | `quickstart.md` valida desde la interfaz | Pasa |
+| V. Datos con respeto | Solo identidad del camarero y datos del pedido/modificación; secretos por variables de entorno | Pasa |
+| VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |
+| VII. Desarrollo en equipo | Estructura y arranque reproducibles con Docker; decisiones en `research.md` | Pasa |
+| Tecnología obligatoria | React + Chakra UI; ExpressJS sobre Node.js (mismo stack que la 001) | Pasa |
+| Contenedores (Docker) | Reutiliza el `docker-compose.yml` de la 001 | Pasa |
+| Calidad y pruebas | Pruebas automatizadas junto al desarrollo (Vitest/RTL/Supertest) | Pasa |
+| Flujo de trabajo (Git Flow) | Parada por tarea y commit; PR revisado | Pasa |
 
-Sin violaciones. **Complexity Tracking** no aplica.
+No hay violaciones. El **Seguimiento de Complejidad** no aplica.
 
-## Project Structure
+## Estructura del Proyecto
 
-### Documentation (this feature)
+### Documentación (esta funcionalidad)
 
 ```text
 specs/002-editar-comanda/
@@ -86,7 +79,7 @@ specs/002-editar-comanda/
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
-### Source Code (repository root)
+### Código fuente (raíz del repositorio)
 
 Se parte de la estructura creada en la historia 001 y se añaden los ficheros de esta historia.
 
@@ -95,44 +88,47 @@ backend/
 ├── src/
 │   ├── api/
 │   │   ├── middleware/
-│   │   │   ├── camarero.ts       # identidad (historia 001)
-│   │   │   └── bloqueo.ts        # comprobación del bloqueo de edición
-│   │   ├── mesas.ts              # historia 001
-│   │   ├── platos.ts             # historia 001
-│   │   └── comandas.ts           # se amplía: edición, bloqueo y enviar-cambios
+│   │   │   ├── camarero.js       # identidad (historia 001)
+│   │   │   └── bloqueo.js        # comprobación del bloqueo de edición
+│   │   ├── mesas.js              # historia 001
+│   │   ├── platos.js             # historia 001
+│   │   └── pedidos.js           # se amplía: edición, bloqueo y enviar-cambios
 │   ├── domain/
-│   │   ├── comandas.ts           # historia 001
-│   │   └── edicion.ts            # reglas de edición, marcado y envío de cambios
+│   │   ├── pedidos.js           # historia 001
+│   │   └── edicion.js            # reglas de edición, marcado y envío de cambios
 │   ├── db/
-│   │   ├── pool.ts               # historia 001
-│   │   ├── comandas.ts           # se amplía: estado, modificada, cambios_pendientes, bloqueo
-│   │   └── modificaciones.ts     # registro de cambios (trazabilidad)
+│   │   ├── db.js               # historia 001
+│   │   ├── pedidos.js           # se amplía: estado, modificada, cambios_pendientes, bloqueo
+│   │   └── modificaciones.js     # registro de cambios (trazabilidad)
 │   ├── schemas/
-│   │   └── edicion.ts            # validación zod de la edición
-│   ├── app.ts
-│   └── index.ts
+│   │   └── edicion.js            # validación zod de la edición
+│   ├── realtime/                 # hub SSE compartido (proyecto)
+│   │   └── hub.js
+│   ├── app.js
+│   └── index.js
 ├── migrations/                   # nueva migración: modificada, cambios_pendientes, bloqueo, modificaciones
-└── tests/                        # edicion.*.test.ts (API)
+└── tests/                        # edicion.*.test.js (API)
 
 frontend/
 ├── src/
 │   ├── components/
-│   │   ├── Comanda.tsx           # historia 001 (se reutiliza)
-│   │   ├── EditorComanda.tsx     # edición de una comanda enviada
-│   │   └── EnviarCambios.tsx     # acción explícita "enviar cambios"
+│   │   ├── Pedido.jsx           # historia 001 (se reutiliza)
+│   │   ├── EditorPedido.jsx     # edición de un pedido enviado
+│   │   └── EnviarCambios.jsx     # acción explícita "enviar cambios"
 │   ├── pages/
-│   │   └── Mesas.tsx             # historia 001 (se reutiliza)
+│   │   └── Mesas.jsx             # historia 001 (se reutiliza)
 │   ├── services/
-│   │   └── api.ts                # se amplía: editar, bloqueo, enviar-cambios
-│   └── utils/formato.ts          # historia 001
-└── tests/                        # edicion.test.tsx
+│   │   ├── api.js                # se amplía: editar, bloqueo, enviar-cambios
+│   │   └── realtime.js           # suscripción SSE
+│   └── utils/formato.js          # historia 001
+└── tests/                        # edicion.test.jsx
 ```
 
-**Structure Decision**: misma aplicación web de dos paquetes (`backend/`, `frontend/`) de la 001; se
+**Decisión de estructura**: misma aplicación web de dos paquetes (`backend/`, `frontend/`) de la 001; se
 amplían ficheros existentes y se añaden los específicos de la edición. Sin paquetes ni capas nuevas.
 
-## Complexity Tracking
+## Seguimiento de Complejidad
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+> **Rellena SOLO si la Verificación de la Constitución tiene violaciones que justificar**
 
 No hay violaciones de la constitución; esta sección no aplica.

@@ -7,8 +7,8 @@ diseño para la historia 006. Formato: Decisión / Rationale / Alternativas cons
 
 **Decisión**: la historia 006 reutiliza las decisiones técnicas ya fijadas a nivel de proyecto
 por el plan de la historia 005 (y aplicables a las historias 01–08): JavaScript (ES2022) sobre
-Node.js 20 LTS, React 18 + Chakra UI en el frontend, ExpressJS 4 en el backend, PostgreSQL 16
-con `pg` y migraciones SQL versionadas, Jest + Supertest (backend) y Vitest + React Testing
+Node.js 20 LTS, React 18 + Chakra UI en el frontend, ExpressJS 4 en el backend, SQLite
+con `better-sqlite3` y migraciones SQL versionadas, Vitest + Supertest (backend) y Vitest + React Testing
 Library (frontend), y arranque con Docker Compose. No se introducen decisiones nuevas de stack.
 
 **Rationale**: la constitución fija React + Chakra UI y ExpressJS sobre Node; el resto son
@@ -21,7 +21,7 @@ la coherencia del proyecto y la constitución).
 ## 1. Cálculo del importe total (FR-002, FR-003, SC-001)
 
 **Decisión**: el total de la cuenta es la suma de `cantidad × precio_unitario` de cada línea
-de comanda de la mesa, usando el **precio fijado en el momento de pedir** (historia 01,
+de pedido de la mesa, usando el **precio fijado en el momento de pedir** (historia 01,
 FR-019). El importe se calcula en céntimos enteros para evitar errores de coma flotante y se
 muestra en euros (€) con formato español.
 
@@ -84,12 +84,12 @@ Al confirmar el cierre, el backend recalcula el total actual y, si difiere del t
 enviado, rechaza la operación (`422`) e indica que la cuenta cambió; la pantalla vuelve a
 cargar la cuenta con el total actualizado y el camarero rehace la división.
 
-**Rationale**: cumple FR-017 sin bloquear la comanda (evita introducir estados de "división
+**Rationale**: cumple FR-017 sin bloquear el pedido (evita introducir estados de "división
 vigente" y su limpieza) y sin un canal de tiempo real propio; el caso de edición concurrente
 es poco frecuente y se resuelve en el momento de confirmar (Principio I).
 
 **Alternativas consideradas**: bloquear la cuenta mientras se divide (como la edición de
-comanda de la historia 02: más complejidad y estados); suscribirse a eventos para reiniciar en
+pedido de la historia 02: más complejidad y estados); suscribirse a eventos para reiniciar en
 vivo (no exigido por la spec).
 
 ## 6. Pago por partes y cierre transaccional (FR-011, FR-014, FR-016, SC-005, SC-007)
@@ -123,7 +123,7 @@ no notificar (la vista de sala mostraría mesas cerradas hasta recargar).
 
 ## 8. Pruebas automatizadas y verificación
 
-**Decisión**: backend con Jest + Supertest (contrato de las rutas de cuenta y cierre; cálculo
+**Decisión**: backend con Vitest + Supertest (contrato de las rutas de cuenta y cierre; cálculo
 del total; redondeo de céntimos en partes iguales; validación de la división; cierre
 transaccional; rechazo de cuenta ya cerrada y de partes pendientes) y frontend con Vitest +
 React Testing Library (resumen del total, división en ambos modos, ticket y estado de error).

@@ -2,7 +2,7 @@
 description: "Task list for feature 001-comandas"
 ---
 
-# Tasks: Abrir mesa y tomar comanda
+# Tasks: Abrir mesa y tomar pedido
 
 **Input**: Design documents from `/specs/001-comandas/`
 
@@ -35,10 +35,10 @@ Aplicación web (ver `plan.md`): `backend/` y `frontend/` en la raíz del reposi
 **Purpose**: Inicialización del proyecto y estructura básica.
 
 - [ ] T001 Crear la estructura del monorepo (`backend/`, `frontend/`) y los ficheros de raíz `.gitignore`, `.env.example` y `README.md`
-- [ ] T002 Inicializar el backend Node.js 20 + TypeScript + Express en `backend/` (`backend/package.json`, `backend/tsconfig.json`)
-- [ ] T003 Inicializar el frontend Vite + React 18 + TypeScript + Chakra UI en `frontend/` (`frontend/package.json`, `frontend/tsconfig.json`, `frontend/vite.config.ts`)
+- [ ] T002 Inicializar el backend Node.js 20 + JavaScript + Express en `backend/` (`backend/package.json`, `backend/jsconfig.json`)
+- [ ] T003 Inicializar el frontend Vite + React 18 + JavaScript + Chakra UI en `frontend/` (`frontend/package.json`, `frontend/jsconfig.json`, `frontend/vite.config.js`)
 - [ ] T004 [P] Configurar ESLint y Prettier en `backend/.eslintrc.cjs` y `frontend/.eslintrc.cjs`
-- [ ] T005 [P] Configurar Vitest en `backend/vitest.config.ts` y `frontend/vitest.config.ts`
+- [ ] T005 [P] Configurar Vitest en `backend/vitest.config.js` y `frontend/vitest.config.js`
 
 ---
 
@@ -48,52 +48,52 @@ Aplicación web (ver `plan.md`): `backend/` y `frontend/` en la raíz del reposi
 
 **⚠️ CRITICAL**: Ninguna tarea de la historia US1 puede empezar hasta completar esta fase.
 
-- [ ] T006 Crear `docker-compose.yml` (servicios `db` PostgreSQL 16, `backend`, `frontend`) y `backend/Dockerfile` y `frontend/Dockerfile`
-- [ ] T007 Configurar variables de entorno del backend en `backend/src/config.ts` y documentar `.env.example`
-- [ ] T008 Implementar el pool de conexión a PostgreSQL en `backend/src/db/pool.ts`
-- [ ] T009 Crear las migraciones SQL del esquema (partida, plato, mesa, comanda, linea_comanda) en `backend/migrations/`
-- [ ] T010 Implementar el script de datos de ejemplo (mesas y carta) en `backend/src/db/seed.ts`
-- [ ] T011 Montar el esqueleto de la app Express con router base y middleware de errores en `backend/src/app.ts` y `backend/src/index.ts`
-- [ ] T012 Implementar el endpoint de salud `GET /api/health` en `backend/src/api/health.ts` con su prueba en `backend/tests/health.test.ts`
-- [ ] T013 Implementar el middleware de identidad del camarero (sesión existente) en `backend/src/api/middleware/camarero.ts`
+- [ ] T006 Crear `docker-compose.yml` (servicios `backend` y `frontend`; SQLite persistido en volumen) y `backend/Dockerfile` y `frontend/Dockerfile`
+- [ ] T007 Configurar variables de entorno del backend en `backend/src/config.js` y documentar `.env.example`
+- [ ] T008 Implementar la conexión a SQLite en `backend/src/db/db.js`
+- [ ] T009 Crear las migraciones SQL del esquema (partida, plato, mesa, pedido, linea_pedido) en `backend/migrations/`
+- [ ] T010 Implementar el script de datos de ejemplo (mesas y carta) en `backend/src/db/seed.js`
+- [ ] T011 Montar el esqueleto de la app Express con router base, middleware de errores y hub SSE compartido (`backend/src/realtime/hub.js`) en `backend/src/app.js` y `backend/src/index.js`
+- [ ] T012 Implementar el endpoint de salud `GET /api/health` en `backend/src/api/health.js` con su prueba en `backend/tests/health.test.js`
+- [ ] T013 Implementar el middleware de identidad del camarero (sesión existente) en `backend/src/api/middleware/camarero.js`
 
 **Checkpoint**: Base lista — puede comenzar la historia US1.
 
 ---
 
-## Phase 3: User Story 1 - Abrir una mesa y tomar la comanda plato a plato (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 - Abrir una mesa y tomar el pedido plato a plato (Priority: P1) 🎯 MVP
 
 **Goal**: El camarero abre una mesa, añade platos con cantidad que se agrupan por partidas, ajusta
-y confirma la comanda, que queda enviada y vinculada a la mesa con el pedido agrupado por partidas.
+y confirma el pedido, que queda enviado y vinculada a la mesa con el pedido agrupado por partidas.
 
 **Independent Test**: abrir una mesa, añadir platos de las tres partidas, ajustar cantidades,
-confirmar y comprobar que la comanda queda enviada, vinculada a la mesa y agrupada por partidas
+confirmar y comprobar que el pedido queda enviado, vinculada a la mesa y agrupado por partidas
 (ver `quickstart.md`, escenarios 1–9).
 
 ### Tests for User Story 1 (write first, ensure they FAIL) ⚠️
 
-- [ ] T014 [P] [US1] Prueba de API para abrir mesa e iniciar comanda (incluye 409 si ya hay comanda en curso) en `backend/tests/comandas.abrir.test.ts`
-- [ ] T015 [P] [US1] Prueba de API para añadir, modificar y retirar líneas, y para el precio fijado al pedir, en `backend/tests/comandas.lineas.test.ts`
-- [ ] T016 [P] [US1] Prueba de API para confirmar la comanda (pedido agrupado por partidas) y para impedir confirmar una comanda vacía, en `backend/tests/comandas.confirmar.test.ts`
-- [ ] T017 [P] [US1] Pruebas de componentes de sala (agrupar por partidas, añadir y ajustar líneas) en `frontend/tests/comanda.test.tsx`
+- [ ] T014 [P] [US1] Prueba de API para abrir mesa e iniciar pedido (incluye 409 si ya hay pedido en curso) en `backend/tests/pedidos.abrir.test.js`
+- [ ] T015 [P] [US1] Prueba de API para añadir, modificar y retirar líneas, y para el precio fijado al pedir, en `backend/tests/pedidos.lineas.test.js`
+- [ ] T016 [P] [US1] Prueba de API para confirmar el pedido (pedido agrupado por partidas) y para impedir confirmar un pedido vacío, en `backend/tests/pedidos.confirmar.test.js`
+- [ ] T017 [P] [US1] Pruebas de componentes de sala (agrupar por partidas, añadir y ajustar líneas) en `frontend/tests/pedido.test.jsx`
 
 ### Implementation for User Story 1
 
-- [ ] T018 [P] [US1] Repositorio de mesas (listar, marcar ocupada) en `backend/src/db/mesas.ts`
-- [ ] T019 [P] [US1] Repositorio de platos (carta vigente, disponibles) en `backend/src/db/platos.ts`
-- [ ] T020 [P] [US1] Repositorio de comandas y líneas (crear, añadir, modificar, retirar, confirmar) en `backend/src/db/comandas.ts`
-- [ ] T021 [US1] Dominio de comandas: agrupación por partidas y reglas (una comanda en curso por mesa, comanda no vacía) en `backend/src/domain/comandas.ts`
-- [ ] T022 [US1] Esquemas de validación zod para las peticiones en `backend/src/schemas/comandas.ts`
-- [ ] T023 [US1] Endpoints de mesas `GET /api/mesas` y `POST /api/mesas/{mesaId}/abrir` en `backend/src/api/mesas.ts`
-- [ ] T024 [US1] Endpoint de carta `GET /api/platos` en `backend/src/api/platos.ts`
-- [ ] T025 [US1] Endpoints de comanda `GET /api/comandas/{id}`, `POST/PATCH/DELETE` de líneas y `POST /confirmar` en `backend/src/api/comandas.ts`
-- [ ] T026 [US1] Fijar el precio del plato en la línea al pedirla (FR-018) en `backend/src/db/comandas.ts`
-- [ ] T027 [P] [US1] Pantalla de mesas (listar y abrir) en `frontend/src/pages/Mesas.tsx`
-- [ ] T028 [P] [US1] Componente de comanda agrupada por partidas en `frontend/src/components/Comanda.tsx`
-- [ ] T029 [US1] Selector de platos de la carta con cantidad en `frontend/src/components/SelectorPlatos.tsx`
-- [ ] T030 [US1] Acciones de ajustar cantidad, retirar línea y confirmar comanda en `frontend/src/components/Comanda.tsx`
-- [ ] T031 [US1] Cliente HTTP de la API y estado "sin conexión" (bloquear confirmar/modificar y conservar lo escrito) en `frontend/src/services/api.ts` y `frontend/src/components/Conexion.tsx`
-- [ ] T032 [US1] Localización es-ES y formato de moneda en euros en `frontend/src/theme/` y `frontend/src/utils/formato.ts`
+- [ ] T018 [P] [US1] Repositorio de mesas (listar, marcar ocupada) en `backend/src/db/mesas.js`
+- [ ] T019 [P] [US1] Repositorio de platos (carta vigente, disponibles) en `backend/src/db/platos.js`
+- [ ] T020 [P] [US1] Repositorio de pedidos y líneas (crear, añadir, modificar, retirar, confirmar) en `backend/src/db/pedidos.js`
+- [ ] T021 [US1] Dominio de pedidos: agrupación por partidas y reglas (un pedido en curso por mesa, pedido no vacía) en `backend/src/domain/pedidos.js`
+- [ ] T022 [US1] Esquemas de validación zod para las peticiones en `backend/src/schemas/pedidos.js`
+- [ ] T023 [US1] Endpoints de mesas `GET /api/mesas` y `POST /api/mesas/{mesaId}/abrir` en `backend/src/api/mesas.js`
+- [ ] T024 [US1] Endpoint de carta `GET /api/platos` en `backend/src/api/platos.js`
+- [ ] T025 [US1] Endpoints de pedido `GET /api/pedidos/{id}`, `POST/PATCH/DELETE` de líneas y `POST /confirmar` en `backend/src/api/pedidos.js`
+- [ ] T026 [US1] Fijar el precio del plato en la línea al pedirla (FR-018) en `backend/src/db/pedidos.js`
+- [ ] T027 [P] [US1] Pantalla de mesas (listar y abrir) en `frontend/src/pages/Mesas.jsx`
+- [ ] T028 [P] [US1] Componente de pedido agrupada por partidas en `frontend/src/components/Pedido.jsx`
+- [ ] T029 [US1] Selector de platos de la carta con cantidad en `frontend/src/components/SelectorPlatos.jsx`
+- [ ] T030 [US1] Acciones de ajustar cantidad, retirar línea y confirmar pedido en `frontend/src/components/Pedido.jsx`
+- [ ] T031 [US1] Cliente HTTP de la API, suscripción SSE (`frontend/src/services/realtime.js`) y estado "sin conexión" (bloquear confirmar/modificar y conservar lo escrito) en `frontend/src/services/api.js` y `frontend/src/components/Conexion.jsx`
+- [ ] T032 [US1] Localización es-ES y formato de moneda en euros en `frontend/src/theme/` y `frontend/src/utils/formato.js`
 
 **Checkpoint**: US1 funcional y verificable de forma independiente (MVP).
 
@@ -139,15 +139,15 @@ confirmar y comprobar que la comanda queda enviada, vinculada a la mesa y agrupa
 
 ```bash
 # Pruebas de US1 (escribir primero, deben fallar):
-Task: "T014 [US1] Prueba de API abrir mesa en backend/tests/comandas.abrir.test.ts"
-Task: "T015 [US1] Prueba de API líneas y precio en backend/tests/comandas.lineas.test.ts"
-Task: "T016 [US1] Prueba de API confirmar y comanda vacía en backend/tests/comandas.confirmar.test.ts"
-Task: "T017 [US1] Pruebas de componentes en frontend/tests/comanda.test.tsx"
+Task: "T014 [US1] Prueba de API abrir mesa en backend/tests/pedidos.abrir.test.js"
+Task: "T015 [US1] Prueba de API líneas y precio en backend/tests/pedidos.lineas.test.js"
+Task: "T016 [US1] Prueba de API confirmar y pedido vacío en backend/tests/pedidos.confirmar.test.js"
+Task: "T017 [US1] Pruebas de componentes en frontend/tests/pedido.test.jsx"
 
 # Repositorios de US1 (paralelizables):
-Task: "T018 [US1] Repositorio de mesas en backend/src/db/mesas.ts"
-Task: "T019 [US1] Repositorio de platos en backend/src/db/platos.ts"
-Task: "T020 [US1] Repositorio de comandas en backend/src/db/comandas.ts"
+Task: "T018 [US1] Repositorio de mesas en backend/src/db/mesas.js"
+Task: "T019 [US1] Repositorio de platos en backend/src/db/platos.js"
+Task: "T020 [US1] Repositorio de pedidos en backend/src/db/pedidos.js"
 ```
 
 ---
@@ -180,6 +180,6 @@ revise y haga el commit (Conventional Commits) antes de continuar con la siguien
 - `[P]` = ficheros distintos, sin dependencias.
 - Las pruebas se escriben primero y deben fallar antes de implementar.
 - Un commit por tarea (Conventional Commits).
-- La edición de comandas ya enviadas pertenece a la historia 002 (no se incluye aquí).
+- La edición de pedidos ya enviados pertenece a la historia 002 (no se incluye aquí).
 - Fuera de alcance: cocina (003), marcar listos (004), señales (005), cierre de cuenta (006),
   dashboard (007) y gestión de carta (008).

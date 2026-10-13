@@ -1,13 +1,13 @@
-# Implementation Plan: Ver pedidos pendientes en cocina
+# Plan de Implementación: Ver pedidos pendientes en cocina
 
-**Branch**: `003-ver_pedidos` | **Date**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
+**Rama**: `003-ver_pedidos` | **Fecha**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/003-ver_pedidos/spec.md`
+**Entrada**: Especificación de la funcionalidad en `/specs/003-ver_pedidos/spec.md`
 
-**Note**: el stack y la estructura del repositorio se comparten con el plan de `004-marcar_listos`
+**Nota**: el stack y la estructura del repositorio se comparten con el plan de `004-marcar_listos`
 (primer plan del proyecto); este documento no los redefine, solo los aplica a esta historia.
 
-## Summary
+## Resumen
 
 Ofrecer al cocinero una vista de cocina que muestre **solo** los pedidos pendientes de su partida,
 ordenados por tiempo de espera (más antiguo primero, con desempate por orden de llegada), con el
@@ -16,56 +16,50 @@ listos, marcados). La vista se refresca en vivo sin recargar, muestra estados va
 y señala cuándo se pierde la conexión. El enfoque técnico reutiliza React + Chakra UI (frontend),
 ExpressJS sobre Node.js con SQLite (backend) y Server-Sent Events para el refresco en vivo.
 
-## Technical Context
+## Contexto Técnico
 
-**Language/Version**: JavaScript ES2022 sobre Node.js 20 (backend) y navegador moderno (frontend)
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 (backend) y navegador moderno (frontend)
 
-**Primary Dependencies**: React 18 + Chakra UI (frontend); ExpressJS 4 (backend); Vite (build);
+**Dependencias principales**: React 18 + Chakra UI (frontend); ExpressJS 4 (backend); Vite (build);
 better-sqlite3 (persistencia); Server-Sent Events vía `EventSource` (refresco en vivo);
 Vitest + React Testing Library + Supertest (pruebas)
 
-**Storage**: SQLite en fichero, persistido en un volumen Docker
+**Almacenamiento**: SQLite en fichero, persistido en un volumen Docker
 
-**Testing**: Vitest (unitarias/integración backend), Supertest (contratos REST), React Testing
+**Pruebas**: Vitest (unitarias/integración backend), Supertest (contratos REST), React Testing
 Library (componentes y flujos del frontend)
 
-**Target Platform**: Aplicación web; backend Linux en contenedor; pantallas de cocina en navegador
+**Plataforma objetivo**: Aplicación web; backend Linux en contenedor; pantallas de cocina en navegador
 
-**Project Type**: Aplicación web (frontend + backend en el mismo repositorio)
+**Tipo de proyecto**: Aplicación web (frontend + backend en el mismo repositorio)
 
-**Performance Goals**: un pedido nuevo aparece en la vista en ≤5 s sin recargar; la lista se
+**Objetivos de rendimiento**: un pedido nuevo aparece en la vista en ≤5 s sin recargar; la lista se
 reordena en ≤5 s al cambiar el estado; el tiempo de espera se muestra con precisión ≥1 min
 
-**Constraints**: UI en español de España; **requiere conexión** (al perderse se muestra indicador
+**Restricciones**: UI en español de España; **requiere conexión** (al perderse se muestra indicador
 de «sin conexión» y no se permite confirmar cambios hasta recuperarla); sin secretos en el
 repositorio; arranque reproducible con `docker-compose`
 
-**Scale/Scope**: un restaurante, 3 partidas, ~20 mesas, hasta ~20 pedidos pendientes por partida y
+**Escala/Alcance**: un restaurante, 3 partidas, ~20 mesas, hasta ~20 pedidos pendientes por partida y
 un puñado de pantallas de cocina concurrentes
 
-## Constitution Check
+## Verificación de la Constitución
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- **I. Simplicidad ante todo** — PASS. Un backend, un frontend, SQLite y SSE; la vista se resuelve
-  con una lista ordenada en servidor y un temporizador en cliente, sin estado extra.
-- **II. Idioma y mercado (español de España, euro)** — PASS. Toda la vista y el formato de tiempo
-  van en español de España (FR-014); no maneja importes.
-- **III. Cero alcance fantasma** — PASS. El plan cubre exactamente FR-001…FR-016; el indicador de
-  «sin conexión» y el modo conectado proceden de una clarificación aprobada de la spec.
-- **IV. Verificable por una persona no técnica** — PASS. `quickstart.md` permite demostrar cada
-  escenario de aceptación desde la aplicación.
-- **V. Datos del usuario con respeto** — PASS. Solo datos operativos del servicio; sin login nuevo
-  (se reutiliza la identidad/asignación existente); sin secretos versionados.
-- **VI. Conventional Commits obligatorios** — PASS. Afecta al flujo de trabajo del equipo, no al
-  diseño técnico.
-- **VII. Desarrollo en equipo** — PASS. Estructura monorepo y arranque con `docker-compose`
-  documentados y reproducibles.
-- **Tecnología obligatoria** — PASS. React + Chakra UI y ExpressJS sobre Node.js, sin alternativas.
-- **Contenedores (Docker)** — PASS. Se reutilizan los `Dockerfile` y `docker-compose.yml` del plan
-  compartido.
-- **Calidad y pruebas** — PASS. Cada requisito funcional contará con pruebas automatizadas
-  (Vitest + RTL + Supertest).
+| Principio / regla | Comprobación | Estado |
+|-------------------|--------------|--------|
+| I. Simplicidad | Un backend, un frontend, SQLite y SSE; lista ordenada en servidor y temporizador en cliente | Pasa |
+| II. Español de España y euro | Vista y formato de tiempo en español; no maneja importes | Pasa |
+| III. Cero alcance fantasma | Solo FR-001…FR-016; «sin conexión» procede de una clarificación aprobada | Pasa |
+| IV. Verificable por no técnica | `quickstart.md` demuestra cada escenario desde la aplicación | Pasa |
+| V. Datos con respeto | Solo datos operativos; sin login nuevo; sin secretos versionados | Pasa |
+| VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |
+| VII. Desarrollo en equipo | Monorepo y arranque con `docker-compose` reproducibles | Pasa |
+| Tecnología obligatoria | React + Chakra UI; ExpressJS sobre Node.js | Pasa |
+| Contenedores (Docker) | `Dockerfile` y `docker-compose.yml` compartidos | Pasa |
+| Calidad y pruebas | Pruebas automatizadas por requisito (Vitest + RTL + Supertest) | Pasa |
+| Flujo de trabajo (Git Flow) | Rama desde `develop`, PR revisado | Pasa |
 
 **Resultado**: sin violaciones; no se requiere justificación en Complexity Tracking.
 
@@ -73,9 +67,9 @@ un puñado de pantallas de cocina concurrentes
 la guía de validación no añaden dependencias fuera del stack obligatorio y cubren todos los FR,
 incluidos el estado sin partida, el estado vacío y el comportamiento sin conexión.
 
-## Project Structure
+## Estructura del Proyecto
 
-### Documentation (this feature)
+### Documentación (esta funcionalidad)
 
 ```text
 specs/003-ver_pedidos/
@@ -89,7 +83,7 @@ specs/003-ver_pedidos/
 └── tasks.md             # Phase 2 output (/speckit.tasks - NOT created by /speckit.plan)
 ```
 
-### Source Code (repository root)
+### Código fuente (raíz del repositorio)
 
 ```text
 backend/
@@ -103,7 +97,7 @@ backend/
 │   ├── routes/              # endpoints REST (contracts/openapi.yaml)
 │   │   ├── partidas.js      # lista de pedidos pendientes
 │   │   └── cocineros.js     # partida del cocinero (identidad reutilizada)
-│   └── realtime/            # canal SSE y emisión de eventos
+│   └── realtime/            # suscripción al hub SSE compartido (`realtime/hub.js`)
 ├── tests/
 │   ├── contract/
 │   ├── integration/
@@ -127,10 +121,10 @@ frontend/
 docker-compose.yml           # frontend + backend; volumen para SQLite (compartido)
 ```
 
-**Structure Decision**: se mantiene la estructura de **aplicación web** del plan compartido
+**Decisión de estructura**: se mantiene la estructura de **aplicación web** del plan compartido
 (`backend/` + `frontend/`). Para esta historia, el backend expone la lista ordenada de pendientes y
-el canal SSE de la partida; el frontend concentra la pantalla de cocina y el aviso de conexión.
+el hub SSE compartido; el frontend concentra la pantalla de cocina y el aviso de conexión.
 
-## Complexity Tracking
+## Seguimiento de Complejidad
 
 > Sin violaciones de la constitución; no aplica.

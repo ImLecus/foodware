@@ -7,7 +7,7 @@ código. No incluye código de implementación: los detalles están en
 ## Requisitos previos
 
 - Docker y Docker Compose instalados.
-- Puertos libres para el frontend, el backend y PostgreSQL (los define `docker-compose.yml`).
+- Puertos libres para el frontend y el backend (los define `docker-compose.yml`); SQLite se guarda en un fichero.
 - Conexión a la red local entre las pantallas que se usen en la prueba.
 
 ## Puesta en marcha

@@ -10,7 +10,7 @@ El encargado necesita, una vez terminado el día, una vista de conjunto de las v
 día, desglose por camarero y por plato, y comparación contra el día natural anterior (importe y
 porcentaje, indicando subida, bajada o sin variación), siempre con formato español y en euros.
 La funcionalidad es de solo lectura: agrega las cuentas cerradas del día a partir de los datos que
-generan las historias de comandas (01) y cierre de cuenta (06), sin modificarlos.
+generan las historias de pedidos (01) y cierre de cuenta (06), sin modificarlos.
 
 El enfoque técnico es una **agregación bajo demanda** sobre los datos de cuentas cerradas,
 expuesta por un único endpoint HTTP de solo lectura protegido por rol de encargado, y consumida
@@ -20,7 +20,7 @@ consistencia garantizada con las cuentas cerradas, SC-004).
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: TypeScript 5.x sobre Node.js 20 LTS (backend) y React 18 con TypeScript y
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 LTS (backend) y React 18 con JavaScript y
 Vite (frontend).
 
 **Dependencias principales**:
@@ -59,7 +59,7 @@ día anterior; pocos usuarios encargados y varias cuentas por día.
 |-------------------|--------------|--------|
 | I. Simplicidad | Agregación bajo demanda con SQL; sin capa de caché ni agregados precalculados; sin librería de gráficas | Pasa |
 | II. Español de España y euro | Formato `Intl` es-ES y €; día natural Europe/Madrid | Pasa |
-| III. Cero alcance fantasma | Solo lectura + visualización del dashboard; no se implementan comandas, cierre ni gestión de carta | Pasa |
+| III. Cero alcance fantasma | Solo lectura + visualización del dashboard; no se implementan pedidos, cierre ni gestión de carta | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` con escenarios de comprobación desde la interfaz | Pasa |
 | V. Datos con respeto | Solo se leen ventas, camarero y plato; sin datos personales innecesarios ni secretos | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |

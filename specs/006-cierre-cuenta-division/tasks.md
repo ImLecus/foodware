@@ -20,7 +20,7 @@
 
 **Frontera de propiedad de datos (obligatoria)**: la historia 006 solo **escribe** sus tablas
 (`cuentas`, `cuentas_partes`, `cuentas_parte_consumos`) y **cierra la mesa**; **solo lee** las
-mesas y las líneas de comanda (consumos) de las historias 01–04.
+mesas y las líneas de pedido (consumos) de las historias 01–04.
 
 ---
 
@@ -29,8 +29,8 @@ mesas y las líneas de comanda (consumos) de las historias 01–04.
 **Purpose**: Inicialización del proyecto y estructura básica
 
 - [ ] T001 Crear/verificar la estructura de carpetas del proyecto (`backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/tests/`) según `specs/006-cierre-cuenta-division/plan.md`
-- [ ] T002 [P] Asegurar la configuración de Jest + Supertest (backend) y Vitest + React Testing Library (frontend) en `backend/package.json` y `frontend/package.json`
-- [ ] T003 [P] Asegurar `docker-compose.yml` (frontend, backend, PostgreSQL), `backend/Dockerfile` y `frontend/Dockerfile`
+- [ ] T002 [P] Asegurar la configuración de Vitest + Supertest (backend) y Vitest + React Testing Library (frontend) en `backend/package.json` y `frontend/package.json`
+- [ ] T003 [P] Asegurar `docker-compose.yml` (frontend y backend; SQLite en volumen), `backend/Dockerfile` y `frontend/Dockerfile`
 - [ ] T004 [P] Asegurar `backend/.env.example` sin secretos y la sección de arranque en `README.md`
 
 ---
@@ -41,8 +41,8 @@ mesas y las líneas de comanda (consumos) de las historias 01–04.
 
 **⚠️ CRITICAL**: Ninguna historia puede empezar hasta completar esta fase
 
-- [ ] T005 Implementar el pool de conexión a PostgreSQL en `backend/src/db.js`
-- [ ] T006 Crear la migración de la historia 006 (`cuentas`, `cuentas_partes`, `cuentas_parte_consumos`) en `backend/src/migrations/002_cuentas.sql` (solo tablas propias de 006; NO crear `mesas` ni líneas de comanda, que pertenecen a las historias 01–04)
+- [ ] T005 Implementar el conexión a SQLite en `backend/src/db.js`
+- [ ] T006 Crear la migración de la historia 006 (`cuentas`, `cuentas_partes`, `cuentas_parte_consumos`) en `backend/src/migrations/002_cuentas.sql` (solo tablas propias de 006; NO crear `mesas` ni líneas de pedido, que pertenecen a las historias 01–04)
 - [ ] T007 [P] Ampliar los datos de ejemplo con una mesa abierta con consumos y precios fijados al pedir en `backend/scripts/seed.js`
 - [ ] T008 [P] Reutilizar el hub SSE de la historia 005 y exponer la emisión del evento `mesa-cerrada` en `backend/src/realtime/eventos.js`
 - [ ] T009 Implementar el bootstrap de la app Express y del servidor HTTP (montaje de rutas y uso del hub) en `backend/src/app.js` y `backend/src/server.js`

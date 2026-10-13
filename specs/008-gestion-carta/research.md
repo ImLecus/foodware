@@ -70,7 +70,7 @@ su justificación.
 ## D7. Precio inmutable en pedidos ya tomados
 
 - **Decisión**: la gestión de carta solo escribe sobre el plato (nombre, partida, precio, `activo`);
-  nunca modifica el `precioUnitario` ya fijado en líneas de comanda existentes (historia 01,
+  nunca modifica el `precioUnitario` ya fijado en líneas de pedido existentes (historia 01,
   FR-019). El precio nuevo afecta solo a la carta vigente y a nuevos pedidos.
 - **Razón**: FR-014 y los casos límite prohíben alterar cuentas del pasado; el precio fijado al
   pedir es la fuente para el cierre (06) y los informes (07).

@@ -27,10 +27,10 @@ independientes.
 **Propósito**: inicialización del proyecto y estructura básica.
 
 - [ ] T001 Crear la estructura de carpetas `backend/` y `frontend/` según `plan.md`
-- [ ] T002 [P] Inicializar el backend (TypeScript, Express, better-sqlite3, zod) en `backend/package.json`
-- [ ] T003 [P] Inicializar el frontend (React 18, Vite, TypeScript, Chakra UI, React Router) en `frontend/package.json`
-- [ ] T004 [P] Configurar Vitest y Supertest en el backend en `backend/vitest.config.ts`
-- [ ] T005 [P] Configurar Vitest y React Testing Library en el frontend en `frontend/vitest.config.ts`
+- [ ] T002 [P] Inicializar el backend (JavaScript, Express, better-sqlite3, zod) en `backend/package.json`
+- [ ] T003 [P] Inicializar el frontend (React 18, Vite, JavaScript, Chakra UI, React Router) en `frontend/package.json`
+- [ ] T004 [P] Configurar Vitest y Supertest en el backend en `backend/vitest.config.js`
+- [ ] T005 [P] Configurar Vitest y React Testing Library en el frontend en `frontend/vitest.config.js`
 - [ ] T006 [P] Configurar ESLint y Prettier en `backend/.eslintrc.cjs` y `frontend/.eslintrc.cjs`
 - [ ] T007 Crear `Dockerfile` de backend y frontend y el `docker-compose.yml` raíz
 
@@ -38,19 +38,19 @@ independientes.
 
 ## Fase 2: Fundacional (prerrequisitos bloqueantes)
 
-**Propósito**: infraestructura que DEBE estar lista antes de cualquier historia.
+**Propósito**: infraestructura que MUST estar lista antes de cualquier historia.
 
 **⚠️ CRÍTICO**: ninguna historia puede empezar hasta completar esta fase.
 
 - [ ] T008 Crear el esquema SQLite (`plato`, `ingrediente`, `plato_ingrediente`) en `backend/db/schema.sql`
-- [ ] T009 [P] Crear el script de datos semilla (platos e ingredientes) en `backend/db/seed.ts`
-- [ ] T010 Implementar modelos y acceso a datos `Plato`, `Ingrediente`, `PlatoIngrediente` en `backend/src/models/carta.ts`
-- [ ] T011 [P] Implementar middleware de autorización por rol `requireRole` en `backend/src/middleware/authorize.ts`
-- [ ] T012 [P] Definir esquemas de validación zod (plato e ingrediente) en `backend/src/api/cartaSchemas.ts`
-- [ ] T013 Implementar el cálculo de disponibilidad derivada (`ofrecible`/`motivo`) en `backend/src/services/cartaService.ts`
-- [ ] T014 Configurar el router de la API y el manejo de errores HTTP en `backend/src/api/index.ts`
-- [ ] T015 [P] Crear el cliente HTTP de carta (`fetch`) en `frontend/src/services/cartaClient.ts`
-- [ ] T016 [P] Crear la utilidad de formato de precio y número es-ES en `frontend/src/utils/format.ts`
+- [ ] T009 [P] Crear el script de datos semilla (platos e ingredientes) en `backend/db/seed.js`
+- [ ] T010 Implementar modelos y acceso a datos `Plato`, `Ingrediente`, `PlatoIngrediente` en `backend/src/models/carta.js`
+- [ ] T011 [P] Implementar middleware de autorización por rol `requireRole` en `backend/src/middleware/authorize.js`
+- [ ] T012 [P] Definir esquemas de validación zod (plato e ingrediente) en `backend/src/api/cartaSchemas.js`
+- [ ] T013 Implementar el cálculo de disponibilidad derivada (`ofrecible`/`motivo`) en `backend/src/services/cartaService.js`
+- [ ] T014 Configurar el router de la API y el manejo de errores HTTP en `backend/src/api/index.js`
+- [ ] T015 [P] Crear el cliente HTTP de carta (`fetch`) en `frontend/src/services/cartaClient.js`
+- [ ] T016 [P] Crear la utilidad de formato de precio y número es-ES en `frontend/src/utils/format.js`
 
 **Punto de control**: base lista; las historias pueden empezar.
 
@@ -66,19 +66,19 @@ independientes.
 
 > **NOTA: escribir primero y comprobar que fallan antes de implementar**
 
-- [ ] T017 [P] [US1] Prueba de contrato de `GET/POST/PATCH /api/admin/platos` en `backend/tests/contract/carta-admin.test.ts`
-- [ ] T018 [P] [US1] Prueba unitaria de validación de precio y partida en `backend/tests/unit/validacion-plato.test.ts`
-- [ ] T019 [P] [US1] Prueba de componente del formulario de alta/edición en `frontend/tests/components/FormularioPlato.test.tsx`
+- [ ] T017 [P] [US1] Prueba de contrato de `GET/POST/PATCH /api/admin/platos` en `backend/tests/contract/carta-admin.test.js`
+- [ ] T018 [P] [US1] Prueba unitaria de validación de precio y partida en `backend/tests/unit/validacion-plato.test.js`
+- [ ] T019 [P] [US1] Prueba de componente del formulario de alta/edición en `frontend/tests/components/FormularioPlato.test.jsx`
 
 ### Implementación de la US1
 
-- [ ] T020 [US1] Implementar el alta de plato (`crearPlato`) y la validación de precio/partida en `backend/src/services/cartaService.ts`
-- [ ] T021 [US1] Implementar la edición de plato (`actualizarPlato` de nombre/partida/precio) en `backend/src/services/cartaService.ts`
-- [ ] T022 [US1] Implementar los endpoints `GET/POST/PATCH /api/admin/platos` en `backend/src/api/cartaAdminRouter.ts`
-- [ ] T023 [US1] Crear el componente `FormularioPlato` (alta/edición, validación y avisos) en `frontend/src/components/FormularioPlato.tsx`
-- [ ] T024 [US1] Crear el componente `TablaPlatos` (nombre, partida, precio en €) en `frontend/src/components/TablaPlatos.tsx`
-- [ ] T025 [US1] Crear la página `PaginaGestionCarta` (carga, alta y edición) en `frontend/src/pages/PaginaGestionCarta.tsx`
-- [ ] T026 [US1] Registrar la ruta `/admin/carta` protegida por rol en `frontend/src/App.tsx`
+- [ ] T020 [US1] Implementar el alta de plato (`crearPlato`) y la validación de precio/partida en `backend/src/services/cartaService.js`
+- [ ] T021 [US1] Implementar la edición de plato (`actualizarPlato` de nombre/partida/precio) en `backend/src/services/cartaService.js`
+- [ ] T022 [US1] Implementar los endpoints `GET/POST/PATCH /api/admin/platos` en `backend/src/api/cartaAdminRouter.js`
+- [ ] T023 [US1] Crear el componente `FormularioPlato` (alta/edición, validación y avisos) en `frontend/src/components/FormularioPlato.jsx`
+- [ ] T024 [US1] Crear el componente `TablaPlatos` (nombre, partida, precio en €) en `frontend/src/components/TablaPlatos.jsx`
+- [ ] T025 [US1] Crear la página `PaginaGestionCarta` (carga, alta y edición) en `frontend/src/pages/PaginaGestionCarta.jsx`
+- [ ] T026 [US1] Registrar la ruta `/admin/carta` protegida por rol en `frontend/src/App.jsx`
 
 **Punto de control**: la US1 es funcional y verificable de forma independiente.
 
@@ -94,16 +94,16 @@ de sala.
 
 ### Pruebas de la US2 ⚠️
 
-- [ ] T027 [P] [US2] Prueba de contrato de `PATCH /api/admin/platos/:id` (`activo`) y `GET /api/carta` en `backend/tests/contract/carta-disponibilidad.test.ts`
-- [ ] T028 [P] [US2] Prueba de integración de baja/alta manual sobre datos sembrados en `backend/tests/integration/disponibilidad-manual.test.ts`
-- [ ] T029 [P] [US2] Prueba de componente del control de disponibilidad en `frontend/tests/components/TablaPlatos.test.tsx`
+- [ ] T027 [P] [US2] Prueba de contrato de `PATCH /api/admin/platos/:id` (`activo`) y `GET /api/carta` en `backend/tests/contract/carta-disponibilidad.test.js`
+- [ ] T028 [P] [US2] Prueba de integración de baja/alta manual sobre datos sembrados en `backend/tests/integration/disponibilidad-manual.test.js`
+- [ ] T029 [P] [US2] Prueba de componente del control de disponibilidad en `frontend/tests/components/TablaPlatos.test.jsx`
 
 ### Implementación de la US2
 
-- [ ] T030 [US2] Implementar el cambio de disponibilidad manual (`cambiarActivo`) en `backend/src/services/cartaService.ts`
-- [ ] T031 [US2] Implementar el endpoint `GET /api/carta` (solo platos ofrecibles, agrupados por partida) en `backend/src/api/cartaRouter.ts`
-- [ ] T032 [US2] Añadir el control activar/desactivar por fila en `frontend/src/components/TablaPlatos.tsx`
-- [ ] T033 [US2] Refrescar la disponibilidad en la página tras guardar un cambio en `frontend/src/pages/PaginaGestionCarta.tsx`
+- [ ] T030 [US2] Implementar el cambio de disponibilidad manual (`cambiarActivo`) en `backend/src/services/cartaService.js`
+- [ ] T031 [US2] Implementar el endpoint `GET /api/carta` (solo platos ofrecibles, agrupados por partida) en `backend/src/api/cartaRouter.js`
+- [ ] T032 [US2] Añadir el control activar/desactivar por fila en `frontend/src/components/TablaPlatos.jsx`
+- [ ] T033 [US2] Refrescar la disponibilidad en la página tras guardar un cambio en `frontend/src/pages/PaginaGestionCarta.jsx`
 
 **Punto de control**: US1 y US2 funcionan de forma independiente.
 
@@ -119,16 +119,16 @@ carta de sala sin que el administrador lo desactive.
 
 ### Pruebas de la US3 ⚠️
 
-- [ ] T034 [P] [US3] Prueba de integración de agotamiento de ingrediente en `backend/tests/integration/ingrediente-agotado.test.ts`
-- [ ] T035 [P] [US3] Prueba unitaria de la regla combinada (`activo` AND ingredientes disponibles) en `backend/tests/unit/disponibilidad-combinada.test.ts`
-- [ ] T036 [P] [US3] Prueba de componente del panel de ingredientes y el estado combinado en `frontend/tests/components/PanelIngredientes.test.tsx`
+- [ ] T034 [P] [US3] Prueba de integración de agotamiento de ingrediente en `backend/tests/integration/ingrediente-agotado.test.js`
+- [ ] T035 [P] [US3] Prueba unitaria de la regla combinada (`activo` AND ingredientes disponibles) en `backend/tests/unit/disponibilidad-combinada.test.js`
+- [ ] T036 [P] [US3] Prueba de componente del panel de ingredientes y el estado combinado en `frontend/tests/components/PanelIngredientes.test.jsx`
 
 ### Implementación de la US3
 
-- [ ] T037 [US3] Implementar los endpoints `GET/PATCH /api/admin/ingredientes` en `backend/src/api/cartaAdminRouter.ts`
-- [ ] T038 [US3] Implementar el cálculo de `motivo` por ingredientes agotados en `backend/src/services/cartaService.ts`
-- [ ] T039 [US3] Crear el componente `PanelIngredientes` (estado disponible/agotado) en `frontend/src/components/PanelIngredientes.tsx`
-- [ ] T040 [US3] Mostrar el motivo de no disponibilidad e integrar el panel en `frontend/src/pages/PaginaGestionCarta.tsx`
+- [ ] T037 [US3] Implementar los endpoints `GET/PATCH /api/admin/ingredientes` en `backend/src/api/cartaAdminRouter.js`
+- [ ] T038 [US3] Implementar el cálculo de `motivo` por ingredientes agotados en `backend/src/services/cartaService.js`
+- [ ] T039 [US3] Crear el componente `PanelIngredientes` (estado disponible/agotado) en `frontend/src/components/PanelIngredientes.jsx`
+- [ ] T040 [US3] Mostrar el motivo de no disponibilidad e integrar el panel en `frontend/src/pages/PaginaGestionCarta.jsx`
 
 **Punto de control**: las tres historias funcionan de forma independiente.
 
@@ -138,8 +138,8 @@ carta de sala sin que el administrador lo desactive.
 
 **Propósito**: mejoras que afectan a varias historias.
 
-- [ ] T041 [P] Crear el componente `EstadoConexion` (sin conexión, conserva lo escrito) en `frontend/src/components/EstadoConexion.tsx`
-- [ ] T042 [P] Añadir pruebas de estados de la página (cargando, vacío, error) en `frontend/tests/components/PaginaGestionCarta.test.tsx`
+- [ ] T041 [P] Crear el componente `EstadoConexion` (sin conexión, conserva lo escrito) en `frontend/src/components/EstadoConexion.jsx`
+- [ ] T042 [P] Añadir pruebas de estados de la página (cargando, vacío, error) en `frontend/tests/components/PaginaGestionCarta.test.jsx`
 - [ ] T043 [P] Añadir índices SQLite (`plato.partida`, `plato_ingrediente.ingredienteId`) en `backend/db/schema.sql`
 - [ ] T044 [P] Actualizar documentación de puesta en marcha en `docs/`
 - [ ] T045 Revisar accesibilidad (etiquetas, teclado) de `frontend/src/components/`
@@ -166,7 +166,7 @@ carta de sala sin que el administrador lo desactive.
 ### Dentro de cada historia
 
 - Pruebas primero (deben fallar antes de implementar) → modelos → servicios → endpoints → UI.
-- Las tareas sobre un mismo fichero son secuenciales (p. ej. T020 y T021 en `cartaService.ts`).
+- Las tareas sobre un mismo fichero son secuenciales (p. ej. T020 y T021 en `cartaService.js`).
 
 ---
 
@@ -174,9 +174,9 @@ carta de sala sin que el administrador lo desactive.
 
 ```bash
 # Lanzar juntas las pruebas de la US1 (ficheros distintos):
-Task: "Prueba de contrato en backend/tests/contract/carta-admin.test.ts"
-Task: "Prueba unitaria en backend/tests/unit/validacion-plato.test.ts"
-Task: "Prueba de componente en frontend/tests/components/FormularioPlato.test.tsx"
+Task: "Prueba de contrato en backend/tests/contract/carta-admin.test.js"
+Task: "Prueba unitaria en backend/tests/unit/validacion-plato.test.js"
+Task: "Prueba de componente en frontend/tests/components/FormularioPlato.test.jsx"
 ```
 
 ---
@@ -201,7 +201,7 @@ Task: "Prueba de componente en frontend/tests/components/FormularioPlato.test.ts
 
 1. El equipo completa Setup + Fundacional.
 2. Después, reparto por historia (US1, US2, US3) entre las 4 personas, integrando en
-   `cartaService.ts`, `cartaAdminRouter.ts` y `PaginaGestionCarta.tsx`.
+   `cartaService.js`, `cartaAdminRouter.js` y `PaginaGestionCarta.jsx`.
 
 ---
 

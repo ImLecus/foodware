@@ -79,7 +79,7 @@ Errores de esta sección:
 Reglas del cuerpo:
 - `precio` se valida en euros y debe ser `> 0` (FR-004); no se guarda un valor inválido.
 - No existe `DELETE`: la baja se hace con `PATCH { "activo": false }` (FR-014).
-- Un cambio de `precio` no altera líneas de comanda ya tomadas (FR-014).
+- Un cambio de `precio` no altera líneas de pedido ya tomadas (FR-014).
 
 ## Gestión de ingredientes (rol `administrador`)
 
@@ -138,4 +138,4 @@ Errores: `401` (sin autenticación), `500`.
 
 - La consulta de la carta y el guardado de un plato deben resolverse por debajo de 1 s; un cambio de
   precio o disponibilidad se refleja en sala en menos de 3 s (SC-002).
-- Los endpoints de escritura no alteran el historial de comandas ni de cuentas.
+- Los endpoints de escritura no alteran el historial de pedidos ni de cuentas.

@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Editar una comanda enviada
+# Specification Quality Checklist: Editar un pedido enviado
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-10-13

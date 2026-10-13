@@ -22,7 +22,7 @@ ventas no se borran; se desactivan para preservar el historial (FR-014).
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: TypeScript 5.x sobre Node.js 20 LTS (backend) y React 18 con TypeScript y
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 LTS (backend) y React 18 con JavaScript y
 Vite (frontend).
 
 **Dependencias principales**:
@@ -64,7 +64,7 @@ pocos administradores y muchas consultas de sala.
 |-------------------|--------------|--------|
 | I. Simplicidad | CRUD directo; disponibilidad derivada en lectura; sin caché, sin estado calculado persistido ni librerías de formularios | Pasa |
 | II. Español de España y euro | Formato `Intl` es-ES y €; textos y partidas en español | Pasa |
-| III. Cero alcance fantasma | Solo gestión de carta (platos, precios, disponibilidad); no se implementan comandas, cierre ni dashboard | Pasa |
+| III. Cero alcance fantasma | Solo gestión de carta (platos, precios, disponibilidad); no se implementan pedidos, cierre ni dashboard | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` con escenarios de comprobación desde la interfaz | Pasa |
 | V. Datos con respeto | Solo se gestionan datos de platos e ingredientes; sin datos personales innecesarios ni secretos | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |
@@ -120,7 +120,7 @@ frontend/
 el stack obligatorio (React/Chakra UI y ExpressJS) y con Docker para levantar ambos. La
 funcionalidad añade la capa de gestión de carta (servicio + endpoints + página) y un endpoint de
 carta vigente que reutiliza la tabla de platos de la historia 01, sin reimplementar la toma de
-comandas.
+pedidos.
 
 ## Seguimiento de Complejidad
 

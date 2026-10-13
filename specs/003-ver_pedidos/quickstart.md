@@ -44,7 +44,7 @@ pedidos enviados con distintas antigüedades y estados de plato.
 | 11 | Reordenación en vivo (US3.2, FR-011) | Marca/completa un pedido (historia 04) | Desaparece y el resto se reordena sin tocar la pantalla |
 | 12 | Desempate de envío (edge case, FR-004) | Provoca dos pedidos con el mismo instante | Se ordenan por orden de llegada, de forma estable |
 | 13 | Espera muy larga (edge case) | Revisa un pedido con >1 h | El tiempo se muestra legible (minutos/horas) |
-| 14 | Comanda editada (edge case, FR-015) | Edita una comanda ya enviada (historia 02) | Conserva su tiempo y posición, marcándose como modificada |
+| 14 | Pedido editado (edge case, FR-015) | Edita un pedido ya enviado (historia 02) | Conserva su tiempo y posición, marcándose como modificado |
 | 15 | Sin conexión (edge case) | Corta el backend con la vista abierta | Aparece «sin conexión» y la info se marca como no actualizada; al volver, se recupera sin duplicar |
 
 ## Cómo ver las pruebas automatizadas

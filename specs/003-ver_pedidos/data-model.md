@@ -23,7 +23,7 @@ proyecto (historia 04). Los campos no usados por esta historia (importes, carta)
 - **Reglas**: `numero` único; se muestra en cada pedido (FR-016, SC-009).
 
 ### Pedido de cocina
-- **Descripción**: porción de una comanda enviada desde sala que corresponde a una partida y a una
+- **Descripción**: porción de un pedido enviado desde sala que corresponde a una partida y a una
   mesa. Aparece en la vista mientras siga pendiente.
 - **Campos**: `id`, `mesaId`, `partidaId`, `enviadoEn` (marca temporal del envío **original**),
   `modificadoEn` (marca temporal de la última edición, si la hubo), `estado` (derivado:
@@ -31,7 +31,7 @@ proyecto (historia 04). Los campos no usados por esta historia (importes, carta)
 - **Relaciones**: pertenece a una mesa y a una partida; contiene una o más líneas.
 - **Reglas**:
   - `estado` es `pendiente` mientras alguna línea no esté lista (FR-008).
-  - `enviadoEn` **no** se reinicia al editar la comanda (FR-005, FR-015); `modificadoEn` solo sirve
+  - `enviadoEn` **no** se reinicia al editar el pedido (FR-005, FR-015); `modificadoEn` solo sirve
     como marca distintiva.
   - Solo se listan los pedidos de la partida del cocinero (FR-002, FR-003).
 

@@ -16,7 +16,7 @@
 - Q: Si un plato se oculta por ingrediente agotado y además el administrador lo ha deshabilitado manualmente, ¿qué ocurre al restaurarse el ingrediente? → A: Disponibilidad combinada: el plato se ofrece solo si está manualmente activo y todos sus ingredientes están disponibles; al restaurar, vuelve solo si la disponibilidad manual lo permite.
 - Q: ¿La gestión del administrador incluye crear y modificar partidas, o son fijas? → A: Las partidas son fijas (entrantes, principales y postres); el administrador solo asigna la partida de cada plato, sin gestionar categorías.
 - Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
-- Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar la comanda y no cambia después.
+- Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar el pedido y no cambia después.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -195,9 +195,9 @@ administrador tenga que desactivar el plato.
   de inventario/stock en esta historia, y la oferta o baja de los platos deriva de ese estado
   (aclarado en la sesión de clarificación).
 - Las partidas de la carta son fijas —entrantes, principales y postres—, coherentes con el resto
-  del sistema de comandas; el administrador asigna la partida de cada plato pero no crea ni
+  del sistema de pedidos; el administrador asigna la partida de cada plato pero no crea ni
   modifica partidas (aclarado en la sesión de clarificación).
 - Los precios se expresan en euros y los formatos de número y fecha siguen la convención
   española de España (constitución del proyecto).
-- La carta vigente es la que ven las tabletas de sala al tomar comandas; esta historia garantiza
-  su contenido actualizado, no cómo se realiza la comanda.
+- La carta vigente es la que ven las tabletas de sala al tomar pedidos; esta historia garantiza
+  su contenido actualizado, no cómo se realiza el pedido.

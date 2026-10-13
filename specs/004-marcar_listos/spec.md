@@ -74,7 +74,7 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - **Plato ya marcado como listo**: la acción no tiene efecto y no se altera el momento registrado previamente.
 - **Plato de otra partida**: no puede marcarse; la marca solo aplica a la partida del cocinero.
 - **Plato de un pedido que ya no está pendiente** (por ejemplo, retirado o cancelado desde sala): no puede marcarse.
-- **Plato retirado de la comanda antes de marcarlo** (historia 02): deja de existir como pendiente y no puede marcarse.
+- **Plato retirado del pedido antes de marcarlo** (historia 02): deja de existir como pendiente y no puede marcarse.
 - **Último plato de un pedido**: al marcarlo, el pedido deja de estar pendiente y desaparece de la lista de pendientes de cocina.
 - **Un pedido con todos sus platos listos**: la pantalla del camarero refleja que todos los platos del pedido están listos.
 - **Interrupción momentánea de la conexión al marcar**: la vista muestra un indicador de "sin conexión" y no permite marcar el plato hasta recuperarla; al restablecerse, el estado de cocina y de sala debe ser coherente.
@@ -107,7 +107,7 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 
 - **Cocinero**: persona que marca los platos como listos; actúa únicamente sobre los pedidos pendientes de la partida que tiene asignada.
 - **Partida**: agrupación de la carta (entrantes, principales, postres) que determina sobre qué platos puede actuar cada cocinero.
-- **Pedido de cocina**: porción de una comanda enviada desde sala que corresponde a una partida y a una mesa; está pendiente mientras alguno de sus platos no esté listo.
+- **Pedido de cocina**: porción de un pedido enviado desde sala que corresponde a una partida y a una mesa; está pendiente mientras alguno de sus platos no esté listo.
 - **Plato de pedido (línea de pedido)**: plato de un pedido con su cantidad; tiene un estado reversible (pendiente o listo) y, mientras está marcado como listo, guarda el momento en que se marcó (que se descarta al deshacer la marca).
 - **Mesa**: mesa de origen del pedido, que permite a cocina y sala referirse al mismo pedido.
 - **Pantalla del camarero**: vista de sala que refleja el estado de cada plato; en esta historia sólo se garantiza que recibe y muestra la marca de "listo".
@@ -131,7 +131,7 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - El estado de un plato es binario (pendiente o listo); no se contempla un estado intermedio de "en preparación".
 - Un plato marcado como listo puede deshacerse por el propio cocinero, devolviéndolo a pendiente; no se contemplan deshacer marcas ya servidas ni realizadas por otros roles.
 - El cocinero ya queda identificado con su partida al usar la pantalla de cocina (historia 03); esta historia no introduce un inicio de sesión propio.
-- Los pedidos y sus platos provienen de las comandas confirmadas en sala (historias 01 y 02) y de la vista de pedidos pendientes de cocina (historia 03).
+- Los pedidos y sus platos provienen de los pedidos confirmadas en sala (historias 01 y 02) y de la vista de pedidos pendientes de cocina (historia 03).
 - Las señales visuales y/o auditivas dedicadas en la pantalla del camarero son objeto de la historia 05; aquí sólo se garantiza que la marca de "listo" se refleja en el estado que sala consulta.
 - El cierre de cuenta (historia 06), el dashboard (historia 07) y la administración (historia 08) quedan fuera del alcance.
 - Se asume conectividad de red del local durante el servicio; ante cortes momentáneos, la marca se conserva y se reconcilia al restablecerse.

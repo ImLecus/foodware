@@ -11,7 +11,7 @@
 ### Session 2026-10-13
 
 - Q: Cuando un pedido sigue pendiente porque todavía le quedan platos por preparar, ¿qué debe mostrar la vista de cocina respecto a los platos de ese pedido que ya se marcaron como listos? (FR-007) → A: Mostrar todos los platos del pedido, marcando visualmente los platos que ya están listos.
-- Q: Cuando una comanda ya enviada se edita después (historia 02), ¿qué tiempo de espera debe mostrar y usar la vista de cocina para ese pedido pendiente? (FR-004, FR-005) → A: El pedido conserva el tiempo desde su envío original; la edición se marca como señal aparte y no reinicia el tiempo de espera.
+- Q: Cuando un pedido ya enviado se edita después (historia 02), ¿qué tiempo de espera debe mostrar y usar la vista de cocina para ese pedido pendiente? (FR-004, FR-005) → A: El pedido conserva el tiempo desde su envío original; la edición se marca como señal aparte y no reinicia el tiempo de espera.
 - Q: ¿Debe la vista de cocina indicar a qué mesa pertenece cada pedido pendiente, además de sus platos y cantidades? (FR-007) → A: Sí, cada pedido pendiente muestra el identificador de la mesa de la que procede.
 - Q: Cuando dos pedidos pendientes tienen exactamente el mismo instante de envío, ¿con qué criterio secundario debe ordenarse la lista? (FR-004) → A: Por orden de llegada (identificador creciente del pedido).
 - Q: ¿Cómo obtiene la vista de cocina la partida del cocinero que la está usando? (FR-001, FR-013) → A: Reutiliza la identidad/asignación ya existente; esta historia no introduce inicio de sesión.
@@ -81,7 +81,7 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 - **Muchos pedidos pendientes a la vez**: la lista permite desplazarse y localizar el pedido más urgente con facilidad.
 - **Interrupción momentánea de la conexión**: la vista muestra un indicador de "sin conexión" y marca la información como no actualizada; al restablecerse, recupera la información vigente sin duplicar ni perder pedidos.
 - **Pedido cancelado o retirado desde sala**: deja de aparecer como pendiente en la vista de cocina.
-- **Comanda editada tras el envío**: el pedido conserva su tiempo de espera original y mantiene su posición por antigüedad, aunque se indique que ha sido modificado.
+- **Pedido editado tras el envío**: el pedido conserva su tiempo de espera original y mantiene su posición por antigüedad, aunque se indique que ha sido modificado.
 
 ## Requirements *(mandatory)*
 
@@ -91,7 +91,7 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 - **FR-002**: La vista de cocina MUST mostrar únicamente los pedidos pendientes que corresponden a la partida del cocinero.
 - **FR-003**: La vista de cocina MUST NOT mostrar pedidos pendientes de partidas distintas a la del cocinero.
 - **FR-004**: Los pedidos MUST ordenarse por tiempo de espera, del más antiguo al más reciente; en caso de empate en el instante de envío, MUST ordenarse por orden de llegada (identificador creciente).
-- **FR-005**: Cada pedido pendiente MUST mostrar el tiempo transcurrido desde que se envió originalmente, sin reiniciarse cuando la comanda se edita después (historia 02).
+- **FR-005**: Cada pedido pendiente MUST mostrar el tiempo transcurrido desde que se envió originalmente, sin reiniciarse cuando el pedido se edita después (historia 02).
 - **FR-006**: El tiempo transcurrido mostrado MUST mantenerse al día mientras el pedido sigue pendiente en pantalla.
 - **FR-007**: Cada pedido pendiente MUST mostrar todos los platos que lo componen junto con la cantidad de cada uno, incluyendo los ya marcados como listos y distinguiéndolos visualmente de los que siguen pendientes.
 - **FR-008**: Un pedido MUST considerarse pendiente mientras conserve al menos un plato sin completar dentro de la partida del cocinero.
@@ -101,14 +101,14 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 - **FR-012**: Cuando la partida del cocinero no tenga pedidos pendientes, la vista MUST mostrar un estado vacío que lo indique.
 - **FR-013**: Ante un cocinero sin partida asignada, la vista MUST indicar la ausencia de partida en lugar de mostrar pedidos de cualquier partida.
 - **FR-014**: Todos los textos visibles de la vista (partidas, estado vacío, unidades de tiempo) MUST estar en español de España.
-- **FR-015**: Una edición posterior de la comanda (historia 02) MUST NOT reiniciar el tiempo de espera del pedido ni alterar su posición por antigüedad.
+- **FR-015**: Una edición posterior del pedido (historia 02) MUST NOT reiniciar el tiempo de espera del pedido ni alterar su posición por antigüedad.
 - **FR-016**: Cada pedido pendiente MUST indicar la mesa de la que procede.
 
 ### Key Entities *(include if data involved)*
 
 - **Cocinero**: persona que usa la vista de cocina; tiene asignada una única partida y solo ve los pedidos de esa partida.
 - **Partida**: agrupación fija de la carta a la que pertenece un plato (entrantes, principales, postres); determina qué pedidos ve cada cocinero.
-- **Pedido de cocina**: porción de una comanda enviada desde sala que corresponde a una partida y a una mesa; se caracteriza por el momento en que se envió y por su estado de pendiente o completado.
+- **Pedido de cocina**: porción de un pedido enviado desde sala que corresponde a una partida y a una mesa; se caracteriza por el momento en que se envió y por su estado de pendiente o completado.
 - **Línea de pedido**: plato incluido en un pedido con su cantidad y su partida; un pedido de cocina se compone de una o más líneas y sigue pendiente mientras alguna de ellas no esté completada.
 - **Mesa**: mesa de sala de la que procede el pedido; identifica el origen del pedido durante el servicio.
 
@@ -130,8 +130,8 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 
 - El cocinero ya dispone de una partida asignada antes de usar la vista; esta historia reutiliza la identidad/asignación existente y no introduce un inicio de sesión propio. La creación, asignación o cambio de partidas quedan fuera del alcance.
 - Las partidas del restaurante son tres: entrantes, principales y postres.
-- Un "pedido pendiente" es aquel que conserva al menos un plato sin completar en la partida del cocinero; marcar platos como listos se trata en la historia 04 y editar la comanda en la historia 02.
-- Los pedidos proceden de comandas confirmadas en sala (historias 01 y 02) y llegan ya agrupados por partida.
+- Un "pedido pendiente" es aquel que conserva al menos un plato sin completar en la partida del cocinero; marcar platos como listos se trata en la historia 04 y editar el pedido en la historia 02.
+- Los pedidos proceden de pedidos confirmadas en sala (historias 01 y 02) y llegan ya agrupados por partida.
 - Se asume que la vista de cocina se usa en una pantalla de cocina con conectividad de red del local disponible durante el servicio.
 - El tiempo de espera se muestra en minutos, y en horas cuando corresponda, siguiendo la convención española.
 - No se incluye en esta historia marcar platos como listos, editar pedidos, ni la señal visual o auditiva para el camarero (historias 04 y 05).

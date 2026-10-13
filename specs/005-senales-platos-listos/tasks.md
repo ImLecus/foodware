@@ -25,11 +25,11 @@
 **Purpose**: Inicialización del proyecto y estructura básica
 
 - [ ] T001 Crear la estructura de carpetas del proyecto (`backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/tests/`) según `plan.md`
-- [ ] T002 Inicializar el proyecto backend (ExpressJS, `pg`, `dotenv`, `cors`) en `backend/package.json`
+- [ ] T002 Inicializar el proyecto backend (ExpressJS, `better-sqlite3`, `dotenv`, `cors`) en `backend/package.json`
 - [ ] T003 [P] Inicializar el proyecto frontend (Vite + React + Chakra UI) en `frontend/package.json`
 - [ ] T004 [P] Configurar ESLint y Prettier en `backend/` y `frontend/`
-- [ ] T005 [P] Configurar Jest + Supertest (backend) y Vitest + React Testing Library (frontend) en sus respectivos `package.json`
-- [ ] T006 [P] Añadir `docker-compose.yml` (frontend, backend, PostgreSQL), `backend/Dockerfile` y `frontend/Dockerfile`
+- [ ] T005 [P] Configurar Vitest + Supertest (backend) y Vitest + React Testing Library (frontend) en sus respectivos `package.json`
+- [ ] T006 [P] Añadir `docker-compose.yml` (frontend y backend; SQLite en volumen), `backend/Dockerfile` y `frontend/Dockerfile`
 - [ ] T007 [P] Añadir `backend/.env.example` con las variables de conexión (sin secretos) y la sección de arranque en `README.md`
 
 ---
@@ -40,8 +40,8 @@
 
 **⚠️ CRITICAL**: Ninguna historia puede empezar hasta completar esta fase
 
-- [ ] T008 Implementar el pool de conexión a PostgreSQL en `backend/src/db.js`
-- [ ] T009 Crear la migración base (`mesas`, `platos_comanda`, `avisos_mesa`) en `backend/src/migrations/0001_init.sql`
+- [ ] T008 Implementar el conexión a SQLite en `backend/src/db.js`
+- [ ] T009 Crear la migración base (`mesas`, `platos_pedido`, `avisos_mesa`) en `backend/src/migrations/0001_init.sql`
 - [ ] T010 [P] Crear el script de datos de ejemplo (mesas abiertas y platos) en `backend/scripts/seed.js`
 - [ ] T011 Implementar el bootstrap de la app Express y del servidor HTTP en `backend/src/app.js` y `backend/src/server.js`
 - [ ] T012 [P] Implementar el hub SSE (registro de clientes, difusión y *heartbeat*) en `backend/src/realtime/eventos.js`

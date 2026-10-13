@@ -1,10 +1,10 @@
-# Implementation Plan: Marcar platos como listos
+# Plan de Implementación: Marcar platos como listos
 
-**Branch**: `004-marcar_listos` | **Date**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
+**Rama**: `004-marcar_listos` | **Fecha**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/004-marcar_listos/spec.md`
+**Entrada**: Especificación de la funcionalidad en `/specs/004-marcar_listos/spec.md`
 
-## Summary
+## Resumen
 
 Permitir al cocinero marcar (y deshacer) un plato de un pedido pendiente de su partida como
 «listo» desde la pantalla de cocina, dejando constancia del momento de la marca y propagando el
@@ -13,58 +13,50 @@ técnico reutiliza el stack obligatorio de la constitución (React + Chakra UI e
 sobre Node.js en backend, todo en Docker) y añade una capa mínima de persistencia SQLite y un canal
 de eventos servidor→cliente (SSE) para el refresco en vivo.
 
-## Technical Context
+## Contexto Técnico
 
-**Language/Version**: JavaScript ES2022 sobre Node.js 20 (backend) y navegador moderno (frontend)
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 (backend) y navegador moderno (frontend)
 
-**Primary Dependencies**: React 18 + Chakra UI (frontend); ExpressJS 4 (backend); Vite (build del
+**Dependencias principales**: React 18 + Chakra UI (frontend); ExpressJS 4 (backend); Vite (build del
 frontend); better-sqlite3 (persistencia); Server-Sent Events vía `EventSource` (refresco en vivo);
 Vitest + React Testing Library + Supertest (pruebas)
 
-**Storage**: SQLite en fichero, persistido en un volumen Docker (una única instancia del backend)
+**Almacenamiento**: SQLite en fichero, persistido en un volumen Docker (una única instancia del backend)
 
-**Testing**: Vitest (unitarias e integración del backend), Supertest (contratos de la API),
+**Pruebas**: Vitest (unitarias e integración del backend), Supertest (contratos de la API),
 React Testing Library (componentes y flujos del frontend)
 
-**Target Platform**: Aplicación web; backend Linux ejecutado en contenedor; clientes en navegador
+**Plataforma objetivo**: Aplicación web; backend Linux ejecutado en contenedor; clientes en navegador
 (tablet/PC de cocina y de sala) dentro de la red del local
 
-**Project Type**: Aplicación web (frontend + backend en el mismo repositorio)
+**Tipo de proyecto**: Aplicación web (frontend + backend en el mismo repositorio)
 
-**Performance Goals**: la marca de un plato se refleja en las pantallas de sala en ≤5 s (objetivo
+**Objetivos de rendimiento**: la marca de un plato se refleja en las pantallas de sala en ≤5 s (objetivo
 SSE: casi inmediato); respuestas de la API de acciones <500 ms; decenas de clientes concurrentes
 
-**Constraints**: todo el texto visible en español de España; sin secretos en el repositorio;
+**Restricciones**: todo el texto visible en español de España; sin secretos en el repositorio;
 arranque reproducible con `docker-compose`; sin frameworks adicionales fuera del stack obligatorio
 
-**Scale/Scope**: un restaurante, 3 partidas (entrantes, principales, postres), ~20 mesas, decenas
-de comandas por hora y un puñado de cocineros y camareros conectados a la vez
+**Escala/Alcance**: un restaurante, 3 partidas (entrantes, principales, postres), ~20 mesas, decenas
+de pedidos por hora y un puñado de cocineros y camareros conectados a la vez
 
-## Constitution Check
+## Verificación de la Constitución
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- **I. Simplicidad ante todo** — PASS. Un solo backend, un solo frontend y SQLite como único
-  almacén; no se añaden capas ni servicios extra. El refresco en vivo se resuelve con SSE (canal
-  unidireccional) en lugar de un bus de mensajes.
-- **II. Idioma y mercado (español de España, euro)** — PASS. La UI y los estados («pendiente»,
-  «listo») se escriben en español de España; esta historia no maneja importes.
-- **III. Cero alcance fantasma** — PASS. El plan cubre solo los FR de la spec (marcar, deshacer,
-  registrar el momento, propagar a sala), sin añadir marcado masivo ni estados intermedios.
-- **IV. Verificable por una persona no técnica** — PASS. `quickstart.md` describe cómo demostrar
-  cada escenario de aceptación usando la aplicación, sin leer código.
-- **V. Datos del usuario con respeto** — PASS. Solo se almacenan datos operativos del servicio
-  (partida, mesa, pedido y estado del plato); la configuración sensible va por variables de
-  entorno y no se versiona ningún secreto.
-- **VI. Conventional Commits obligatorios** — PASS. Se aplica al flujo de trabajo del equipo
-  (no condiciona el diseño técnico).
-- **VII. Desarrollo en equipo** — PASS. `docker-compose` y `quickstart.md` dejan el arranque
-  documentado y reproducible en cualquier máquina.
-- **Tecnología obligatoria** — PASS. React + Chakra UI y ExpressJS sobre Node.js, sin alternativas.
-- **Contenedores (Docker)** — PASS. Se prevén `Dockerfile` de frontend y backend y un
-  `docker-compose.yml` de arranque conjunto.
-- **Calidad y pruebas** — PASS. Cada requisito funcional tendrá pruebas automatizadas
-  (Vitest + RTL + Supertest) escritas junto a la funcionalidad.
+| Principio / regla | Comprobación | Estado |
+|-------------------|--------------|--------|
+| I. Simplicidad | Un backend, un frontend y SQLite como único almacén; refresco en vivo con SSE | Pasa |
+| II. Español de España y euro | UI y estados («pendiente», «listo») en español; no maneja importes | Pasa |
+| III. Cero alcance fantasma | Solo los FR de la spec (marcar, deshacer, registrar, propagar) | Pasa |
+| IV. Verificable por no técnica | `quickstart.md` demuestra cada escenario desde la aplicación | Pasa |
+| V. Datos con respeto | Solo datos operativos del servicio; secretos por variables de entorno | Pasa |
+| VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |
+| VII. Desarrollo en equipo | `docker-compose` y `quickstart.md` reproducibles | Pasa |
+| Tecnología obligatoria | React + Chakra UI; ExpressJS sobre Node.js | Pasa |
+| Contenedores (Docker) | `Dockerfile` de frontend y backend + `docker-compose.yml` | Pasa |
+| Calidad y pruebas | Pruebas automatizadas por requisito (Vitest + RTL + Supertest) | Pasa |
+| Flujo de trabajo (Git Flow) | Rama desde `develop`, PR revisado | Pasa |
 
 **Resultado**: sin violaciones; no se requiere justificación en Complexity Tracking.
 
@@ -72,9 +64,9 @@ de comandas por hora y un puñado de cocineros y camareros conectados a la vez
 la guía de validación no introducen dependencias ni servicios fuera del stack obligatorio, y cada
 requisito funcional queda cubierto por una prueba o por un escenario de la guía de validación.
 
-## Project Structure
+## Estructura del Proyecto
 
-### Documentation (this feature)
+### Documentación (esta funcionalidad)
 
 ```text
 specs/004-marcar_listos/
@@ -88,7 +80,7 @@ specs/004-marcar_listos/
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
-### Source Code (repository root)
+### Código fuente (raíz del repositorio)
 
 ```text
 backend/
@@ -100,7 +92,7 @@ backend/
 │   ├── models/              # acceso a partidas, mesas, pedidos y líneas de pedido
 │   ├── services/            # reglas de negocio (marcar/deshacer listo)
 │   ├── routes/              # endpoints REST (contratos de contracts/openapi.yaml)
-│   └── realtime/            # canal SSE y emisión de eventos
+│   └── realtime/            # suscripción al hub SSE compartido (`realtime/hub.js`)
 ├── tests/
 │   ├── contract/
 │   ├── integration/
@@ -123,12 +115,12 @@ frontend/
 docker-compose.yml           # levanta frontend y backend; volumen para la BD SQLite
 ```
 
-**Structure Decision**: se elige la opción de **aplicación web** (frontend + backend en el mismo
+**Decisión de estructura**: se elige la opción de **aplicación web** (frontend + backend en el mismo
 repositorio), porque la constitución obliga a React + Chakra UI y a ExpressJS sobre Node.js y a un
 arranque conjunto con Docker. El backend concentra persistencia (SQLite), reglas de marcado y
 emisión de eventos; el frontend contiene las pantallas de cocina y sala. La raíz del repositorio
 aloja el `docker-compose.yml` de arranque reproducible.
 
-## Complexity Tracking
+## Seguimiento de Complejidad
 
 > Sin violaciones de la constitución; no aplica.

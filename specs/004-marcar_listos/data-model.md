@@ -25,7 +25,7 @@ que los necesiten.
 - **Reglas**: `numero` es único dentro del restaurante.
 
 ### Pedido de cocina
-- **Descripción**: porción de una comanda enviada desde sala que corresponde a una partida y a una
+- **Descripción**: porción de un pedido enviado desde sala que corresponde a una partida y a una
   mesa. Está pendiente mientras alguna de sus líneas no esté lista.
 - **Campos**: `id`, `mesaId`, `partidaId`, `enviadoEn` (marca temporal), `modificadoEn` (marca
   temporal, si se editó; historia 02), `estado` (derivado: `pendiente` | `completado`).
