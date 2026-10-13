@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: Foodware API — Marcar platos como listos
+  version: 1.0.0
+  description: >
+    Contratos REST necesarios para la historia 04. Las acciones del cocinero se modelan como
+    asignación idempotente de estado sobre la línea de pedido. El refresco en vivo se documenta en
+    contracts/events.md (SSE).
+servers:
+  - url: /api
+paths:
+  /partidas/{partidaId}/pedidos-pendientes:
+    get:
+      summary: Lista los pedidos pendientes de una partida (pantalla de cocina)
+      parameters:
+        - name: partidaId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Pedidos pendientes ordenados por tiempo de espera (más antiguo primero)
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PedidoCocina" }
+        "404":
+          description: Partida no encontrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /pedidos/{pedidoId}/lineas/{lineaId}/estado:
+    put:
+      summary: Marca o deshace la marca de listo de una línea de pedido
+      description: >
+        Asignación idempotente de estado. `listo` fija `listoEn` la primera vez; repetir no cambia
+        el momento. `pendiente` (deshacer) limpia `listoEn`.
+      parameters:
+        - name: pedidoId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: lineaId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado:
+                  type: string
+                  enum: [listo, pendiente]
+      responses:
+        "200":
+          description: Estado aplicado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LineaPedido" }
+        "403":
+          description: La línea no pertenece a la partida del cocinero (FR-003)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Pedido o línea no encontrados
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: El pedido ya no está pendiente y no admite la marca (FR-003)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /mesas/{mesaId}/estado-platos:
+    get:
+      summary: Estado de los platos de la mesa (pantalla del camarero)
+      parameters:
+        - name: mesaId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Platos de la mesa con su estado (pendiente/listo) y momento de listo
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/LineaPedido" }
+        "404":
+          description: Mesa no encontrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  schemas:
+    PedidoCocina:
+      type: object
+      required: [id, mesa, partida, enviadoEn, estado, lineas]
+      properties:
+        id: { type: string }
+        mesa: { type: integer, description: número de mesa }
+        partida: { type: string, enum: [entrantes, principales, postres] }
+        enviadoEn: { type: string, format: date-time }
+        modificadoEn: { type: string, format: date-time, nullable: true }
+        estado: { type: string, enum: [pendiente, completado] }
+        lineas:
+          type: array
+          items: { $ref: "#/components/schemas/LineaPedido" }
+    LineaPedido:
+      type: object
+      required: [id, pedidoId, nombrePlato, cantidad, estado]
+      properties:
+        id: { type: string }
+        pedidoId: { type: string }
+        nombrePlato: { type: string }
+        cantidad: { type: integer, minimum: 1 }
+        estado: { type: string, enum: [pendiente, listo] }
+        listoEn: { type: string, format: date-time, nullable: true }
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      properties:
+        codigo: { type: string }
+        mensaje: { type: string, description: mensaje en español de España }
