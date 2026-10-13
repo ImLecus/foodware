@@ -1,34 +1,35 @@
-# Historia 03 - Ver Pedidos
+# Historia 03 - Ver pedidos
 
-## Responsable: **Israel Izquierdo Sanchís**
+## Responsable: **Israel Izquierdo**
 
-#### Historia de usuario: Como cocinero, quiero ver únicamente los pedidos pendientes de mi partida ordenados por tiempo de espera, para priorizar la preparación de los que llevan más tiempo aguardando.
+#### Historia de usuario: Como cocinero, quiero ver únicamente los pedidos pendientes que corresponden a mi partida, ordenados por tiempo de espera, para priorizar los platos que llevan más tiempo aguardando.
 
 #### Especificación (spec)
 
-El cocinero trabaja en una partida concreta de la cocina y accede a la pantalla de cocina
-identificándose con su perfil, de manera que el sistema sepa qué pedidos le corresponden. Al
-iniciar su turno, la pantalla le muestra la lista de pedidos pendientes asociados exclusivamente
-a su partida, sin mezclar los de las demás partidas, para que pueda concentrarse en su propio
-trabajo.
+En la cocina cada partida trabaja a su propio ritmo, por lo que el cocinero responsable
+necesita una pantalla que le muestre en todo momento los pedidos que aún tiene pendientes de
+preparar. Al abrir la aplicación, el cocinero queda identificado con la partida que tiene
+asignada —entrantes, principales o postres— y la vista de cocina se carga con los pedidos
+correspondientes a esa partida, sin mostrar los de las demás.
 
-Cada pedido aparece con la información necesaria para prepararlo —los platos que lo componen
-con sus cantidades y las observaciones recogidas en la comanda— y ordenado por tiempo de
-espera, de forma que los que llevan más tiempo aguardando queden siempre en las primeras
-posiciones. La pantalla indica de forma visible el tiempo transcurrido desde que cada pedido
-entró en cocina, para que el cocinero identifique de un vistazo qué debe priorizar.
+La lista de pedidos pendientes se presenta ordenada por tiempo de espera, de modo que los
+pedidos más antiguos aparecen en primer lugar y los más recientes al final. Junto a cada
+pedido se indica el tiempo transcurrido desde que se envió, para que el cocinero identifique
+de un vistazo qué conviene priorizar. Cada pedido muestra además los platos que lo componen
+junto con sus cantidades, de forma que el cocinero sabe exactamente qué debe preparar.
 
-La lista se actualiza en tiempo real a medida que llegan nuevas comandas a la partida, sin que
-el cocinero tenga que refrescar la pantalla manualmente, y contiene siempre y únicamente los
-pedidos que siguen pendientes. Así, la pantalla de cocina refleja en todo momento la carga real
-de trabajo de la partida.
+La vista se mantiene actualizada conforme avanza el servicio: cuando llega un pedido nuevo
+desde sala, aparece en la posición que le corresponde según su antigüedad, y a medida que
+los pedidos dejan de estar pendientes la lista se reordena de forma automática. Así el
+cocinero trabaja siempre sobre información vigente y sabe en cada momento qué platos le
+quedan por preparar y en qué orden abordarlos.
 
 #### Criterios de aceptación
 
-- El cocinero accede a la pantalla de cocina identificándose con su perfil de partida.
-- La pantalla muestra únicamente los pedidos pendientes de la partida del cocinero.
-- La pantalla no muestra pedidos pendientes de otras partidas.
-- Cada pedido muestra los platos que lo componen, con sus cantidades y observaciones.
+- El cocinero queda identificado con la partida que tiene asignada.
+- La pantalla de cocina muestra únicamente los pedidos pendientes de la partida del cocinero.
 - Los pedidos se ordenan por tiempo de espera, del más antiguo al más reciente.
-- Se muestra el tiempo transcurrido desde que cada pedido entró en cocina.
-- La lista se actualiza en tiempo real al llegar nuevos pedidos, sin refresco manual.
+- Cada pedido muestra el tiempo transcurrido desde su envío.
+- Cada pedido detalla los platos que lo componen y sus cantidades.
+- La lista se actualiza automáticamente al recibir nuevos pedidos desde sala.
+- La lista se reordena de forma automática al cambiar el estado de los pedidos.
