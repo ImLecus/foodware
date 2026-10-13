@@ -12,8 +12,10 @@
 
 - Q: Cuando un pedido incluye varias unidades del mismo plato (por ejemplo, 3 raciones), ¿la marca de "listo" se aplica a toda la línea del plato de una vez o a cada unidad por separado? (FR-001, FR-004) → A: La marca se aplica a toda la línea del plato: todas sus unidades quedan listas a la vez.
 - Q: Si el cocinero marca un plato como listo por error, ¿debe poder deshacer esa marca (volver a dejarlo pendiente) dentro de esta historia? (FR-009) → A: Sí, el cocinero puede desmarcar un plato y devolverlo a pendiente.
-- Q: Cuando cocina marca un plato como listo, ¿qué pantallas de camarero deben reflejar ese cambio? (FR-008) → A: Todas las pantallas de los camareros que atienden la mesa del pedido.
+- Q: Cuando cocina marca un plato como listo, ¿qué pantallas de camarero deben reflejar ese cambio? (FR-008) → A: Todas las pantallas de todos los camareros, ya que las mesas son compartidas.
 - Q: ¿Debe el cocinero poder marcar como listos todos los platos de un pedido de una sola vez, además de plato a plato? (FR-001) → A: No; solo se marca plato a plato, como describe la historia.
+- Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
+- Q: ¿Cada mesa queda vinculada a un camarero concreto o cualquier camarero puede ver y atender cualquier mesa? → A: Todas las mesas son compartidas: cualquier camarero ve, atiende y recibe los avisos de cualquier mesa.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -37,7 +39,7 @@ Mientras avanza el servicio, el cocinero prepara los platos de los pedidos pendi
 
 ### User Story 2 - Reflejo inmediato en la pantalla del camarero (Priority: P2)
 
-En cuanto el cocinero marca un plato como listo, la pantalla del camarero correspondiente refleja que ese plato ya está preparado y puede servirse, sin retrasos y sin que el camarero tenga que preguntar a cocina. Sala y cocina mantienen así una información coherente sobre el estado de cada plato durante todo el servicio.
+En cuanto el cocinero marca un plato como listo, las pantallas de los camareros reflejan que ese plato ya está preparado y puede servirse, sin retrasos y sin que el camarero tenga que preguntar a cocina. Sala y cocina mantienen así una información coherente sobre el estado de cada plato durante todo el servicio.
 
 **Why this priority**: Es la finalidad declarada de la historia (que sala lo sepa al momento). Aporta el valor que conecta cocina y sala, aunque sin la acción de marcado (P1) no existiría.
 
@@ -47,7 +49,7 @@ En cuanto el cocinero marca un plato como listo, la pantalla del camarero corres
 
 1. **Given** un plato pendiente que el cocinero acaba de marcar como listo, **When** el camarero consulta su pantalla, **Then** el plato aparece como listo para servir.
 2. **Given** la pantalla del camarero abierta, **When** cocina marca un plato como listo, **Then** el cambio se refleja sin que el camarero recargue ni actualice manualmente.
-3. **Given** varios camareros que atienden la misma mesa, **When** cocina marca un plato de esa mesa como listo, **Then** todos ellos ven el plato como listo.
+3. **Given** varios camareros con la mesa abierta en su pantalla, **When** cocina marca un plato de esa mesa como listo, **Then** todos ellos ven el plato como listo.
 
 ---
 
@@ -75,7 +77,7 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - **Plato retirado de la comanda antes de marcarlo** (historia 02): deja de existir como pendiente y no puede marcarse.
 - **Último plato de un pedido**: al marcarlo, el pedido deja de estar pendiente y desaparece de la lista de pendientes de cocina.
 - **Un pedido con todos sus platos listos**: la pantalla del camarero refleja que todos los platos del pedido están listos.
-- **Interrupción momentánea de la conexión al marcar**: la marca no debe perderse ni duplicarse; al restablecerse, el estado de cocina y de sala debe ser coherente.
+- **Interrupción momentánea de la conexión al marcar**: la vista muestra un indicador de "sin conexión" y no permite marcar el plato hasta recuperarla; al restablecerse, el estado de cocina y de sala debe ser coherente.
 - **Marcado simultáneo del mismo plato** desde dos pantallas de la misma partida: el resultado debe ser uno solo, sin duplicar el momento registrado.
 - **Pedido con varias unidades del mismo plato**: la marca afecta a la línea completa del plato (todas sus unidades), no a unidades sueltas.
 - **Deshacer una marca de listo**: el plato vuelve a contarse como pendiente y reaparece entre los platos por preparar del pedido; la pantalla del camarero deja de mostrarlo como listo.
@@ -91,9 +93,9 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - **FR-005**: Los demás platos del mismo pedido MUST permanecer como pendientes hasta que se marquen como listos.
 - **FR-006**: Cuando todos los platos de un pedido estén marcados como listos, el pedido MUST dejar de aparecer como pendiente en la pantalla de cocina.
 - **FR-007**: El sistema MUST registrar el momento en que cada plato se marca como listo.
-- **FR-008**: La marca de "listo" MUST reflejarse en las pantallas de los camareros que atienden la mesa del pedido, sin que tengan que recargar ni actualizar manualmente.
+- **FR-008**: La marca de "listo" MUST reflejarse en las pantallas de todos los camareros (al ser las mesas compartidas), sin que tengan que recargar ni actualizar manualmente.
 - **FR-009**: Volver a marcar un plato ya listo MUST NOT alterar el momento registrado ni el estado.
-- **FR-010**: Una marca de "listo" MUST NOT perderse ni duplicarse si la conexión se interrumpe en el momento de la acción.
+- **FR-010**: Mientras no haya conexión, el sistema MUST bloquear el marcado de platos como listos, de modo que no se registren marcas parciales ni duplicadas.
 - **FR-011**: Los estados reflejados en cocina y en sala MUST ser coherentes para un mismo plato en todo momento.
 - **FR-012**: Todos los textos visibles de la acción y de los estados (pendiente, listo) MUST estar en español de España.
 - **FR-013**: La marca de "listo" MUST aplicarse a la línea completa del plato, de modo que todas sus unidades queden listas a la vez.
@@ -119,7 +121,7 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - **SC-003**: La pantalla del camarero muestra un plato como listo en 5 segundos o menos desde que cocina lo marca, sin recargar la pantalla.
 - **SC-004**: El 100% de los platos marcados como listos guarda el momento en que se marcó, con una precisión de al menos un minuto.
 - **SC-005**: Al marcar el último plato pendiente de un pedido, el pedido desaparece de la lista de pendientes de cocina en 5 segundos o menos.
-- **SC-006**: Tras una interrupción momentánea de la conexión durante el marcado, el 100% de las marcas queda registrado una sola vez, sin pérdidas ni duplicados.
+- **SC-006**: Ninguna marca de "listo" queda registrada por duplicado ni se pierde (0 duplicados y 0 pérdidas).
 - **SC-007**: Un cocinero distingue de un vistazo, en el 100% de los pedidos, qué platos ya están listos y cuáles siguen pendientes.
 - **SC-008**: Al deshacer la marca de un plato, este vuelve a aparecer como pendiente en la pantalla de cocina en 5 segundos o menos.
 

@@ -12,9 +12,11 @@
 
 ### Session 2026-10-13
 
-- Q: ¿La comparación de resultados debe hacerse contra el turno/servicio anterior o contra el día natural anterior? → A: Contra el turno/servicio anterior registrado.
-- Q: ¿La comparación con el turno anterior debe ofrecer solo el total o también los desgloses por camarero y por plato? → A: Comparar el total y también los desgloses por camarero y por plato.
-- Q: ¿El dashboard debe mostrar datos parciales mientras el servicio está en curso o solo al terminar el servicio? → A: Solo los datos del servicio una vez terminado, sin vista parcial durante el turno.
+- Q: ¿La comparación de resultados debe hacerse contra el turno/servicio anterior o contra el día natural anterior? → A: Contra el día natural anterior (el turno/servicio corresponde al día natural).
+- Q: ¿La comparación con el día anterior debe ofrecer solo el total o también los desgloses por camarero y por plato? → A: Comparar el total y también los desgloses por camarero y por plato.
+- Q: ¿El dashboard debe mostrar datos parciales mientras el servicio está en curso o solo al terminar el servicio? → A: Solo los datos del servicio una vez terminado, sin vista parcial durante el día.
+- Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
+- Q: ¿Qué determina que un turno/servicio haya terminado? → A: El turno/servicio corresponde al día natural; el turno anterior es el día anterior.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -68,31 +70,31 @@ cuentas el dashboard muestra la cifra agrupada por cada camarero y por cada plat
 
 ---
 
-### User Story 3 - Comparación con turnos anteriores (Priority: P2)
+### User Story 3 - Comparación con días anteriores (Priority: P2)
 
 Un dato aislado dice poco sin contexto. El encargado puede comparar los resultados del servicio
-con los de turnos anteriores, de modo que vea con claridad si las ventas han subido, bajado o se
-han mantenido respecto a servicios previos. Esta comparación le permite valorar el rendimiento
+con los de días anteriores, de modo que vea con claridad si las ventas han subido, bajado o se
+han mantenido respecto a días previos. Esta comparación le permite valorar el rendimiento
 del servicio apoyándose en datos y no solo en impresiones.
 
 **Why this priority**: aporta contexto sobre el total; útil pero no imprescindible para la primera
 versión, por lo que se sitúa por detrás de la visión global y de los desgloses.
 
 **Independent Test**: se puede probar de forma independiente comprobando que el dashboard
-muestra la diferencia porcentual del servicio actual frente al turno anterior seleccionado.
+muestra la diferencia porcentual del servicio actual frente al día anterior.
 
 **Acceptance Scenarios**:
 
-1. **Given** que existe al menos un turno anterior con ventas registradas, **When** el encargado
-   consulta la comparación, **Then** ve la diferencia del total respecto al turno anterior.
-2. **Given** que las ventas del servicio actual han subido respecto al turno anterior, **When** se
+1. **Given** que existe al menos un día anterior con ventas registradas, **When** el encargado
+   consulta la comparación, **Then** ve la diferencia del total respecto al día anterior.
+2. **Given** que las ventas del día actual han subido respecto al día anterior, **When** se
    muestra la comparación, **Then** se indica de forma clara que las ventas han subido.
 3. **Given** que las ventas han bajado o se han mantenido, **When** se muestra la comparación,
    **Then** se indica de forma clara que han bajado o se han mantenido, respectivamente.
-4. **Given** que no existe un turno anterior con el que comparar, **When** el encargado consulta
+4. **Given** que no existe un día anterior con el que comparar, **When** el encargado consulta
    la comparación, **Then** se muestra un mensaje indicando que no hay datos anteriores.
-5. **Given** que existen ventas del turno anterior tanto por camarero como por plato, **When** el
-   encargado consulta la comparación, **Then** ve la diferencia del turno actual frente al anterior
+5. **Given** que existen ventas del día anterior tanto por camarero como por plato, **When** el
+   encargado consulta la comparación, **Then** ve la diferencia del día actual frente al anterior
    también desglosada por camarero y por plato.
 
 ---
@@ -100,15 +102,15 @@ muestra la diferencia porcentual del servicio actual frente al turno anterior se
 ### Edge Cases
 
 - Servicio sin ninguna venta: el total se muestra como 0,00 € y las comparaciones reflejan una
-  bajada o un estado sin variación respecto a turnos anteriores.
-- No existen turnos anteriores registrados: la sección de comparación muestra un aviso en lugar
+  bajada o un estado sin variación respecto a días anteriores.
+- No existen días anteriores registrados: la sección de comparación muestra un aviso en lugar
   de un error o de datos vacíos sin explicación.
 - Un camarero o un plato sin ventas en el servicio: aparece con 0,00 € en los desgloses.
-- El turno anterior comparado no tiene ventas o tiene ventas parciales: la comparación se
-  muestra igualmente con la diferencia real frente a ese turno.
+- El día anterior comparado no tiene ventas o tiene ventas parciales: la comparación se
+  muestra igualmente con la diferencia real frente a ese día.
 - Dos servicios con idénticas ventas: la comparación se indica como "sin variación".
-- El encargado consulta el dashboard antes de terminar el servicio en curso: se muestra el
-  servicio anterior completado; el servicio en curso no aparece hasta su cierre.
+- El encargado consulta el dashboard antes de terminar el día en curso: se muestra el
+  día anterior completado; el día en curso no aparece hasta su cierre.
 
 ## Requirements *(mandatory)*
 
@@ -122,13 +124,12 @@ muestra la diferencia porcentual del servicio actual frente al turno anterior se
   camarero.
 - **FR-004**: El sistema MUST desglosar las ventas por plato, mostrando la cantidad y el importe
   de cada plato.
-- **FR-005**: El sistema MUST comparar el total del servicio con el de, al menos, el turno
-  anterior.
-- **FR-010**: El sistema MUST ofrecer la comparación con el turno anterior también desglosada
+- **FR-005**: El sistema MUST comparar el total del servicio con el del día natural anterior.
+- **FR-010**: El sistema MUST ofrecer la comparación con el día anterior también desglosada
   por camarero y por plato (aclarado en la sesión de clarificación).
 - **FR-006**: El sistema MUST indicar de forma inequívoca si la comparación refleja una subida,
   una bajada o una situación sin variación.
-- **FR-007**: El sistema MUST mostrar un aviso cuando no existan turnos anteriores con los que
+- **FR-007**: El sistema MUST mostrar un aviso cuando no exista un día anterior con el que
   comparar.
 - **FR-008**: El sistema MUST reflejar en el dashboard exactamente las ventas registradas por las
   cuentas cerradas del servicio, sin desviaciones.
@@ -137,8 +138,8 @@ muestra la diferencia porcentual del servicio actual frente al turno anterior se
 
 ### Key Entities *(include if feature involves data)*
 
-- **Servicio/Turno**: periodo de atención (una jornada o turno) con su fecha, total vendido y la
-  referencia al turno anterior para la comparación.
+- **Día/Servicio**: día natural de atención con su fecha, total vendido y la
+  referencia al día anterior para la comparación.
 - **Venta**: importe registrado por cada cuenta cerrada, asociada a un camarero y compuesta por
   platos con cantidades y precios.
 - **Camarero**: perfil que cierra cuentas y del que se agregan las ventas en el desglose.
@@ -153,7 +154,7 @@ muestra la diferencia porcentual del servicio actual frente al turno anterior se
   dashboard, sin necesidad de realizar más de una acción de navegación.
 - **SC-002**: El desglose por camarero y por plato está disponible desde el dashboard y su
   consulta no requiere salir de la vista de estadísticas.
-- **SC-003**: La comparación con el turno anterior indica de forma visual y textual clara la
+- **SC-003**: La comparación con el día anterior indica de forma visual y textual clara la
   subida, bajada o situación sin variación, tanto en el total como en los desgloses por camarero
   y por plato.
 - **SC-004**: Las cifras del dashboard coinciden exactamente con la suma de las cuentas cerradas
@@ -172,6 +173,5 @@ muestra la diferencia porcentual del servicio actual frente al turno anterior se
   perfiles de usuario existentes en el sistema.
 - La moneda es el euro y los formatos de número y fecha siguen la convención española de
   España (constitución del proyecto).
-- La comparación se realiza contra el turno/servicio anterior registrado, no contra el día natural
-  anterior (aclarado en la sesión de clarificación); ofrecer más histórico queda fuera de alcance
-  para esta versión.
+- La comparación se realiza contra el día natural anterior (el turno/servicio corresponde al día
+  natural); ofrecer más histórico queda fuera de alcance para esta versión.

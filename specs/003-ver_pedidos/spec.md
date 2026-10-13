@@ -15,6 +15,7 @@
 - Q: ¿Debe la vista de cocina indicar a qué mesa pertenece cada pedido pendiente, además de sus platos y cantidades? (FR-007) → A: Sí, cada pedido pendiente muestra el identificador de la mesa de la que procede.
 - Q: Cuando dos pedidos pendientes tienen exactamente el mismo instante de envío, ¿con qué criterio secundario debe ordenarse la lista? (FR-004) → A: Por orden de llegada (identificador creciente del pedido).
 - Q: ¿Cómo obtiene la vista de cocina la partida del cocinero que la está usando? (FR-001, FR-013) → A: Reutiliza la identidad/asignación ya existente; esta historia no introduce inicio de sesión.
+- Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -78,7 +79,7 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 - **Pedido con un único plato**: se muestra igual que cualquier otro pedido, con su plato y cantidad.
 - **Todos los platos de un pedido dejan de estar pendientes**: el pedido desaparece de la lista y no queda como pendiente.
 - **Muchos pedidos pendientes a la vez**: la lista permite desplazarse y localizar el pedido más urgente con facilidad.
-- **Interrupción momentánea de la conexión**: la vista debe recuperar la información vigente al restablecerse, sin duplicar ni perder pedidos.
+- **Interrupción momentánea de la conexión**: la vista muestra un indicador de "sin conexión" y marca la información como no actualizada; al restablecerse, recupera la información vigente sin duplicar ni perder pedidos.
 - **Pedido cancelado o retirado desde sala**: deja de aparecer como pendiente en la vista de cocina.
 - **Comanda editada tras el envío**: el pedido conserva su tiempo de espera original y mantiene su posición por antigüedad, aunque se indique que ha sido modificado.
 

@@ -15,6 +15,8 @@
 - Q: ¿Debe el ticket final mostrar el desglose de impuestos (IVA) o basta con el total y las partes? → A: Los precios ya incluyen el IVA; el ticket muestra el total y las partes, sin desglose de impuestos (fuera de alcance en v1).
 - Q: Si la cuenta cambia después de iniciar la división, ¿se actualiza sola, se reinicia o se bloquean los cambios? → A: La división se reinicia al modificar la cuenta y el camarero debe rehacerla sobre el total actualizado.
 - Q: Cuando la cuenta no se puede repartir en partes exactamente iguales, ¿qué parte asume los céntimos sobrantes? → A: Los céntimos sobrantes se reparten de uno en uno entre las partes por orden, empezando por la primera, de modo que la suma siga coincidiendo con el total.
+- Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
+- Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar la comanda y no cambia después.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -22,7 +24,7 @@
 
 Al terminar el servicio de una mesa, el camarero selecciona la opción de cerrar la
 cuenta. El sistema reúne todo lo consumido por la mesa, calcula el importe total
-aplicando los precios vigentes de cada plato y se lo muestra al camarero antes de
+aplicando el precio registrado en el momento de pedir cada plato y se lo muestra al camarero antes de
 confirmar el cobro, de modo que pueda comprobar la cifra y cobrar correctamente.
 
 **Why this priority**: Es la base del cierre: sin el cálculo y la visualización del
@@ -30,12 +32,12 @@ total no hay cuenta que cobrar. Por sí sola ya aporta valor (cobrar la mesa) y 
 comprobable sin el resto de la historia.
 
 **Independent Test**: Puede probarse abriendo una mesa con consumos, cerrando su cuenta
-y comprobando que el total mostrado coincide con la suma de los platos a sus precios
-vigentes.
+y comprobando que el total mostrado coincide con la suma de los platos con el precio
+registrado en el momento de pedir cada uno.
 
 **Acceptance Scenarios**:
 
-1. **Given** una mesa con consumos registrados, **When** el camarero elige cerrar la cuenta, **Then** el sistema calcula y muestra el importe total a partir de lo consumido con los precios vigentes.
+1. **Given** una mesa con consumos registrados, **When** el camarero elige cerrar la cuenta, **Then** el sistema calcula y muestra el importe total a partir de lo consumido con el precio registrado en el momento de pedir cada plato.
 2. **Given** una cuenta con su total calculado, **When** el camarero la revisa antes de confirmar, **Then** ve el total a cobrar y puede confirmar o cancelar el cierre.
 3. **Given** una cuenta con su total calculado, **When** el camarero cancela el cierre antes de confirmar, **Then** la cuenta y la mesa quedan como estaban.
 
@@ -95,7 +97,7 @@ nuevas operaciones.
 - ¿Qué ocurre con una mesa sin consumos? La cuenta debe mostrar un total de cero y no debe permitir un cierre sin importe.
 - ¿Qué ocurre si no están pagadas todas las partes de una cuenta dividida? La mesa no se cierra hasta que todas las partes queden marcadas como pagadas.
 - ¿Qué ocurre si se modifica la cuenta después de iniciar la división? La división se reinicia y el camarero debe rehacerla sobre el nuevo total.
-- ¿Qué ocurre si un precio cambia entre el consumo y el cierre? Se aplica el precio vigente en el momento de calcular el total.
+- ¿Qué ocurre si un precio cambia entre el consumo y el cierre? Se aplica el precio registrado en el momento de pedir cada plato; el cambio de precio no altera las cuentas ya en curso.
 - ¿Qué ocurre si se intenta cerrar una cuenta que ya está cerrada? El sistema debe impedirlo.
 
 ## Requirements *(mandatory)*
@@ -103,7 +105,7 @@ nuevas operaciones.
 ### Functional Requirements
 
 - **FR-001**: El camarero MUST poder iniciar el cierre de la cuenta de una mesa.
-- **FR-002**: El sistema MUST calcular el importe total de la cuenta a partir de lo consumido, aplicando los precios vigentes.
+- **FR-002**: El sistema MUST calcular el importe total de la cuenta a partir de lo consumido, aplicando el precio registrado en el momento de pedir cada plato.
 - **FR-003**: El sistema MUST mostrar el importe total al camarero antes de confirmar el cobro.
 - **FR-004**: El camarero MUST poder cancelar el cierre antes de confirmarlo, dejando la cuenta y la mesa sin cambios.
 - **FR-005**: El camarero MUST poder dividir la cuenta en varias partes.
@@ -125,7 +127,7 @@ nuevas operaciones.
 
 - **Mesa**: mesa que se cobra; agrupa el consumo y pasa a estar cerrada tras el cobro.
 - **Cuenta**: importe total de lo consumido por una mesa y su estado (abierta o cerrada).
-- **Consumo**: cada plato registrado en la mesa con su precio vigente, base del cálculo del total; puede asignarse a una parte de la división al cerrar la cuenta.
+- **Consumo**: cada plato registrado en la mesa con el precio fijado en el momento de pedirlo, base del cálculo del total; puede asignarse a una parte de la división al cerrar la cuenta.
 - **División de la cuenta**: conjunto de partes en que se reparte el importe; cada parte tiene un importe, una forma (partes iguales o por consumo) y los platos o porciones asignados.
 - **Comensal**: persona a la que se asocia una parte de la cuenta.
 - **Parte de la cuenta**: cada porción de la división, con su importe, el comensal asociado y su estado (pendiente de pago o pagada).
@@ -135,7 +137,7 @@ nuevas operaciones.
 
 ### Measurable Outcomes
 
-- **SC-001**: El 100 % de las cuentas cerradas muestran un total igual a la suma de los consumos a sus precios vigentes.
+- **SC-001**: El 100 % de las cuentas cerradas muestran un total igual a la suma de los consumos con el precio registrado en el momento de pedir cada plato.
 - **SC-002**: El camarero cierra la cuenta de una mesa en menos de 2 minutos.
 - **SC-003**: En el 100 % de las cuentas divididas, la suma de las partes coincide exactamente con el total, incluso en los casos con redondeo.
 - **SC-004**: El ticket final incluye el total y el desglose de cada parte con su importe en el 100 % de los cierres.
@@ -146,7 +148,7 @@ nuevas operaciones.
 ## Assumptions
 
 - El pedido no registra qué comensal consume cada plato; la asignación de platos (o porciones) a las partes de la división se realiza al cerrar la cuenta.
-- Los precios de los platos son los vigentes en el momento de calcular el total y se muestran con IVA incluido; el desglose de impuestos queda fuera del alcance de esta historia.
+- Los precios de los platos son los del momento de pedir cada plato y se muestran con IVA incluido; el desglose de impuestos queda fuera del alcance de esta historia.
 - El cobro lo confirma el camarero (efectivo, tarjeta u otro medio); el sistema no se integra con terminales de pago.
 - La división de la cuenta es opcional: por defecto la cuenta se cobra como un único pago; si se divide, cada parte se paga por separado y la mesa se cierra al completarse el pago de todas ellas.
 - No se contemplan propinas, descuentos ni anulaciones parciales en esta historia.

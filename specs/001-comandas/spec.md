@@ -6,6 +6,14 @@
 
 **Status**: Draft
 
+## Clarifications
+
+### Session 2026-10-13
+
+- Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
+- Q: ¿Cómo debe entenderse que una comanda confirmada "no admite cambios directos"? → A: La comanda confirmada puede editarse directamente en cualquier momento, sin una acción previa de reapertura (el detalle de la edición corresponde a la historia 02).
+- Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar la comanda y no cambia después.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Abrir una mesa y tomar la comanda plato a plato (Priority: P1)
@@ -39,7 +47,7 @@ que la comanda queda registrada como enviada, vinculada a la mesa y agrupada por
    **entonces** la comanda pasa a estado enviada, queda vinculada a su mesa y el pedido se remite
    agrupado por partidas.
 6. **Dado** una comanda ya confirmada, **cuando** el camarero la consulta, **entonces** la
-   comanda figura como enviada y no admite cambios directos.
+   comanda figura como enviada y sigue vinculada a su mesa.
 
 ---
 
@@ -51,8 +59,9 @@ que la comanda queda registrada como enviada, vinculada a la mesa y agrupada por
   impedir confirmar una comanda vacía e indicárselo al camarero.
 - ¿Qué ocurre si el camarero añade el mismo plato varias veces? El sistema debe permitir repetir
   platos iguales conservando la cantidad solicitada de cada uno.
-- ¿Qué ocurre si la conexión se interrumpe durante la toma de la comanda? El sistema debe evitar
-  perder los platos ya anotados o avisar de que la comanda no se ha podido confirmar.
+- ¿Qué ocurre si la conexión se interrumpe durante la toma de la comanda? El sistema muestra un
+  indicador de "sin conexión", no permite confirmar la comanda y conserva los platos ya anotados
+  en pantalla hasta que se recupere la conexión.
 - ¿Qué ocurre si el camarero quiere corregir un plato antes de confirmar? Debe poder modificar
   cantidades y repetir o retirar platos mientras la comanda no se haya confirmado.
 
@@ -82,7 +91,10 @@ que la comanda queda registrada como enviada, vinculada a la mesa y agrupada por
 - **FR-015**: El sistema DEBE registrar la comanda como enviada al confirmarla.
 - **FR-016**: El sistema DEBE remitir el pedido agrupado por partidas al confirmar la comanda.
 - **FR-017**: El sistema DEBE mantener la comanda vinculada a su mesa tras la confirmación.
-- **FR-018**: El sistema DEBE impedir modificaciones directas sobre una comanda ya confirmada.
+- **FR-018**: El sistema DEBE permitir modificar una comanda ya confirmada directamente, sin una
+  acción previa de reapertura (el detalle de la edición corresponde a la historia 02).
+- **FR-019**: El sistema DEBE fijar el precio de cada plato en el momento de pedirlo, de modo que
+  un cambio posterior del precio en la carta no altere el importe de la comanda.
 
 ### Key Entities _(include if feature involves data)_
 
@@ -91,7 +103,7 @@ que la comanda queda registrada como enviada, vinculada a la mesa y agrupada por
 - **Comanda**: pedido tomado para una mesa. Atributos relevantes: mesa asociada, estado (en curso
   o enviada), platos que la componen y momento de confirmación.
 - **Línea de comanda**: cada plato anotado dentro de una comanda. Atributos relevantes: plato,
-  cantidad y partida a la que pertenece.
+  cantidad, partida a la que pertenece y el precio del plato en el momento de pedirlo.
 - **Plato**: artículo de la carta del restaurante que se puede pedir. Atributos relevantes:
   nombre y partida a la que pertenece.
 - **Partida**: agrupación por la que se ordena el pedido: entrantes, principales y postres.

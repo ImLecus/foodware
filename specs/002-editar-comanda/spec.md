@@ -12,16 +12,20 @@
 
 - Q: ¿Cómo llega el cambio a cocina tras editar una comanda ya enviada? → A: El camarero debe pulsar explícitamente una acción de "enviar cambios" para que cocina reciba la modificación; no se envía sola al guardar.
 - Q: ¿Cómo debe tratarse un plato retirado de una comanda ya enviada que cocina ya puede estar preparando? → A: El plato se retira del pedido vigente y deja de aparecer en la comanda; el cambio se comunica a cocina al enviar cambios.
-- Q: ¿Qué camarero puede reabrir y editar una comanda ya enviada? → A: Cualquier camarero identificado puede reabrir y editar la comanda enviada de cualquier mesa.
+- Q: ¿Qué camarero puede editar una comanda ya enviada? → A: Cualquier camarero identificado puede editar la comanda enviada de cualquier mesa.
 - Q: Si dos camareros editan a la vez la misma comanda ya enviada, ¿qué debe hacer el sistema? → A: La comanda se bloquea mientras un camarero la edita; otro camarero no puede abrirla hasta que el primero termine.
+- Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
+- Q: ¿Cada mesa queda vinculada a un camarero concreto o cualquier camarero puede ver y atender cualquier mesa? → A: Todas las mesas son compartidas: cualquier camarero ve, atiende y recibe los avisos de cualquier mesa.
+- Q: ¿Cómo debe entenderse que una comanda confirmada "no admite cambios directos" (historia 01)? → A: La comanda confirmada puede editarse directamente en cualquier momento, sin una acción previa de reapertura.
+- Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar la comanda y no cambia después.
 
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Editar una comanda ya enviada (Priority: P1)
 
 En pleno servicio, después de haber enviado el pedido, un cliente cambia de opinión: pide que se
-retire un ingrediente, añade un plato a última hora o decide que ya no quiere algo. El camarero
-reabre la comanda que ya había sido enviada y la modifica sobre la marcha, sin tener que crear una
+retire un ingrediente, añade un plato a última hora o decide que ya no quiere algo. El camarero abre
+la comanda que ya había sido enviada y la modifica sobre la marcha, sin tener que crear una
 comanda nueva que duplique el pedido. Los cambios se aplican sobre la misma comanda y quedan
 asociados a esa mesa. Como el pedido ya había llegado a cocina, el cambio queda marcado como una
 modificación de la comanda original, de forma que se distingue de un pedido nuevo y no se confunde
@@ -31,19 +35,19 @@ con el anterior.
 comanda ya enviada, el camarero tendría que duplicar pedidos y cocina recibiría información
 errónea o contradictoria.
 
-**Independent Test**: puede probarse de principio a fin enviando una comanda, reabriéndola,
+**Independent Test**: puede probarse de principio a fin enviando una comanda, editándola,
 añadiendo y retirando platos y ajustando cantidades o indicaciones, y comprobando que los cambios
 quedan sobre la misma comanda, marcada como modificada y vinculada a la misma mesa.
 
 **Acceptance Scenarios**:
 
-1. **Dado** una comanda ya enviada de una mesa, **cuando** el camarero la reabre, **entonces**
-   la comanda admite de nuevo modificaciones.
-2. **Dado** una comanda ya enviada reabierta para edición, **cuando** el camarero añade un plato
+1. **Dado** una comanda ya enviada de una mesa, **cuando** el camarero la abre para editarla,
+   **entonces** la comanda admite modificaciones directamente.
+2. **Dado** una comanda ya enviada abierta para edición, **cuando** el camarero añade un plato
    nuevo, **entonces** el plato se incorpora a la comanda existente.
-3. **Dado** una comanda ya enviada reabierta para edición, **cuando** el camarero retira un plato,
+3. **Dado** una comanda ya enviada abierta para edición, **cuando** el camarero retira un plato,
    **entonces** el plato desaparece de la comanda existente.
-4. **Dado** una comanda ya enviada reabierta para edición, **cuando** el camarero ajusta la
+4. **Dado** una comanda ya enviada abierta para edición, **cuando** el camarero ajusta la
    cantidad de un plato o corrige una indicación, **entonces** la comanda refleja el cambio.
 5. **Dado** una comanda que ha sido editada, **cuando** el camarero la consulta, **entonces** la
    comanda figura marcada como modificada y distinta de un pedido nuevo.
@@ -57,7 +61,7 @@ quedan sobre la misma comanda, marcada como modificada y vinculada a la misma me
 
 ### Edge Cases
 
-- ¿Qué ocurre si el camarero reabre una comanda enviada y no realiza ningún cambio? La comanda
+- ¿Qué ocurre si el camarero abre para editar una comanda enviada y no realiza ningún cambio? La comanda
   debe conservar su estado sin quedar marcada como modificada innecesariamente.
 - ¿Qué ocurre si el camarero retira todos los platos de una comanda ya enviada? El sistema debe
   impedir dejar la comanda sin ningún plato o exigir una acción explícita (por ejemplo, cancelar
@@ -65,8 +69,9 @@ quedan sobre la misma comanda, marcada como modificada y vinculada a la misma me
 - ¿Qué ocurre si el camarero modifica la comanda mientras cocina ya está preparando el pedido?
   La comanda debe seguir reflejando su estado actualizado y la modificación debe quedar marcada
   como tal.
-- ¿Qué ocurre si la conexión se interrumpe al guardar una edición? El sistema debe evitar perder
-  el cambio o avisar de que la edición no se ha podido aplicar.
+- ¿Qué ocurre si la conexión se interrumpe al guardar una edición? El sistema muestra un indicador
+  de "sin conexión", no permite guardar la edición y conserva en pantalla los cambios no aplicados
+  hasta que se recupere la conexión.
 - ¿Qué ocurre si el camarero intenta editar una comanda que ya no está enviada (por ejemplo, ya
   cerrada)? El sistema debe impedir la edición y avisar de que la comanda no admite cambios.
 - ¿Qué ocurre si un camarero intenta editar una comanda que otro camarero tiene abierta? El
@@ -76,8 +81,8 @@ quedan sobre la misma comanda, marcada como modificada y vinculada a la misma me
 
 ### Functional Requirements
 
-- **FR-001**: El sistema DEBE permitir a cualquier camarero identificado reabrir para edición la
-  comanda ya enviada de cualquier mesa.
+- **FR-001**: El sistema DEBE permitir a cualquier camarero identificado editar directamente la
+  comanda ya enviada de cualquier mesa, sin una acción previa de reapertura.
 - **FR-002**: El sistema DEBE permitir añadir platos nuevos a una comanda ya enviada.
 - **FR-003**: El sistema DEBE permitir retirar platos de una comanda ya enviada, quedando el plato
   retirado fuera del pedido vigente y dejando de aparecer en la comanda.
@@ -109,8 +114,8 @@ quedan sobre la misma comanda, marcada como modificada y vinculada a la misma me
 
 - **Comanda**: pedido tomado para una mesa. Atributos relevantes: mesa asociada, estado (en curso,
   enviada o cerrada), platos que la componen y marca de modificada.
-- **Línea de comanda**: cada plato dentro de una comanda. Atributos relevantes: plato, cantidad e
-  indicaciones.
+- **Línea de comanda**: cada plato dentro de una comanda. Atributos relevantes: plato, cantidad,
+  indicaciones y el precio del plato en el momento de pedirlo.
 - **Modificación de comanda**: cambio realizado sobre una comanda previamente enviada. Atributos
   relevantes: comanda afectada, tipo de cambio (añadir, retirar, ajustar cantidad o corregir) y
   momento del cambio.
@@ -121,7 +126,7 @@ quedan sobre la misma comanda, marcada como modificada y vinculada a la misma me
 
 ### Measurable Outcomes
 
-- **SC-001**: Un camarero puede reabrir una comanda ya enviada, añadir o retirar un plato y
+- **SC-001**: Un camarero puede editar una comanda ya enviada, añadir o retirar un plato y
   confirmar el cambio en menos de 1 minuto.
 - **SC-002**: El 100% de las ediciones se aplican sobre la comanda original, generando 0 comandas
   nuevas o duplicadas.

@@ -15,13 +15,15 @@
 - Q: ¿Incluye esta historia que el camarero marque un plato o la mesa como "servido", o su papel termina en descartar el aviso? → A: Fuera de alcance: la única acción del camarero aquí es descartar el aviso; marcar platos o mesas como "servido" pertenece a otra historia.
 - Q: ¿Cómo debe comportarse el aviso de mesa completa para que el camarero lo note a distancia: un único aviso o algo que se repita hasta descartarlo? → A: Aviso único (visual y, si está activada, sonoro) al completarse la mesa, manteniendo después una señal visual destacada y persistente hasta que el camarero lo descarte; no se repite por sí solo.
 - Q: ¿Qué debe mostrar la pantalla del camarero cuando no tiene mesas abiertas o mientras la lista de mesas se está cargando? → A: Un estado vacío claro (por ejemplo, "No tienes mesas abiertas") y, mientras los datos están llegando, un indicador de carga.
+- Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
+- Q: ¿Cada mesa queda vinculada a un camarero concreto o cualquier camarero puede ver y atender cualquier mesa? → A: Todas las mesas son compartidas: cualquier camarero ve, atiende y recibe los avisos de cualquier mesa.
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Estado de los platos de cada mesa en tiempo real (Priority: P1)
 
 Mientras se mueve por la sala durante el servicio, el camarero consulta en su
-dispositivo las mesas que tiene abiertas. Para cada mesa ve la relación de sus
+dispositivo las mesas abiertas del restaurante. Para cada mesa ve la relación de sus
 platos junto con el estado de cada uno, diferenciando de un simple vistazo los
 platos ya listos de los que siguen pendientes. Así sabe en todo momento qué puede
 servir y qué no, sin tener que acercarse a la ventanilla de cocina ni preguntar
@@ -93,13 +95,13 @@ que deja de mostrarse y de repetirse.
 - ¿Qué ocurre con una mesa cuyo pedido se compone de un único plato? Se trata igual que cualquier otra: al estar listo, la mesa se considera completa.
 - ¿Qué ocurre si un aviso permanece sin atender mucho tiempo? No vuelve a sonar ni se repite, pero su señal visual sigue mostrándose y perceptible sin desaparecer por sí solo.
 - ¿Qué ocurre si un plato vuelve a "pendiente" cuando la mesa ya estaba marcada como completa? El aviso de mesa completa debe retirarse y la mesa deja de considerarse completa hasta que ese plato vuelva a estar listo.
-- ¿Qué muestra la vista cuando el camarero no tiene ninguna mesa abierta o mientras la información se está cargando? Un mensaje claro de "No tienes mesas abiertas" en el primer caso y un indicador de carga en el segundo, en lugar de una pantalla en blanco.
+- ¿Qué muestra la vista cuando no hay ninguna mesa abierta o mientras la información se está cargando? Un mensaje claro de "No hay mesas abiertas" en el primer caso y un indicador de carga en el segundo, en lugar de una pantalla en blanco.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: El sistema MUST mostrar al camarero las mesas que tiene abiertas con la relación de platos de cada mesa.
+- **FR-001**: El sistema MUST mostrar al camarero todas las mesas abiertas del restaurante con la relación de platos de cada mesa.
 - **FR-002**: El sistema MUST mostrar, para cada plato, si está pendiente o listo.
 - **FR-003**: El sistema MUST distinguir visualmente los platos listos de los pendientes de forma inequívoca.
 - **FR-004**: El estado de cada plato MUST actualizarse automáticamente en la vista del camarero, sin que éste tenga que refrescar ni volver a abrir la mesa.
@@ -109,11 +111,11 @@ que deja de mostrarse y de repetirse.
 - **FR-008**: El aviso MUST ser perceptible a distancia y distinguirse del resto de información de la pantalla.
 - **FR-009**: El camarero MUST poder descartar el aviso de una mesa una vez atendida.
 - **FR-010**: Un aviso descartado MUST dejar de repetirse mientras no se produzca un nuevo plato listo en esa mesa.
-- **FR-011**: El sistema MUST mostrar al camarero únicamente las mesas que tiene asignadas o abiertas.
+- **FR-011**: El sistema MUST mostrar a cada camarero todas las mesas abiertas del restaurante, sin restringirlas a las que tenga asignadas.
 - **FR-012**: Los cambios de estado realizados en cocina MUST reflejarse en la vista del camarero sin intervención manual de éste.
 - **FR-013**: Un plato MUST poder volver del estado "listo" al estado "pendiente" si se corrige (por ejemplo, un error o un plato devuelto); al hacerlo, el sistema MUST recalcular automáticamente la completitud de la mesa y su aviso.
 - **FR-014**: La vista del camarero MUST requerir conexión con la red del restaurante; al perderse, MUST mostrar un indicador claro de "sin conexión" y marcar la información como no actualizada, y al recuperarla MUST resincronizar automáticamente el estado de los platos y los avisos.
-- **FR-015**: Cuando el camarero no tenga mesas abiertas, la vista MUST mostrar un estado vacío claro (por ejemplo, "No tienes mesas abiertas"); mientras la información esté cargando, MUST mostrar un indicador de carga en lugar de una pantalla en blanco.
+- **FR-015**: Cuando no haya ninguna mesa abierta, la vista MUST mostrar un estado vacío claro (por ejemplo, "No hay mesas abiertas"); mientras la información esté cargando, MUST mostrar un indicador de carga en lugar de una pantalla en blanco.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -141,7 +143,7 @@ que deja de mostrarse y de repetirse.
 - El camarero lleva consigo durante el servicio un dispositivo con pantalla (y sonido) que permanece encendido y conectado a la red del restaurante.
 - El marcado de platos como listos lo realiza cocina según la historia de usuario 4; esta historia consume ese estado y no modifica cómo se marca.
 - Marcar platos o mesas como "servido" y cualquier cierre o cobro de cuenta quedan fuera del alcance de esta historia; la única acción del camarero aquí es descartar el aviso de una mesa.
-- Cada camarero ve únicamente las mesas que tiene asignadas o abiertas, no las de sus compañeros.
+- Todos los camareros comparten las mesas: cada camarero ve y recibe los avisos de cualquier mesa abierta del restaurante, no solo de las suyas.
 - La señal visual es siempre obligatoria; la sonora es opcional y puede silenciarse en el dispositivo sin perder el aviso, y en todo caso suena una sola vez por aviso.
 - Los avisos no desaparecen solos: permanecen visibles hasta que el camarero los descarta.
 - El idioma de toda la información mostrada es español de España.

@@ -15,6 +15,8 @@
 - Q: ¿De dónde procede la información de que un ingrediente está agotado para la baja automática de platos? → A: El sistema registra el estado de cada ingrediente (disponible/agotado) y el administrador lo actualiza; los platos asociados se ofrecen o se ocultan automáticamente al cambiar ese estado.
 - Q: Si un plato se oculta por ingrediente agotado y además el administrador lo ha deshabilitado manualmente, ¿qué ocurre al restaurarse el ingrediente? → A: Disponibilidad combinada: el plato se ofrece solo si está manualmente activo y todos sus ingredientes están disponibles; al restaurar, vuelve solo si la disponibilidad manual lo permite.
 - Q: ¿La gestión del administrador incluye crear y modificar partidas, o son fijas? → A: Las partidas son fijas (entrantes, principales y postres); el administrador solo asigna la partida de cada plato, sin gestionar categorías.
+- Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
+- Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar la comanda y no cambia después.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -106,10 +108,10 @@ administrador tenga que desactivar el plato.
   marcado por el administrador.
 - El administrador intenta guardar un precio vacío o negativo: el sistema lo rechaza con un
   aviso y conserva el último valor válido.
-- Un plato ya vendido en turnos anteriores: no se elimina del registro, se gestiona mediante su
+- Un plato ya vendido en días anteriores: no se elimina del registro, se gestiona mediante su
   disponibilidad para preservar el historial de ventas.
-- El cambio de precio de un plato ya vendido: afecta solo a la carta vigente, sin modificar
-  cuentas del pasado.
+- El cambio de precio de un plato: afecta solo a la carta vigente y a los nuevos pedidos; no
+  modifica el precio ya fijado en platos pedidos con anterioridad ni en cuentas del pasado.
 - El administrador cambia datos de un plato mientras los camareros lo están pidiendo: los
   cambios se aplican a la carta vigente y se reflejan en las tabletas de sala.
 - Un ingrediente agotado y reabastecido dentro del mismo servicio: el plato se oculta y se
@@ -148,6 +150,8 @@ administrador tenga que desactivar el plato.
 - **FR-013**: Las partidas de la carta MUST ser fijas (entrantes, principales y postres); el
   sistema MUST asignar cada plato a una de ellas y rechazar partidas no válidas, sin permitir
   crear ni modificar partidas (aclarado en la sesión de clarificación).
+- **FR-014**: Un cambio de precio MUST NOT alterar el precio ya fijado en los platos pedidos con
+  anterioridad; afecta solo a la carta vigente y a los nuevos pedidos.
 - **FR-009**: Cualquier cambio de la carta (platos, precios o disponibilidad) MUST reflejarse de
   inmediato en la carta vigente que ven las tabletas de sala.
 - **FR-010**: El sistema MUST mostrar al resto de usuarios siempre la carta vigente, sin
