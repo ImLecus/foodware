@@ -47,7 +47,7 @@ Aplicación web (monorepositorio): `backend/src/`, `backend/tests/`, `frontend/s
 
 **⚠️ CRITICAL**: ninguna historia puede empezar hasta terminar esta fase
 
-- [ ] T007 Create SQLite connection and schema/migrations for `partidas`, `usuarios`, `mesas`, `pedidos`, `lineas_pedido` (with `estado` and `listoEn` columns) in `backend/src/db/index.js` and `backend/src/db/schema.js`
+- [X] T007 Create SQLite connection and schema/migrations for `partidas`, `usuarios`, `mesas`, `pedidos`, `lineas_pedido` (with `estado` and `listoEn` columns) in `backend/src/db/index.js` and `backend/src/db/schema.js`
 - [ ] T008 [P] Create seed data (partidas, mesas, cocineros/camareros, pedidos de ejemplo) in `backend/src/db/seed.js`
 - [ ] T009 [P] Create Express app skeleton, config and error-handling middleware in `backend/src/app.js`, `backend/src/server.js`, `backend/src/config/env.js`, `backend/src/middleware/error.js`
 - [ ] T010 [P] Implement data-access models for partidas, mesas and usuarios in `backend/src/models/partida.js`, `backend/src/models/mesa.js`, `backend/src/models/usuario.js`
