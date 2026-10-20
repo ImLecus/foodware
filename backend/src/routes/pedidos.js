@@ -64,6 +64,15 @@ export function pedidosRouter(db) {
     }
   });
 
+  router.get('/:pedidoId/editar', (req, res, next) => {
+    try {
+      const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
+      res.json(estadoBloqueo(pedido));
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.post('/:pedidoId/editar', (req, res, next) => {
     try {
       const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
