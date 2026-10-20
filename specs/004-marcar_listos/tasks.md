@@ -82,7 +82,7 @@ reaparición del pedido en la pantalla de cocina.
 - [X] T019 [US1] Implement mark/undo service with rules (own partida, pending order, line-level mark, order completion) in `backend/src/services/marcarListo.js`
 - [X] T020 [US1] Allow undoing the last line when the order is no longer pending: clear `listoEn` and recalculate the derived order state in `backend/src/services/marcarListo.js`
 - [X] T021 [US1] Implement `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` and register routes in `backend/src/routes/pedidos.js` and `backend/src/app.js`
-- [ ] T022 [US1] Implement `GET /partidas/{partidaId}/pedidos-pendientes` in `backend/src/routes/partidas.js` and register it in `backend/src/app.js`
+- [X] T022 [US1] Implement `GET /partidas/{partidaId}/pedidos-pendientes` in `backend/src/routes/partidas.js` and register it in `backend/src/app.js`
 - [ ] T023 [P] [US1] Build kitchen page and components (`PedidoCard`, `LineaPlato`) with accessible ready marking (colour + «listo» text/symbol and `aria-label`) in `frontend/src/pages/CocinaPage.jsx`, `frontend/src/components/PedidoCard.jsx`, `frontend/src/components/LineaPlato.jsx`
 - [X] T024 [US1] Wire mark/undo actions, disallowed-action feedback (403/409) and the offline state (indicator «sin conexión», blocked marking and on-screen data preserved) in `frontend/src/pages/CocinaPage.jsx`, `frontend/src/components/IndicadorConexion.jsx` and `frontend/src/services/api.js`
 - [X] T025 [US1] Build the «Pedido completado» toast/notice with a «Deshacer» action and a minimum 10 s timer in `frontend/src/components/AvisoPedidoCompletado.jsx`
