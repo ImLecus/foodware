@@ -74,7 +74,7 @@ reaparición del pedido en la pantalla de cocina.
 - [X] T014 [P] [US1] Contract test for undoing the last line of a completed order (`estado: pendiente`, `listoEn: null`, and `409` still returned when marking `listo`) in `backend/tests/contract/desmarcar-completado.test.js`
 - [X] T015 [P] [US1] Integration test for reopening after undo of the last line (line back to `pendiente`, `listoEn` cleared, order reappears in the pending list) in `backend/tests/integration/reapertura-pedido.test.js`
 - [X] T016 [P] [US1] Component test for the kitchen mark/undo flow, the accessible ready distinction (colour + symbol/text) and the offline state (indicator and blocked marking) in `frontend/tests/pages/CocinaPage.test.jsx`
-- [ ] T017 [P] [US1] Component test for the «Pedido completado» notice and its ≥10 s «Deshacer» window (fake timers) in `frontend/tests/components/AvisoPedidoCompletado.test.jsx`
+- [X] T017 [P] [US1] Component test for the «Pedido completado» notice and its ≥10 s «Deshacer» window (fake timers) in `frontend/tests/components/AvisoPedidoCompletado.test.jsx`
 
 ### Implementation for User Story 1
 
