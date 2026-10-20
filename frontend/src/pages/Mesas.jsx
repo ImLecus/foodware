@@ -14,21 +14,37 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Pedido from '../components/Pedido.jsx';
 import SelectorPlatos from '../components/SelectorPlatos.jsx';
-import { apiEnviar, apiGet } from '../services/api.js';
+import {
+  abrirMesa,
+  anadirLinea,
+  confirmarPedido,
+  listarMesas,
+  listarPlatos,
+  modificarLinea,
+  obtenerPedido,
+  retirarLinea,
+} from '../services/api.js';
+import { crearConexionEventos } from '../services/realtime.js';
 
 export default function Mesas() {
   const [mesas, setMesas] = useState([]);
   const [platos, setPlatos] = useState([]);
   const [pedido, setPedido] = useState(null);
   const [mesaSeleccionadaId, setMesaSeleccionadaId] = useState(null);
+  const [enLinea, setEnLinea] = useState(true);
   const [cargando, setCargando] = useState(true);
   const [aviso, setAviso] = useState(null);
 
+  const pedidoIdRef = useRef(null);
+  useEffect(() => {
+    pedidoIdRef.current = pedido?.id ?? null;
+  }, [pedido]);
+
   const cargarMesas = useCallback(async () => {
-    const datos = await apiGet('/mesas');
+    const datos = await listarMesas();
     setMesas(datos);
     return datos;
   }, []);
@@ -38,7 +54,7 @@ export default function Mesas() {
 
     (async () => {
       try {
-        const [datosMesas, datosPlatos] = await Promise.all([apiGet('/mesas'), apiGet('/platos')]);
+        const [datosMesas, datosPlatos] = await Promise.all([listarMesas(), listarPlatos()]);
         if (!activo) return;
         setMesas(datosMesas);
         setPlatos(datosPlatos);
@@ -56,8 +72,47 @@ export default function Mesas() {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof EventSource === 'undefined') {
+      return undefined;
+    }
+
+    const conexion = crearConexionEventos();
+    const alConectar = () => setEnLinea(true);
+    const alFallar = () => setEnLinea(false);
+    const alCambiar = async () => {
+      try {
+        await cargarMesas();
+      } catch {
+        // Si falla la recarga se mantiene el estado actual en pantalla.
+      }
+
+      const pedidoId = pedidoIdRef.current;
+      if (!pedidoId) return;
+
+      try {
+        setPedido(await obtenerPedido(pedidoId));
+      } catch {
+        setPedido(null);
+      }
+    };
+
+    conexion.addEventListener('open', alConectar);
+    conexion.addEventListener('error', alFallar);
+    conexion.addEventListener('pedido-confirmado', alCambiar);
+    conexion.addEventListener('pedido-anulado', alCambiar);
+
+    return () => {
+      conexion.removeEventListener('open', alConectar);
+      conexion.removeEventListener('error', alFallar);
+      conexion.removeEventListener('pedido-confirmado', alCambiar);
+      conexion.removeEventListener('pedido-anulado', alCambiar);
+      conexion.close();
+    };
+  }, [cargarMesas]);
+
   const mesaSeleccionada = mesas.find((mesa) => mesa.id === mesaSeleccionadaId) ?? null;
-  const puedeEditar = Boolean(pedido && pedido.estado === 'en_curso');
+  const puedeEditar = Boolean(pedido && pedido.estado === 'en_curso' && enLinea);
 
   function mostrarError(error) {
     setAviso({
@@ -76,7 +131,7 @@ export default function Mesas() {
     }
 
     try {
-      setPedido(await apiGet(`/pedidos/${mesa.pedido_en_curso_id}`));
+      setPedido(await obtenerPedido(mesa.pedido_en_curso_id));
     } catch (error) {
       mostrarError(error);
     }
@@ -86,7 +141,7 @@ export default function Mesas() {
     if (!mesaSeleccionada) return;
 
     try {
-      const nuevo = await apiEnviar(`/mesas/${mesaSeleccionada.id}/abrir`, 'POST');
+      const nuevo = await abrirMesa(mesaSeleccionada.id);
       setPedido(nuevo);
       await cargarMesas();
       setAviso({
@@ -100,17 +155,14 @@ export default function Mesas() {
 
   async function recargarPedido() {
     if (!pedido) return;
-    setPedido(await apiGet(`/pedidos/${pedido.id}`));
+    setPedido(await obtenerPedido(pedido.id));
   }
 
   async function anadirPlato(platoId, cantidad) {
     if (!pedido) return;
 
     try {
-      await apiEnviar(`/pedidos/${pedido.id}/lineas`, 'POST', {
-        plato_id: platoId,
-        cantidad,
-      });
+      await anadirLinea(pedido.id, platoId, cantidad);
       await recargarPedido();
     } catch (error) {
       mostrarError(error);
@@ -121,7 +173,7 @@ export default function Mesas() {
     if (!pedido) return;
 
     try {
-      await apiEnviar(`/pedidos/${pedido.id}/lineas/${lineaId}`, 'PATCH', { cantidad });
+      await modificarLinea(pedido.id, lineaId, cantidad);
       await recargarPedido();
     } catch (error) {
       mostrarError(error);
@@ -132,7 +184,7 @@ export default function Mesas() {
     if (!pedido) return;
 
     try {
-      await apiEnviar(`/pedidos/${pedido.id}/lineas/${lineaId}`, 'DELETE');
+      await retirarLinea(pedido.id, lineaId);
       await recargarPedido();
     } catch (error) {
       mostrarError(error);
@@ -143,7 +195,7 @@ export default function Mesas() {
     if (!pedido) return;
 
     try {
-      await apiEnviar(`/pedidos/${pedido.id}/confirmar`, 'POST');
+      await confirmarPedido(pedido.id);
       await recargarPedido();
       await cargarMesas();
       setAviso({ tipo: 'success', texto: 'Pedido confirmado y enviado a cocina.' });
@@ -169,6 +221,16 @@ export default function Mesas() {
           de pedir.
         </Text>
       </Box>
+
+      {!enLinea && (
+        <Alert status="warning" borderRadius="md">
+          <AlertIcon />
+          <AlertDescription>
+            Sin conexión. No se pueden confirmar ni modificar pedidos; lo anotado se conserva en
+            pantalla hasta recuperar la conexión.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {aviso && (
         <Alert status={aviso.tipo} borderRadius="md">
@@ -228,7 +290,7 @@ export default function Mesas() {
             <Pedido
               pedido={pedido}
               mesa={mesaSeleccionada}
-              enLinea
+              enLinea={enLinea}
               onCambiarCantidad={cambiarCantidad}
               onRetirarLinea={quitarLinea}
               onConfirmar={confirmar}
