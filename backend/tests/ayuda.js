@@ -41,3 +41,15 @@ export function crearAppDePrueba() {
   const db = crearBaseDePrueba();
   return { db, app: createApp(db) };
 }
+
+/** Cliente SSE falso que acumula lo escrito por el servidor. */
+export function clienteSseFalso() {
+  const escrito = [];
+  const respuesta = {
+    writeHead: () => {},
+    write: (trozo) => escrito.push(String(trozo)),
+    end: () => {},
+  };
+  const peticion = { on: () => {} };
+  return { respuesta, peticion, escrito };
+}
