@@ -106,7 +106,7 @@ mesa, la lista de platos con cantidades, el marcado accesible de listos y el avi
 - [X] T026 [P] [US2] Component test for the elapsed-time ticker and the plate list with ready marking in `frontend/tests/components/TiempoEspera.test.jsx`
 - [X] T027 [P] [US2] Component test that ready plates are distinguished by colour plus a text/symbol label (never colour alone) in `frontend/tests/components/LineaPlato.test.jsx`
 - [X] T028 [P] [US2] Unit test that `modificado` is derived from a non-null `modificadoEn` in the pending-orders representation in `backend/tests/unit/pedido-modificado.test.js`
-- [ ] T029 [P] [US2] Component test for the «Modificado» notice without line detail, keeping the original elapsed time and position in `frontend/tests/components/PedidoCard.modificado.test.jsx`
+- [X] T029 [P] [US2] Component test for the «Modificado» notice without line detail, keeping the original elapsed time and position in `frontend/tests/components/PedidoCard.modificado.test.jsx`
 
 ### Implementation for User Story 2
 
