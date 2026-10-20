@@ -102,7 +102,7 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 - [ ] T035 [P] [US1] Pantalla de mesas (listar y abrir) en `frontend/src/pages/Mesas.jsx`
 - [X] T036 [P] [US1] Componente de pedido agrupada por partidas en `frontend/src/components/Pedido.jsx`
 - [X] T037 [US1] Selector de platos de la carta con cantidad en `frontend/src/components/SelectorPlatos.jsx`
-- [ ] T038 [US1] Acciones de ajustar cantidad, retirar línea y confirmar pedido en `frontend/src/components/Pedido.jsx`
+- [X] T038 [US1] Acciones de ajustar cantidad, retirar línea y confirmar pedido en `frontend/src/components/Pedido.jsx`
 - [ ] T039 [US1] Cliente HTTP de la API, suscripción SSE (`frontend/src/services/realtime.js`) y estado "sin conexión" (bloquear confirmar/modificar y conservar lo escrito) en `frontend/src/services/api.js` y `frontend/src/components/Conexion.jsx`
 - [ ] T040 [US1] Añadir `anularPedido(pedidoId)` al cliente HTTP en `frontend/src/services/api.js`
 - [ ] T041 [US1] Añadir la acción «Anular pedido» con diálogo de confirmación en la pantalla de pedido en `frontend/src/components/Pedido.jsx`

@@ -1,11 +1,32 @@
-import { Badge, Box, Card, CardBody, CardHeader, Flex, Heading, Text } from '@chakra-ui/react';
+import {
+  Badge,
+  Box,
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Flex,
+  Heading,
+  NumberInput,
+  NumberInputField,
+  Text,
+} from '@chakra-ui/react';
 import { formatearEuros } from '../utils/formato.js';
 import { agruparPorPartida, NOMBRES_PARTIDA, PARTIDAS } from '../utils/partidas.js';
 
-export default function Pedido({ pedido, mesa }) {
+export default function Pedido({
+  pedido,
+  mesa,
+  enLinea = true,
+  onCambiarCantidad,
+  onRetirarLinea,
+  onConfirmar,
+}) {
   const lineas = pedido.lineas ?? [];
   const porPartida = pedido.por_partida ?? agruparPorPartida(lineas);
   const enCurso = pedido.estado === 'en_curso';
+  const editable = enCurso && enLinea;
   const total = lineas.reduce((suma, linea) => suma + linea.cantidad * linea.precio_centimos, 0);
 
   return (
@@ -46,9 +67,34 @@ export default function Pedido({ pedido, mesa }) {
                   borderColor="gray.100"
                 >
                   <Text flex="1">{linea.plato_nombre}</Text>
-                  <Text fontSize="sm" color="gray.600">
-                    {linea.cantidad} × {formatearEuros(linea.precio_centimos)}
+                  <NumberInput
+                    value={linea.cantidad}
+                    min={1}
+                    max={99}
+                    size="sm"
+                    maxW="90px"
+                    isDisabled={!editable}
+                    onChange={(valor) => {
+                      const cantidad = Number(valor);
+                      if (Number.isInteger(cantidad) && cantidad >= 1) {
+                        onCambiarCantidad?.(linea.id, cantidad);
+                      }
+                    }}
+                  >
+                    <NumberInputField aria-label={`Cantidad de ${linea.plato_nombre}`} />
+                  </NumberInput>
+                  <Text fontSize="sm" color="gray.600" minW="70px" textAlign="right">
+                    {formatearEuros(linea.precio_centimos)}
                   </Text>
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    colorScheme="red"
+                    isDisabled={!editable}
+                    onClick={() => onRetirarLinea?.(linea.id)}
+                  >
+                    Quitar
+                  </Button>
                 </Flex>
               ))
             )}
@@ -60,6 +106,16 @@ export default function Pedido({ pedido, mesa }) {
           <Text>{formatearEuros(total)}</Text>
         </Flex>
       </CardBody>
+
+      <CardFooter>
+        <Button
+          colorScheme="teal"
+          isDisabled={!editable || lineas.length === 0}
+          onClick={() => onConfirmar?.()}
+        >
+          Confirmar pedido
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
