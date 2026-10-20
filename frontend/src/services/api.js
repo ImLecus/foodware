@@ -64,6 +64,10 @@ export function marcarEstado(pedidoId, lineaId, estado, partidaId) {
   );
 }
 
+export function obtenerEstadoPlatos(mesaId) {
+  return apiGet(`/mesas/${encodeURIComponent(mesaId)}/estado-platos`);
+}
+
 /* Sala: mesas, carta y pedidos (historia 001) */
 
 export function listarMesas() {
