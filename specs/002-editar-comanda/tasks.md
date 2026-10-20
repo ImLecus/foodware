@@ -92,7 +92,7 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 - [X] T028 [P] [US1] Componente de la acción "Enviar cambios" en `frontend/src/components/EnviarCambios.jsx`
 - [X] T029 [US1] Aviso de bloqueo (pedido en edición por otro camarero) en `frontend/src/components/EditorPedido.jsx`
 - [X] T030 [US1] Cliente de API de edición, bloqueo, enviar-cambios y suscripción SSE en `frontend/src/services/api.js` y `frontend/src/services/realtime.js`
-- [ ] T031 [US1] Marca visual de "modificada" y "cambios pendientes" en `frontend/src/components/EditorPedido.jsx`
+- [X] T031 [US1] Marca visual de "modificada" y "cambios pendientes" en `frontend/src/components/EditorPedido.jsx`
 - [ ] T032 [US1] Llamar a la liberación del bloqueo (`DELETE /pedidos/{id}/editar`) al cancelar o salir de la edición en `frontend/src/components/EditorPedido.jsx`
 - [ ] T033 [US1] Indicar pedido bloqueado y manejar 423 (`pedido_bloqueado`) y 409 (`bloqueo_expirado`) con aviso y opción de reabrir en `frontend/src/components/EditorPedido.jsx` y `frontend/src/services/api.js`
 - [ ] T034 [US1] Liberar el bloqueo en el desmontaje/cierre del editor para no dejar bloqueos huérfanos en `frontend/src/components/EditorPedido.jsx`

@@ -2,6 +2,7 @@ import {
   Alert,
   AlertDescription,
   AlertIcon,
+  Badge,
   Box,
   Button,
   Card,
@@ -173,7 +174,13 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
   return (
     <Card>
       <CardHeader>
-        <Heading size="md">Editar pedido · {mesa?.identificador ?? 'Mesa'}</Heading>
+        <Flex align="center" justify="space-between" gap={3} wrap="wrap">
+          <Heading size="md">Editar pedido · {mesa?.identificador ?? 'Mesa'}</Heading>
+          <Flex gap={2}>
+            {pedido.modificada && <Badge colorScheme="purple">Modificada</Badge>}
+            {pedido.cambios_pendientes && <Badge colorScheme="orange">Cambios pendientes</Badge>}
+          </Flex>
+        </Flex>
       </CardHeader>
 
       <CardBody>
