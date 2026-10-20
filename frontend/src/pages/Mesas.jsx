@@ -20,6 +20,7 @@ import SelectorPlatos from '../components/SelectorPlatos.jsx';
 import {
   abrirMesa,
   anadirLinea,
+  anularPedido,
   confirmarPedido,
   listarMesas,
   listarPlatos,
@@ -204,6 +205,19 @@ export default function Mesas() {
     }
   }
 
+  async function anular() {
+    if (!pedido) return;
+
+    try {
+      await anularPedido(pedido.id);
+      setPedido(null);
+      await cargarMesas();
+      setAviso({ tipo: 'info', texto: 'Pedido anulado. La mesa vuelve a estar libre.' });
+    } catch (error) {
+      mostrarError(error);
+    }
+  }
+
   if (cargando) {
     return (
       <Flex justify="center" py={16}>
@@ -294,6 +308,7 @@ export default function Mesas() {
               onCambiarCantidad={cambiarCantidad}
               onRetirarLinea={quitarLinea}
               onConfirmar={confirmar}
+              onAnular={anular}
             />
           ) : (
             <Card>
