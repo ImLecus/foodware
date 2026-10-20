@@ -118,7 +118,7 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 
 **Purpose**: Mejoras y validación final.
 
-- [ ] T045 [P] Documentar arranque, pruebas y validación manual en `README.md` (enlazando `specs/001-comandas/quickstart.md`)
+- [X] T045 [P] Documentar arranque, pruebas y validación manual en `README.md` (enlazando `specs/001-comandas/quickstart.md`)
 - [ ] T046 Ejecutar la validación manual de `specs/001-comandas/quickstart.md` (escenarios 1–10) y corregir lo necesario
 - [ ] T047 [P] Revisar todos los textos visibles en español de España y el formato de moneda en la UI en `frontend/src/`
 - [ ] T048 Ejecutar la suite completa (`docker compose run --rm backend npm test` y `frontend npm test`) con los resultados de `backend/tests/` y `frontend/tests/` y dejar todo en verde
