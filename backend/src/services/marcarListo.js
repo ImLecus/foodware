@@ -5,6 +5,7 @@ import {
 } from '../models/lineaPedido.js';
 import { buscarPedido } from '../models/pedido.js';
 import { ErrorHttp } from '../middleware/error.js';
+import { logger } from '../config/logger.js';
 import {
   emitirLineaActualizada,
   emitirPedidoReabierto,
@@ -76,6 +77,11 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
     if (respuesta.pedidoCompletado) {
       emitirPendientesCambiado({ partida: linea.partida });
     }
+    logger.info('Línea marcada como lista', {
+      pedidoId,
+      lineaId,
+      pedidoCompletado: respuesta.pedidoCompletado,
+    });
 
     return respuesta;
   }
@@ -95,6 +101,11 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
     emitirPendientesCambiado({ partida: linea.partida });
     emitirPedidoReabierto({ pedidoId, partida: linea.partida });
   }
+  logger.info('Línea devuelta a pendiente', {
+    pedidoId,
+    lineaId,
+    pedidoReabierto: respuesta.pedidoReabierto,
+  });
 
   return respuesta;
 }

@@ -146,7 +146,7 @@ su momento; re-marcar uno ya listo no lo altera.
 
 **Purpose**: mejoras que afectan a varias historias
 
-- [ ] T041 [P] Add logging for mark/undo operations in `backend/src/config/logger.js` and `backend/src/services/marcarListo.js`
+- [X] T041 [P] Add logging for mark/undo operations in `backend/src/config/logger.js` and `backend/src/services/marcarListo.js`
 - [ ] T042 [P] Document docker-compose usage and project setup in `README.md`
 - [ ] T043 [P] Add integration test for order completion/disappearance in `backend/tests/integration/pedido-completado.test.js`
 - [ ] T044 Run the validation guide in `specs/004-marcar_listos/quickstart.md` end-to-end and fix gaps found
