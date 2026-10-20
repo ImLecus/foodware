@@ -80,7 +80,7 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 
 - [X] T017 [US1] Dominio de edición: reglas (solo pedido `enviada`, no vacío, marcar como modificado, cambios pendientes) en `backend/src/domain/edicion.js`
 - [X] T018 [US1] Esquemas de validación zod de la edición en `backend/src/schemas/edicion.js`
-- [ ] T019 [US1] Endpoints de bloqueo `POST /pedidos/{id}/editar` y `DELETE /pedidos/{id}/editar` en `backend/src/api/pedidos.js`
+- [X] T019 [US1] Endpoints de bloqueo `POST /pedidos/{id}/editar` y `DELETE /pedidos/{id}/editar` en `backend/src/api/pedidos.js`
 - [ ] T020 [US1] Endpoint `GET /pedidos/{id}/editar` que consulta el estado del bloqueo (`libre`, `bloqueado`, `expirado`) en `backend/src/api/pedidos.js`
 - [ ] T021 [US1] Invocar la renovación del bloqueo (`editando_ultima_actividad` y `bloqueo_expira_en`) al guardar cada cambio de línea en `backend/src/api/pedidos.js`
 - [ ] T022 [US1] Ampliar los endpoints de líneas para admitir pedidos enviados (añadir/modificar/retirar) en `backend/src/api/pedidos.js`
