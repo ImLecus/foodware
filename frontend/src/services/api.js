@@ -45,6 +45,16 @@ export async function apiEnviar(ruta, metodo, cuerpo) {
   );
 }
 
+/* Cocina: pedidos pendientes (historia 003) */
+
+export function obtenerCocinero(cocineroId) {
+  return apiGet(`/cocineros/${encodeURIComponent(cocineroId)}`);
+}
+
+export function obtenerPedidosPendientes(partidaId) {
+  return apiGet(`/partidas/${encodeURIComponent(partidaId)}/pedidos-pendientes`);
+}
+
 /* Sala: mesas, carta y pedidos (historia 001) */
 
 export function listarMesas() {

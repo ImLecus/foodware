@@ -139,9 +139,113 @@ const cargar = db.transaction(() => {
   }
 });
 
+const pedidosDemo = [
+  {
+    id: 'pedido-demo-1',
+    mesa: 'mesa-1',
+    camarero: 'camarero-1',
+    enviadoEn: '-35 minutes',
+    modificado: 0,
+    lineas: [
+      { id: 'linea-demo-1', plato: 'plato-1', cantidad: 2, estado: 'pendiente' },
+      { id: 'linea-demo-2', plato: 'plato-3', cantidad: 1, estado: 'pendiente' },
+      { id: 'linea-demo-3', plato: 'plato-6', cantidad: 1, estado: 'pendiente' },
+    ],
+  },
+  {
+    id: 'pedido-demo-2',
+    mesa: 'mesa-2',
+    camarero: 'camarero-2',
+    enviadoEn: '-20 minutes',
+    modificado: 0,
+    lineas: [
+      { id: 'linea-demo-4', plato: 'plato-2', cantidad: 1, estado: 'listo' },
+      { id: 'linea-demo-5', plato: 'plato-4', cantidad: 1, estado: 'pendiente' },
+    ],
+  },
+  {
+    id: 'pedido-demo-3',
+    mesa: 'mesa-3',
+    camarero: 'camarero-1',
+    enviadoEn: '-10 minutes',
+    modificado: 1,
+    lineas: [
+      { id: 'linea-demo-6', plato: 'plato-5', cantidad: 2, estado: 'pendiente' },
+      { id: 'linea-demo-7', plato: 'plato-7', cantidad: 2, estado: 'pendiente' },
+    ],
+  },
+  {
+    id: 'pedido-demo-4',
+    mesa: 'mesa-4',
+    camarero: 'camarero-2',
+    enviadoEn: '-5 minutes',
+    modificado: 0,
+    lineas: [
+      { id: 'linea-demo-8', plato: 'plato-8', cantidad: 1, estado: 'pendiente' },
+      { id: 'linea-demo-9', plato: 'plato-1', cantidad: 1, estado: 'pendiente' },
+    ],
+  },
+  {
+    id: 'pedido-demo-5',
+    mesa: 'mesa-5',
+    camarero: 'camarero-1',
+    enviadoEn: '-15 minutes',
+    modificado: 0,
+    lineas: [
+      { id: 'linea-demo-10', plato: 'plato-2', cantidad: 1, estado: 'listo' },
+      { id: 'linea-demo-11', plato: 'plato-4', cantidad: 1, estado: 'pendiente' },
+    ],
+  },
+];
+
+const precios = new Map(platos.map((plato) => [plato.id, plato.precio]));
+
+const cargarDemo = db.transaction(() => {
+  const insertarPedido = db.prepare(`
+    INSERT OR IGNORE INTO pedidos
+      (id, mesa_id, camarero_id, estado, modificado, enviado_en, modificado_en)
+    VALUES (?, ?, ?, 'enviada', ?, datetime('now', ?),
+            CASE WHEN ? = 1 THEN datetime('now', ?) ELSE NULL END)
+  `);
+  const insertarLinea = db.prepare(`
+    INSERT OR IGNORE INTO lineas_pedido
+      (id, pedido_id, plato_id, cantidad, precio_centimos, estado, listo_en)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+  const ocuparMesa = db.prepare(`
+    UPDATE mesas SET estado = 'ocupada' WHERE id = ? AND estado = 'libre'
+  `);
+
+  for (const pedido of pedidosDemo) {
+    insertarPedido.run(
+      pedido.id,
+      pedido.mesa,
+      pedido.camarero,
+      pedido.modificado,
+      pedido.enviadoEn,
+      pedido.modificado,
+      pedido.enviadoEn,
+    );
+    ocuparMesa.run(pedido.mesa);
+
+    for (const linea of pedido.lineas) {
+      insertarLinea.run(
+        linea.id,
+        pedido.id,
+        linea.plato,
+        linea.cantidad,
+        precios.get(linea.plato),
+        linea.estado,
+        linea.estado === 'listo' ? new Date().toISOString() : null,
+      );
+    }
+  }
+});
+
 cargar();
+cargarDemo();
 db.close();
 
 console.log(
-  'Datos de referencia cargados: partidas, usuarios, mesas, carta, ingredientes y un pedido enviado.',
+  'Datos cargados: partidas, usuarios, mesas, carta, ingredientes y pedidos de ejemplo (001–003).',
 );

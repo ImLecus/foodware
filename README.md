@@ -195,10 +195,33 @@ tiene el bloqueo. Detalles en
 [`specs/002-editar-comanda/quickstart.md`](specs/002-editar-comanda/quickstart.md) y
 [`specs/002-editar-comanda/contracts/openapi.yaml`](specs/002-editar-comanda/contracts/openapi.yaml).
 
+## Verificación de la historia 003
+
+```bash
+docker compose up --build
+docker compose exec backend npm run seed
+
+# API
+curl http://localhost:3000/api/cocineros/cocinero-entrantes
+curl http://localhost:3000/api/partidas/entrantes/pedidos-pendientes
+curl -N http://localhost:3000/api/partidas/entrantes/eventos
+
+# Interfaz
+# http://localhost:5173/cocina?cocinero=cocinero-entrantes
+
+# Pruebas
+npm test
+```
+
+La vista de cocina identifica al cocinero con `?cocinero=<id>` (por defecto
+`cocinero-entrantes`). El canal SSE se abre por partida y refresca la lista sin recargar.
+
 ## Alcance actual
 
-Este incremento implementa el **esqueleto compartido** (estructura, Docker, configuración, conexión
-a SQLite, migración base, hub SSE, cliente HTTP/SSE, tema y rutas provisionales), la **historia
-001 (Sala: abrir mesa y tomar pedido)** y la **historia 002 (Editar un pedido enviado)**. El resto
-de módulos (cocina, cuentas, dashboard y carta) siguen mostrando su página provisional hasta que se
-implementen sus historias.
+- Esqueleto compartido: estructura, Docker, SQLite, hub SSE, cliente HTTP/SSE, tema y pruebas de
+  humo.
+- Historia **001**: abrir mesa y tomar pedido, con anulación y sin conexión.
+- Historia **002**: edición de pedidos enviados, bloqueo y envío explícito de cambios.
+- Historia **003**: pedidos pendientes por partida, tiempo de espera, detalle de platos, marcado
+  accesible, aviso «Modificado», actualización en vivo, sin conexión y reintento.
+- Las historias `004`–`008` siguen pendientes.

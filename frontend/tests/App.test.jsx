@@ -25,7 +25,7 @@ describe('App', () => {
   });
 
   it('muestra una página provisional en los módulos aún no implementados', () => {
-    renderizar('/cocina');
+    renderizar('/cuentas');
 
     expect(screen.getByText('Módulo en construcción')).toBeInTheDocument();
   });
