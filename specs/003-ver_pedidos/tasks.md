@@ -82,7 +82,7 @@ comprobar el filtrado y el orden (y los estados vacío, sin partida, carga y err
 - [X] T018 [US1] Implement `GET /partidas/{partidaId}/pedidos-pendientes` and register the route in `backend/src/routes/partidas.js` and `backend/src/app.js`
 - [X] T019 [US1] Implement `GET /cocineros/{cocineroId}` returning the assigned partida (nullable) in `backend/src/routes/cocineros.js` and register it in `backend/src/app.js`
 - [X] T020 [P] [US1] Build kitchen page, order card, empty state and no-partida state in `frontend/src/pages/CocinaPage.jsx`, `frontend/src/components/PedidoCard.jsx`, `frontend/src/components/EstadoVacio.jsx`, `frontend/src/components/EstadoSinPartida.jsx`
-- [ ] T021 [US1] Wire partida fetch and pending-orders load into the kitchen page in `frontend/src/pages/CocinaPage.jsx` and `frontend/src/services/api.js`
+- [X] T021 [US1] Wire partida fetch and pending-orders load into the kitchen page in `frontend/src/pages/CocinaPage.jsx` and `frontend/src/services/api.js`
 - [ ] T022 [P] [US1] Build the loading indicator («Cargando pedidos…») and the load-error state with «Reintentar» in `frontend/src/components/EstadoCarga.jsx` and `frontend/src/components/EstadoError.jsx`
 - [ ] T023 [US1] Wire initial loading, load error and retry (without showing the empty state) into the kitchen page in `frontend/src/pages/CocinaPage.jsx` and `frontend/src/services/api.js`
 

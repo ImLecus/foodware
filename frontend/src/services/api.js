@@ -27,3 +27,11 @@ export async function apiEnviar(ruta, metodo, cuerpo) {
     }),
   );
 }
+
+export function obtenerCocinero(cocineroId) {
+  return apiGet(`/cocineros/${encodeURIComponent(cocineroId)}`);
+}
+
+export function obtenerPedidosPendientes(partidaId) {
+  return apiGet(`/partidas/${encodeURIComponent(partidaId)}/pedidos-pendientes`);
+}
