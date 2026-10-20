@@ -162,7 +162,7 @@ recargar; con la conexión cortada, el tiempo de espera sigue avanzando.
 - [X] T050 [P] Add backend logging for list queries and event emission in `backend/src/config/logger.js` and `backend/src/services/verPedidos.js`
 - [X] T051 [P] Document docker-compose usage and project setup in `README.md`
 - [X] T052 Run the validation guide in `specs/003-ver_pedidos/quickstart.md` end-to-end and fix gaps found
-- [ ] T053 Validar SC-007 (identificar pedido, platos y cantidades de cada pendiente sin ayuda) y SC-008 (con 20 pedidos pendientes, localizar el más urgente en 10 s o menos) según los escenarios de `specs/003-ver_pedidos/quickstart.md`
+- [X] T053 Validar SC-007 (identificar pedido, platos y cantidades de cada pendiente sin ayuda) y SC-008 (con 20 pedidos pendientes, localizar el más urgente en 10 s o menos) según los escenarios de `specs/003-ver_pedidos/quickstart.md`
 - [ ] T054 Verify full test suites pass and map results to FR-001…FR-018 in `backend/tests/` and `frontend/tests/`
 - [ ] T055 Verificar que todos los textos visibles (partidas, estados, tiempos, carga/error y avisos) están en español de España en `frontend/tests/i18n/textos.test.jsx`
 
