@@ -149,7 +149,7 @@ su momento; re-marcar uno ya listo no lo altera.
 - [X] T041 [P] Add logging for mark/undo operations in `backend/src/config/logger.js` and `backend/src/services/marcarListo.js`
 - [X] T042 [P] Document docker-compose usage and project setup in `README.md`
 - [X] T043 [P] Add integration test for order completion/disappearance in `backend/tests/integration/pedido-completado.test.js`
-- [ ] T044 Run the validation guide in `specs/004-marcar_listos/quickstart.md` end-to-end and fix gaps found
+- [X] T044 Run the validation guide in `specs/004-marcar_listos/quickstart.md` end-to-end and fix gaps found
 - [ ] T045 Run the «Deshacer tras completar el pedido» scenario (12) in `specs/004-marcar_listos/quickstart.md` end-to-end and fix gaps found in `frontend/src/components/AvisoPedidoCompletado.jsx` and `backend/src/services/marcarListo.js`
 - [ ] T046 Verify full test suites pass and map results to FR-001…FR-016 in `backend/tests/` and `frontend/tests/`
 
