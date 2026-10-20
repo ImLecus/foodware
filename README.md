@@ -127,9 +127,45 @@ Cada historia tiene su especificación, plan y tareas en `specs/00X-.../`. Para 
   revisión y commit antes de continuar.
 - Toda funcionalidad debe incluir pruebas automatizadas.
 
+## Sala: abrir mesa y tomar pedido (historia 001)
+
+La pantalla de sala (`/sala`) implementa el flujo completo de la historia 001:
+
+1. **Abrir mesa**: al seleccionar una mesa libre aparece el botón «Abrir Mesa N». La mesa pasa a
+   `ocupada` y se crea su pedido `en_curso`.
+2. **Añadir platos**: desde la carta se añade cada plato con su cantidad; se permiten repeticiones.
+3. **Agrupación automática**: el pedido se muestra agrupado en entrantes, principales y postres.
+4. **Ajustar antes de confirmar**: se puede cambiar la cantidad o retirar cualquier línea.
+5. **Confirmar**: el pedido pasa a `enviada`, queda vinculado a su mesa y se publica el evento SSE
+   `pedido-confirmado` con el pedido agrupado por partidas.
+6. **Anular**: con el pedido en curso, «Anular pedido» pide confirmación, elimina el pedido y sus
+   líneas, deja la mesa `libre` y publica `pedido-anulado`. No se envía nada a cocina.
+7. **Sin conexión**: si se pierde el SSE, la pantalla lo avisa y bloquea la edición y la
+   confirmación, conservando lo anotado.
+
+### API de la historia 001
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `GET` | `/api/mesas` | Mesas con su estado y `pedido_en_curso_id` |
+| `POST` | `/api/mesas/{mesaId}/abrir` | Abre la mesa y crea el pedido (`409` si ya hay uno) |
+| `GET` | `/api/platos` | Carta vigente (platos disponibles) |
+| `GET` | `/api/pedidos/{id}` | Pedido con líneas y `por_partida` |
+| `POST` | `/api/pedidos/{id}/lineas` | Añade un plato con cantidad |
+| `PATCH` | `/api/pedidos/{id}/lineas/{lineaId}` | Ajusta la cantidad |
+| `DELETE` | `/api/pedidos/{id}/lineas/{lineaId}` | Retira el plato |
+| `POST` | `/api/pedidos/{id}/confirmar` | Confirma y devuelve el pedido agrupado |
+| `POST` | `/api/pedidos/{id}/anular` | Anula el pedido en curso y libera la mesa |
+
+La identidad del camarero se toma de la cabecera `X-Camarero-Id` (por defecto `camarero-1`, que
+existe en los datos de ejemplo); el inicio de sesión queda fuera del alcance de esta historia.
+El contrato completo está en
+[`specs/001-comandas/contracts/openapi.yaml`](specs/001-comandas/contracts/openapi.yaml) y la
+validación manual en [`specs/001-comandas/quickstart.md`](specs/001-comandas/quickstart.md).
+
 ## Alcance actual
 
-Este incremento implementa **solo el esqueleto compartido**: estructura, Docker, configuración,
-conexión a SQLite, migración base, hub SSE, cliente HTTP/SSE, tema, rutas provisionales y pruebas
-de humo. **No implementa** todavía los flujos de las historias 001–008; eso corresponde a las
-tareas de cada `tasks.md`.
+Este incremento implementa el **esqueleto compartido** (estructura, Docker, configuración, conexión
+a SQLite, migración base, hub SSE, cliente HTTP/SSE, tema y rutas provisionales) y la **historia
+001 (Sala: abrir mesa y tomar pedido)**. El resto de módulos (cocina, cuentas, dashboard y carta)
+siguen mostrando su página provisional hasta que se implementen sus historias.

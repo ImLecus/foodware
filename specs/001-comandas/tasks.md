@@ -34,11 +34,11 @@ Aplicación web (ver `plan.md`): `backend/` y `frontend/` en la raíz del reposi
 
 **Purpose**: Inicialización del proyecto y estructura básica.
 
-- [ ] T001 Crear la estructura del monorepo (`backend/`, `frontend/`) y los ficheros de raíz `.gitignore`, `.env.example` y `README.md`
-- [ ] T002 Inicializar el backend Node.js 22 + JavaScript + Express en `backend/` (`backend/package.json`, `backend/jsconfig.json`)
-- [ ] T003 Inicializar el frontend Vite + React 18 + JavaScript + Chakra UI en `frontend/` (`frontend/package.json`, `frontend/jsconfig.json`, `frontend/vite.config.js`)
-- [ ] T004 [P] Configurar ESLint y Prettier en `backend/.eslintrc.cjs` y `frontend/.eslintrc.cjs`
-- [ ] T005 [P] Configurar Vitest en `backend/vitest.config.js` y `frontend/vitest.config.js`
+- [X] T001 Crear la estructura del monorepo (`backend/`, `frontend/`) y los ficheros de raíz `.gitignore`, `.env.example` y `README.md`
+- [X] T002 Inicializar el backend Node.js 22 + JavaScript + Express en `backend/` (`backend/package.json`, `backend/jsconfig.json`)
+- [X] T003 Inicializar el frontend Vite + React 18 + JavaScript + Chakra UI en `frontend/` (`frontend/package.json`, `frontend/jsconfig.json`, `frontend/vite.config.js`)
+- [X] T004 [P] Configurar ESLint y Prettier en `backend/.eslintrc.cjs` y `frontend/.eslintrc.cjs`
+- [X] T005 [P] Configurar Vitest en `backend/vitest.config.js` y `frontend/vitest.config.js`
 
 ---
 
@@ -48,15 +48,15 @@ Aplicación web (ver `plan.md`): `backend/` y `frontend/` en la raíz del reposi
 
 **⚠️ CRITICAL**: Ninguna tarea de la historia US1 puede empezar hasta completar esta fase.
 
-- [ ] T006 Crear `docker-compose.yml` (servicios `backend` y `frontend`; SQLite persistido en volumen) y `backend/Dockerfile` y `frontend/Dockerfile`
-- [ ] T007 Configurar variables de entorno del backend en `backend/src/config.js` y documentar `.env.example`
-- [ ] T008 Implementar la conexión a SQLite en `backend/src/db/db.js`
-- [ ] T009 Crear las migraciones SQL del esquema (partida, plato, mesa, pedido, linea_pedido) en `backend/migrations/`
-- [ ] T010 Añadir en las migraciones SQL el borrado en cascada de `linea_pedido` al eliminar su `pedido` y el índice por `pedido_id` para la anulación en `backend/migrations/`
-- [ ] T011 Implementar el script de datos de ejemplo (mesas y carta) en `backend/src/db/seed.js`
-- [ ] T012 Montar el esqueleto de la app Express con router base, middleware de errores y hub SSE compartido (`backend/src/realtime/hub.js`) en `backend/src/app.js` y `backend/src/index.js`
-- [ ] T013 Implementar el endpoint de salud `GET /api/health` en `backend/src/api/health.js` con su prueba en `backend/tests/health.test.js`
-- [ ] T014 Implementar el middleware de identidad del camarero (sesión existente) en `backend/src/api/middleware/camarero.js`
+- [X] T006 Crear `docker-compose.yml` (servicios `backend` y `frontend`; SQLite persistido en volumen) y `backend/Dockerfile` y `frontend/Dockerfile`
+- [X] T007 Configurar variables de entorno del backend en `backend/src/config.js` y documentar `.env.example`
+- [X] T008 Implementar la conexión a SQLite en `backend/src/db/db.js`
+- [X] T009 Crear las migraciones SQL del esquema (partida, plato, mesa, pedido, linea_pedido) en `backend/migrations/`
+- [X] T010 Añadir en las migraciones SQL el borrado en cascada de `linea_pedido` al eliminar su `pedido` y el índice por `pedido_id` para la anulación en `backend/migrations/`
+- [X] T011 Implementar el script de datos de ejemplo (mesas y carta) en `backend/src/db/seed.js`
+- [X] T012 Montar el esqueleto de la app Express con router base, middleware de errores y hub SSE compartido (`backend/src/realtime/hub.js`) en `backend/src/app.js` y `backend/src/index.js`
+- [X] T013 Implementar el endpoint de salud `GET /api/health` en `backend/src/api/health.js` con su prueba en `backend/tests/health.test.js`
+- [X] T014 Implementar el middleware de identidad del camarero (sesión existente) en `backend/src/api/middleware/camarero.js`
 
 **Checkpoint**: Base lista — puede comenzar la historia US1.
 
@@ -76,39 +76,39 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 
 ### Tests for User Story 1 (write first, ensure they FAIL) ⚠️
 
-- [ ] T015 [P] [US1] Prueba de API para abrir mesa e iniciar pedido (incluye 409 si ya hay pedido en curso) en `backend/tests/pedidos.abrir.test.js`
-- [ ] T016 [P] [US1] Prueba de API para añadir, modificar, retirar y repetir el mismo plato en líneas, y para el precio fijado al pedir, en `backend/tests/pedidos.lineas.test.js`
-- [ ] T017 [P] [US1] Prueba de API para confirmar el pedido (pedido agrupado por partidas, evento SSE `pedido-confirmado`) y para impedir confirmar un pedido vacío, en `backend/tests/pedidos.confirmar.test.js`
-- [ ] T018 [P] [US1] Prueba de contrato de `POST /api/pedidos/{pedidoId}/anular` (204, 404 y 409) conforme a `specs/001-comandas/contracts/openapi.yaml` en `backend/tests/pedidos.anular.contrato.test.js`
-- [ ] T019 [P] [US1] Prueba de integración de la anulación (borra pedido y líneas, deja la mesa `libre`, 404 posterior y ningún evento hacia cocina) en `backend/tests/pedidos.anular.test.js`
-- [ ] T020 [P] [US1] Pruebas de componentes de sala (agrupar por partidas, añadir y ajustar líneas) en `frontend/tests/pedido.test.jsx`
-- [ ] T021 [P] [US1] Prueba de componente de «Anular pedido» (confirmación, cancelación y mesa que vuelve a `libre`) en `frontend/tests/anularPedido.test.jsx`
+- [X] T015 [P] [US1] Prueba de API para abrir mesa e iniciar pedido (incluye 409 si ya hay pedido en curso) en `backend/tests/pedidos.abrir.test.js`
+- [X] T016 [P] [US1] Prueba de API para añadir, modificar, retirar y repetir el mismo plato en líneas, y para el precio fijado al pedir, en `backend/tests/pedidos.lineas.test.js`
+- [X] T017 [P] [US1] Prueba de API para confirmar el pedido (pedido agrupado por partidas, evento SSE `pedido-confirmado`) y para impedir confirmar un pedido vacío, en `backend/tests/pedidos.confirmar.test.js`
+- [X] T018 [P] [US1] Prueba de contrato de `POST /api/pedidos/{pedidoId}/anular` (204, 404 y 409) conforme a `specs/001-comandas/contracts/openapi.yaml` en `backend/tests/pedidos.anular.contrato.test.js`
+- [X] T019 [P] [US1] Prueba de integración de la anulación (borra pedido y líneas, deja la mesa `libre`, 404 posterior y ningún evento hacia cocina) en `backend/tests/pedidos.anular.test.js`
+- [X] T020 [P] [US1] Pruebas de componentes de sala (agrupar por partidas, añadir y ajustar líneas) en `frontend/tests/pedido.test.jsx`
+- [X] T021 [P] [US1] Prueba de componente de «Anular pedido» (confirmación, cancelación y mesa que vuelve a `libre`) en `frontend/tests/anularPedido.test.jsx`
 
 ### Implementation for User Story 1
 
-- [ ] T022 [P] [US1] Repositorio de mesas (listar, marcar ocupada) en `backend/src/db/mesas.js`
-- [ ] T023 [P] [US1] Repositorio de platos (carta vigente, disponibles) en `backend/src/db/platos.js`
-- [ ] T024 [P] [US1] Repositorio de pedidos y líneas (crear, añadir, modificar, retirar, confirmar) en `backend/src/db/pedidos.js`
-- [ ] T025 [US1] Borrado transaccional del pedido y sus líneas y liberación de la mesa al anular en `backend/src/db/pedidos.js` y `backend/src/db/mesas.js`
-- [ ] T026 [US1] Dominio de pedidos: agrupación por partidas y reglas (un pedido en curso por mesa, pedido no vacía) en `backend/src/domain/pedidos.js`
-- [ ] T027 [US1] Dominio de pedidos: regla de anulación (solo `en_curso`; un pedido `enviada` devuelve conflicto) en `backend/src/domain/pedidos.js`
-- [ ] T028 [US1] Esquemas de validación zod para las peticiones en `backend/src/schemas/pedidos.js`
-- [ ] T029 [US1] Endpoints de mesas `GET /api/mesas` y `POST /api/mesas/{mesaId}/abrir` en `backend/src/api/mesas.js`
-- [ ] T030 [US1] Endpoint de carta `GET /api/platos` en `backend/src/api/platos.js`
-- [ ] T031 [US1] Endpoints de pedido `GET /api/pedidos/{id}`, `POST/PATCH/DELETE` de líneas y `POST /confirmar` en `backend/src/api/pedidos.js`
-- [ ] T032 [US1] Endpoint `POST /api/pedidos/{pedidoId}/anular` (204, 404 y 409) en `backend/src/api/pedidos.js`
-- [ ] T033 [US1] Publicar los eventos SSE `pedido-confirmado` (al confirmar el pedido) y `pedido-anulado` (con la mesa liberada) en `backend/src/realtime/hub.js`
-- [ ] T034 [US1] Fijar el precio del plato en la línea al pedirla (FR-018) en `backend/src/db/pedidos.js`
-- [ ] T035 [P] [US1] Pantalla de mesas (listar y abrir) en `frontend/src/pages/Mesas.jsx`
-- [ ] T036 [P] [US1] Componente de pedido agrupada por partidas en `frontend/src/components/Pedido.jsx`
-- [ ] T037 [US1] Selector de platos de la carta con cantidad en `frontend/src/components/SelectorPlatos.jsx`
-- [ ] T038 [US1] Acciones de ajustar cantidad, retirar línea y confirmar pedido en `frontend/src/components/Pedido.jsx`
-- [ ] T039 [US1] Cliente HTTP de la API, suscripción SSE (`frontend/src/services/realtime.js`) y estado "sin conexión" (bloquear confirmar/modificar y conservar lo escrito) en `frontend/src/services/api.js` y `frontend/src/components/Conexion.jsx`
-- [ ] T040 [US1] Añadir `anularPedido(pedidoId)` al cliente HTTP en `frontend/src/services/api.js`
-- [ ] T041 [US1] Añadir la acción «Anular pedido» con diálogo de confirmación en la pantalla de pedido en `frontend/src/components/Pedido.jsx`
-- [ ] T042 [US1] Actualizar el estado local tras la anulación (cerrar el pedido y marcar la mesa `libre`) en `frontend/src/pages/Mesas.jsx`
-- [ ] T043 [US1] Ejecutar el escenario 10 de `specs/001-comandas/quickstart.md` (anulación) y comprobar SC-006
-- [ ] T044 [US1] Localización es-ES y formato de moneda en euros en `frontend/src/theme/` y `frontend/src/utils/formato.js`
+- [X] T022 [P] [US1] Repositorio de mesas (listar, marcar ocupada) en `backend/src/db/mesas.js`
+- [X] T023 [P] [US1] Repositorio de platos (carta vigente, disponibles) en `backend/src/db/platos.js`
+- [X] T024 [P] [US1] Repositorio de pedidos y líneas (crear, añadir, modificar, retirar, confirmar) en `backend/src/db/pedidos.js`
+- [X] T025 [US1] Borrado transaccional del pedido y sus líneas y liberación de la mesa al anular en `backend/src/db/pedidos.js` y `backend/src/db/mesas.js`
+- [X] T026 [US1] Dominio de pedidos: agrupación por partidas y reglas (un pedido en curso por mesa, pedido no vacía) en `backend/src/domain/pedidos.js`
+- [X] T027 [US1] Dominio de pedidos: regla de anulación (solo `en_curso`; un pedido `enviada` devuelve conflicto) en `backend/src/domain/pedidos.js`
+- [X] T028 [US1] Esquemas de validación zod para las peticiones en `backend/src/schemas/pedidos.js`
+- [X] T029 [US1] Endpoints de mesas `GET /api/mesas` y `POST /api/mesas/{mesaId}/abrir` en `backend/src/api/mesas.js`
+- [X] T030 [US1] Endpoint de carta `GET /api/platos` en `backend/src/api/platos.js`
+- [X] T031 [US1] Endpoints de pedido `GET /api/pedidos/{id}`, `POST/PATCH/DELETE` de líneas y `POST /confirmar` en `backend/src/api/pedidos.js`
+- [X] T032 [US1] Endpoint `POST /api/pedidos/{pedidoId}/anular` (204, 404 y 409) en `backend/src/api/pedidos.js`
+- [X] T033 [US1] Publicar los eventos SSE `pedido-confirmado` (al confirmar el pedido) y `pedido-anulado` (con la mesa liberada) en `backend/src/realtime/hub.js`
+- [X] T034 [US1] Fijar el precio del plato en la línea al pedirla (FR-018) en `backend/src/db/pedidos.js`
+- [X] T035 [P] [US1] Pantalla de mesas (listar y abrir) en `frontend/src/pages/Mesas.jsx`
+- [X] T036 [P] [US1] Componente de pedido agrupada por partidas en `frontend/src/components/Pedido.jsx`
+- [X] T037 [US1] Selector de platos de la carta con cantidad en `frontend/src/components/SelectorPlatos.jsx`
+- [X] T038 [US1] Acciones de ajustar cantidad, retirar línea y confirmar pedido en `frontend/src/components/Pedido.jsx`
+- [X] T039 [US1] Cliente HTTP de la API, suscripción SSE (`frontend/src/services/realtime.js`) y estado "sin conexión" (bloquear confirmar/modificar y conservar lo escrito) en `frontend/src/services/api.js` y `frontend/src/components/Conexion.jsx`
+- [X] T040 [US1] Añadir `anularPedido(pedidoId)` al cliente HTTP en `frontend/src/services/api.js`
+- [X] T041 [US1] Añadir la acción «Anular pedido» con diálogo de confirmación en la pantalla de pedido en `frontend/src/components/Pedido.jsx`
+- [X] T042 [US1] Actualizar el estado local tras la anulación (cerrar el pedido y marcar la mesa `libre`) en `frontend/src/pages/Mesas.jsx`
+- [X] T043 [US1] Ejecutar el escenario 10 de `specs/001-comandas/quickstart.md` (anulación) y comprobar SC-006
+- [X] T044 [US1] Localización es-ES y formato de moneda en euros en `frontend/src/theme/` y `frontend/src/utils/formato.js`
 
 **Checkpoint**: US1 funcional y verificable de forma independiente (MVP).
 
@@ -118,10 +118,10 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 
 **Purpose**: Mejoras y validación final.
 
-- [ ] T045 [P] Documentar arranque, pruebas y validación manual en `README.md` (enlazando `specs/001-comandas/quickstart.md`)
-- [ ] T046 Ejecutar la validación manual de `specs/001-comandas/quickstart.md` (escenarios 1–10) y corregir lo necesario
-- [ ] T047 [P] Revisar todos los textos visibles en español de España y el formato de moneda en la UI en `frontend/src/`
-- [ ] T048 Ejecutar la suite completa (`docker compose run --rm backend npm test` y `frontend npm test`) con los resultados de `backend/tests/` y `frontend/tests/` y dejar todo en verde
+- [X] T045 [P] Documentar arranque, pruebas y validación manual en `README.md` (enlazando `specs/001-comandas/quickstart.md`)
+- [X] T046 Ejecutar la validación manual de `specs/001-comandas/quickstart.md` (escenarios 1–10) y corregir lo necesario
+- [X] T047 [P] Revisar todos los textos visibles en español de España y el formato de moneda en la UI en `frontend/src/`
+- [X] T048 Ejecutar la suite completa (`docker compose run --rm backend npm test` y `frontend npm test`) con los resultados de `backend/tests/` y `frontend/tests/` y dejar todo en verde
 
 ---
 

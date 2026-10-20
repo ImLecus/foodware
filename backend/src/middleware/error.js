@@ -1,3 +1,12 @@
+/** Error de aplicación con un código HTTP asociado. */
+export class ErrorHttp extends Error {
+  constructor(status, mensaje) {
+    super(mensaje);
+    this.name = 'ErrorHttp';
+    this.status = status;
+  }
+}
+
 export function noEncontrado(req, res) {
   res.status(404).json({ error: 'Recurso no encontrado' });
 }
