@@ -77,7 +77,7 @@ comprobar el filtrado y el orden (y los estados vacío, sin partida, carga y err
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Implement `pedido` and `lineaPedido` data-access and the pending-orders query in `backend/src/models/pedido.js` and `backend/src/models/lineaPedido.js`
+- [X] T016 [P] [US1] Implement `pedido` and `lineaPedido` data-access and the pending-orders query in `backend/src/models/pedido.js` and `backend/src/models/lineaPedido.js`
 - [ ] T017 [US1] Implement the service that lists pending orders of a partida (filter + deterministic order) in `backend/src/services/verPedidos.js`
 - [ ] T018 [US1] Implement `GET /partidas/{partidaId}/pedidos-pendientes` and register the route in `backend/src/routes/partidas.js` and `backend/src/app.js`
 - [ ] T019 [US1] Implement `GET /cocineros/{cocineroId}` returning the assigned partida (nullable) in `backend/src/routes/cocineros.js` and register it in `backend/src/app.js`
