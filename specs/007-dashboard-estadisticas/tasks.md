@@ -27,11 +27,11 @@ independientes.
 
 **Propósito**: Inicialización del proyecto y estructura básica
 
-- [ ] T001 Crear la estructura de backend y frontend según plan.md (`backend/`, `frontend/`, `backend/Dockerfile`, `frontend/Dockerfile`)
-- [ ] T002 Inicializar el backend con Express + JavaScript en `backend/package.json`
-- [ ] T003 [P] Inicializar el frontend con React + Vite + Chakra UI + JavaScript en `frontend/package.json`
-- [ ] T004 [P] Configurar Vitest, ESLint y Prettier en `backend/vitest.config.js` y `frontend/vitest.config.js`
-- [ ] T005 Configurar los servicios `backend` y `frontend` en `docker-compose.yml`
+- [X] T001 Crear la estructura de backend y frontend según plan.md (`backend/`, `frontend/`, `backend/Dockerfile`, `frontend/Dockerfile`)
+- [X] T002 Inicializar el backend con Express + JavaScript en `backend/package.json`
+- [X] T003 [P] Inicializar el frontend con React + Vite + Chakra UI + JavaScript en `frontend/package.json`
+- [X] T004 [P] Configurar Vitest, ESLint y Prettier en `backend/vitest.config.js` y `frontend/vitest.config.js`
+- [X] T005 Configurar los servicios `backend` y `frontend` en `docker-compose.yml`
 
 ---
 
@@ -41,12 +41,12 @@ independientes.
 
 **⚠️ CRÍTICO**: Ninguna historia puede empezar hasta terminar esta fase
 
-- [ ] T006 Crear el esquema SQLite de `cuentas`, `consumos`, `camareros` y `platos` en `backend/db/schema.sql`
-- [ ] T007 [P] Configurar el cliente de SQLite en `backend/src/models/db.js`
+- [X] T006 Crear el esquema SQLite de `cuentas`, `platos`, `usuarios` y `pedidos`/`lineas_pedido` en `backend/migrations/001_init.sql` (esquema canónico compartido; ya en el esqueleto)
+- [X] T007 [P] Configurar el cliente de SQLite en `backend/src/db/index.js` (ya en el esqueleto)
 - [ ] T008 [P] Definir los tipos de entidad compartidos (`Cuenta`, `Consumo`, `Camarero`, `Plato`, `InformeDiario`) en `backend/src/models/types.js`
 - [ ] T009 Implementar el middleware de autorización por rol `encargado` en `backend/src/middleware/auth.js`
-- [ ] T010 Configurar el enrutador de la API y el middleware de errores en `backend/src/api/index.js`
-- [ ] T011 Implementar utilidades de límites del día natural Europe/Madrid en `backend/src/services/dayTime.js`
+- [X] T010 Configurar el enrutador de la API y el middleware de errores en `backend/src/app.js` y `backend/src/middleware/error.js` (ya en el esqueleto)
+- [X] T011 Implementar utilidades de límites del día natural Europe/Madrid en `backend/src/services/dayTime.js`
 - [ ] T012 [P] Crear el script de datos semilla con cuentas cerradas en dos días distintos en `backend/db/seed.js`
 - [ ] T013 [P] Configurar el enrutado del frontend y el acceso por rol en `frontend/src/App.jsx`
 - [ ] T014 [P] Implementar el cliente HTTP de informes (fetch) en `frontend/src/services/reports.js`
