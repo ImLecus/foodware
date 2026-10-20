@@ -69,7 +69,7 @@ reaparición del pedido en la pantalla de cocina.
 
 ### Tests for User Story 1 ⚠️ (escribir primero, deben fallar)
 
-- [ ] T012 [P] [US1] Contract test for `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` in `backend/tests/contract/marcar-estado.test.js`
+- [X] T012 [P] [US1] Contract test for `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` in `backend/tests/contract/marcar-estado.test.js`
 - [ ] T013 [P] [US1] Unit test for mark/undo service (validation by partida, idempotency, order completion) in `backend/tests/unit/marcar-listo-service.test.js`
 - [ ] T014 [P] [US1] Contract test for undoing the last line of a completed order (`estado: pendiente`, `listoEn: null`, and `409` still returned when marking `listo`) in `backend/tests/contract/desmarcar-completado.test.js`
 - [ ] T015 [P] [US1] Integration test for reopening after undo of the last line (line back to `pendiente`, `listoEn` cleared, order reappears in the pending list) in `backend/tests/integration/reapertura-pedido.test.js`
