@@ -115,7 +115,7 @@ mesa, la lista de platos con cantidades, el marcado accesible de listos y el avi
 - [X] T032 [P] [US2] Implement the elapsed-time component with a local timer (minutes, hours if needed) in `frontend/src/components/TiempoEspera.jsx`
 - [X] T033 [P] [US2] Implement the plate-line component showing name, quantity and ready/pending distinction in `frontend/src/components/LineaPlato.jsx`
 - [X] T034 [US2] Add accessible ready marking (colour plus «listo» text/symbol and `aria-label`) to the plate line in `frontend/src/components/LineaPlato.jsx`
-- [ ] T035 [P] [US2] Implement the «Modificado» badge component in `frontend/src/components/AvisoModificado.jsx`
+- [X] T035 [P] [US2] Implement the «Modificado» badge component in `frontend/src/components/AvisoModificado.jsx`
 - [ ] T036 [US2] Wire the elapsed time, table and plate list into the order card in `frontend/src/components/PedidoCard.jsx`
 - [ ] T037 [US2] Wire the «Modificado» badge into the order card without detailing changed lines in `frontend/src/components/PedidoCard.jsx`
 
