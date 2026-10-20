@@ -86,7 +86,7 @@ reaparición del pedido en la pantalla de cocina.
 - [ ] T023 [P] [US1] Build kitchen page and components (`PedidoCard`, `LineaPlato`) with accessible ready marking (colour + «listo» text/symbol and `aria-label`) in `frontend/src/pages/CocinaPage.jsx`, `frontend/src/components/PedidoCard.jsx`, `frontend/src/components/LineaPlato.jsx`
 - [X] T024 [US1] Wire mark/undo actions, disallowed-action feedback (403/409) and the offline state (indicator «sin conexión», blocked marking and on-screen data preserved) in `frontend/src/pages/CocinaPage.jsx`, `frontend/src/components/IndicadorConexion.jsx` and `frontend/src/services/api.js`
 - [X] T025 [US1] Build the «Pedido completado» toast/notice with a «Deshacer» action and a minimum 10 s timer in `frontend/src/components/AvisoPedidoCompletado.jsx`
-- [ ] T026 [US1] Wire the notice: keep the last `pedidoId`/`lineaId`, call the undo operation and make the reordered order reappear in the kitchen list in `frontend/src/pages/CocinaPage.jsx` and `frontend/src/services/api.js`
+- [X] T026 [US1] Wire the notice: keep the last `pedidoId`/`lineaId`, call the undo operation and make the reordered order reappear in the kitchen list in `frontend/src/pages/CocinaPage.jsx` and `frontend/src/services/api.js`
 
 **Checkpoint**: US1 funcional y probable de forma independiente
 

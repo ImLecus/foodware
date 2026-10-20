@@ -1,5 +1,6 @@
 import { Alert, AlertDescription, AlertIcon, Box, Heading, Stack, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import AvisoPedidoCompletado from '../components/AvisoPedidoCompletado.jsx';
 import AvisoSinConexion from '../components/AvisoSinConexion.jsx';
 import EstadoCarga from '../components/EstadoCarga.jsx';
 import EstadoError from '../components/EstadoError.jsx';
@@ -30,6 +31,7 @@ export default function CocinaPage({ cocineroId }) {
   const [intento, setIntento] = useState(0);
   const [sinConexion, setSinConexion] = useState(false);
   const [errorAccion, setErrorAccion] = useState(null);
+  const [avisoCompletado, setAvisoCompletado] = useState(null);
 
   useEffect(() => {
     let cancelado = false;
@@ -104,9 +106,12 @@ export default function CocinaPage({ cocineroId }) {
     setErrorAccion(null);
 
     try {
-      await marcarEstado(pedido.id, linea.id, estado, partida);
+      const resultado = await marcarEstado(pedido.id, linea.id, estado, partida);
       const datosPedidos = await obtenerPedidosPendientes(partida);
       setPedidos(datosPedidos);
+      if (resultado?.pedidoCompletado) {
+        setAvisoCompletado({ pedidoId: pedido.id, lineaId: linea.id });
+      }
     } catch (fallo) {
       setErrorAccion(fallo.message ?? 'No se pudo cambiar el estado del plato');
     }
@@ -122,6 +127,17 @@ export default function CocinaPage({ cocineroId }) {
       </Text>
 
       {sinConexion && <AvisoSinConexion />}
+
+      {avisoCompletado && (
+        <AvisoPedidoCompletado
+          pedidoId={avisoCompletado.pedidoId}
+          lineaId={avisoCompletado.lineaId}
+          onDeshacer={({ pedidoId, lineaId }) =>
+            cambiarEstado({ id: pedidoId }, { id: lineaId }, 'pendiente')
+          }
+          onCerrar={() => setAvisoCompletado(null)}
+        />
+      )}
 
       {errorAccion && (
         <Alert status="error" borderRadius="md" mb={4}>
