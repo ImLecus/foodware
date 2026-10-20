@@ -49,7 +49,7 @@ independientes.
 - [X] T011 Implementar utilidades de límites del día natural Europe/Madrid en `backend/src/services/dayTime.js`
 - [X] T012 [P] Crear el script de datos semilla con cuentas cerradas en dos días distintos en `backend/src/db/seed.js`
 - [ ] T013 [P] Configurar el enrutado del frontend y el acceso por rol en `frontend/src/App.jsx`
-- [ ] T014 [P] Implementar el cliente HTTP de informes (fetch) en `frontend/src/services/reports.js`
+- [X] T014 [P] Implementar el cliente HTTP de informes (fetch) en `frontend/src/services/reports.js`
 
 **Checkpoint**: Base lista — las historias de usuario pueden comenzar
 
