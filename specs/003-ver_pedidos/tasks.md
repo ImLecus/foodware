@@ -138,7 +138,7 @@ recargar; con la conexión cortada, el tiempo de espera sigue avanzando.
 - [X] T038 [P] [US3] Contract test for the SSE endpoint and event shapes (`pedido.nuevo`, `pedido.pendientes-cambiado`, `linea.actualizada`) in `backend/tests/contract/eventos-cocina.test.js`
 - [X] T039 [P] [US3] Contract test for the `pedido.modificado` event shape and emission on an edited order in `backend/tests/contract/eventos-pedido-modificado.test.js`
 - [X] T040 [P] [US3] Integration test for live insertion and reordering (new order appears; completed order disappears) in `backend/tests/integration/lista-en-vivo.test.js`
-- [ ] T041 [P] [US3] Component test for live updates without reload and the offline indicator in `frontend/tests/pages/CocinaPage.en-vivo.test.jsx`
+- [X] T041 [P] [US3] Component test for live updates without reload and the offline indicator in `frontend/tests/pages/CocinaPage.en-vivo.test.jsx`
 - [ ] T042 [P] [US3] Component test that the elapsed time keeps advancing with the local clock while offline (FR-006, SC-003) in `frontend/tests/components/TiempoEspera.sin-conexion.test.jsx`
 
 ### Implementation for User Story 3
