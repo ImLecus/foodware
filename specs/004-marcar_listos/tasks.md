@@ -51,7 +51,7 @@ Aplicación web (monorepositorio): `backend/src/`, `backend/tests/`, `frontend/s
 - [X] T008 [P] Create seed data (partidas, mesas, cocineros/camareros, pedidos de ejemplo) in `backend/src/db/seed.js`
 - [X] T009 [P] Create Express app skeleton, config and error-handling middleware in `backend/src/app.js`, `backend/src/server.js`, `backend/src/config/env.js`, `backend/src/middleware/error.js`
 - [X] T010 [P] Implement data-access models for partidas, mesas and usuarios in `backend/src/models/partida.js`, `backend/src/models/mesa.js`, `backend/src/models/usuario.js`
-- [ ] T011 [P] Create frontend REST client and SSE subscription service in `frontend/src/services/api.js` and `frontend/src/services/events.js`
+- [X] T011 [P] Create frontend REST client and SSE subscription service in `frontend/src/services/api.js` and `frontend/src/services/events.js`
 
 **Checkpoint**: base lista; las historias pueden empezar
 
