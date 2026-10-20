@@ -54,12 +54,13 @@ export function obtenerLinea(db, lineaId) {
   return db.prepare(`SELECT ${LINEA_CAMPOS} ${LINEA_JOIN} WHERE l.id = ?`).get(lineaId) ?? null;
 }
 
-export function anadirLinea(db, { pedidoId, platoId, cantidad, precioCentimos }) {
+/** Añade una línea fijando el precio del plato en el momento de pedirlo (FR-018). */
+export function anadirLinea(db, { pedidoId, plato, cantidad }) {
   const id = randomUUID();
   db.prepare(
     `INSERT INTO lineas_pedido (id, pedido_id, plato_id, cantidad, precio_centimos)
      VALUES (?, ?, ?, ?, ?)`,
-  ).run(id, pedidoId, platoId, cantidad, precioCentimos);
+  ).run(id, pedidoId, plato.id, cantidad, plato.precio_centimos);
   return obtenerLinea(db, id);
 }
 

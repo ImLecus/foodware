@@ -61,9 +61,8 @@ export function pedidosRouter(db) {
 
       const linea = anadirLinea(db, {
         pedidoId: pedido.id,
-        platoId: plato.id,
+        plato,
         cantidad: datos.cantidad,
-        precioCentimos: plato.precio_centimos,
       });
       res.status(201).json(linea);
     } catch (error) {
