@@ -15,6 +15,7 @@ import {
   estadoBloqueo,
   exigirNoQuedaVacio,
   liberarBloqueoEdicion,
+  renovarBloqueoEdicion,
 } from '../domain/edicion.js';
 import {
   agruparPorPartida,
@@ -114,6 +115,7 @@ export function pedidosRouter(db) {
 
       if (pedido.estado === 'enviada') {
         marcarModificado(db, pedido.id);
+        renovarBloqueoEdicion(db, pedido.id);
       }
 
       res.status(201).json(linea);
@@ -131,6 +133,7 @@ export function pedidosRouter(db) {
 
       if (pedido.estado === 'enviada') {
         marcarModificado(db, pedido.id);
+        renovarBloqueoEdicion(db, pedido.id);
       }
 
       res.json(actualizada);
@@ -148,6 +151,7 @@ export function pedidosRouter(db) {
 
       if (pedido.estado === 'enviada') {
         marcarModificado(db, pedido.id);
+        renovarBloqueoEdicion(db, pedido.id);
       }
 
       res.status(204).end();
