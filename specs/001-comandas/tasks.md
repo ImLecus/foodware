@@ -35,10 +35,10 @@ Aplicación web (ver `plan.md`): `backend/` y `frontend/` en la raíz del reposi
 **Purpose**: Inicialización del proyecto y estructura básica.
 
 - [X] T001 Crear la estructura del monorepo (`backend/`, `frontend/`) y los ficheros de raíz `.gitignore`, `.env.example` y `README.md`
-- [ ] T002 Inicializar el backend Node.js 22 + JavaScript + Express en `backend/` (`backend/package.json`, `backend/jsconfig.json`)
-- [ ] T003 Inicializar el frontend Vite + React 18 + JavaScript + Chakra UI en `frontend/` (`frontend/package.json`, `frontend/jsconfig.json`, `frontend/vite.config.js`)
-- [ ] T004 [P] Configurar ESLint y Prettier en `backend/.eslintrc.cjs` y `frontend/.eslintrc.cjs`
-- [ ] T005 [P] Configurar Vitest en `backend/vitest.config.js` y `frontend/vitest.config.js`
+- [X] T002 Inicializar el backend Node.js 22 + JavaScript + Express en `backend/` (`backend/package.json`, `backend/jsconfig.json`)
+- [X] T003 Inicializar el frontend Vite + React 18 + JavaScript + Chakra UI en `frontend/` (`frontend/package.json`, `frontend/jsconfig.json`, `frontend/vite.config.js`)
+- [X] T004 [P] Configurar ESLint y Prettier en `backend/.eslintrc.cjs` y `frontend/.eslintrc.cjs`
+- [X] T005 [P] Configurar Vitest en `backend/vitest.config.js` y `frontend/vitest.config.js`
 
 ---
 
@@ -48,14 +48,14 @@ Aplicación web (ver `plan.md`): `backend/` y `frontend/` en la raíz del reposi
 
 **⚠️ CRITICAL**: Ninguna tarea de la historia US1 puede empezar hasta completar esta fase.
 
-- [ ] T006 Crear `docker-compose.yml` (servicios `backend` y `frontend`; SQLite persistido en volumen) y `backend/Dockerfile` y `frontend/Dockerfile`
-- [ ] T007 Configurar variables de entorno del backend en `backend/src/config.js` y documentar `.env.example`
-- [ ] T008 Implementar la conexión a SQLite en `backend/src/db/db.js`
-- [ ] T009 Crear las migraciones SQL del esquema (partida, plato, mesa, pedido, linea_pedido) en `backend/migrations/`
-- [ ] T010 Añadir en las migraciones SQL el borrado en cascada de `linea_pedido` al eliminar su `pedido` y el índice por `pedido_id` para la anulación en `backend/migrations/`
-- [ ] T011 Implementar el script de datos de ejemplo (mesas y carta) en `backend/src/db/seed.js`
-- [ ] T012 Montar el esqueleto de la app Express con router base, middleware de errores y hub SSE compartido (`backend/src/realtime/hub.js`) en `backend/src/app.js` y `backend/src/index.js`
-- [ ] T013 Implementar el endpoint de salud `GET /api/health` en `backend/src/api/health.js` con su prueba en `backend/tests/health.test.js`
+- [X] T006 Crear `docker-compose.yml` (servicios `backend` y `frontend`; SQLite persistido en volumen) y `backend/Dockerfile` y `frontend/Dockerfile`
+- [X] T007 Configurar variables de entorno del backend en `backend/src/config.js` y documentar `.env.example`
+- [X] T008 Implementar la conexión a SQLite en `backend/src/db/db.js`
+- [X] T009 Crear las migraciones SQL del esquema (partida, plato, mesa, pedido, linea_pedido) en `backend/migrations/`
+- [X] T010 Añadir en las migraciones SQL el borrado en cascada de `linea_pedido` al eliminar su `pedido` y el índice por `pedido_id` para la anulación en `backend/migrations/`
+- [X] T011 Implementar el script de datos de ejemplo (mesas y carta) en `backend/src/db/seed.js`
+- [X] T012 Montar el esqueleto de la app Express con router base, middleware de errores y hub SSE compartido (`backend/src/realtime/hub.js`) en `backend/src/app.js` y `backend/src/index.js`
+- [X] T013 Implementar el endpoint de salud `GET /api/health` en `backend/src/api/health.js` con su prueba en `backend/tests/health.test.js`
 - [ ] T014 Implementar el middleware de identidad del camarero (sesión existente) en `backend/src/api/middleware/camarero.js`
 
 **Checkpoint**: Base lista — puede comenzar la historia US1.
