@@ -34,7 +34,7 @@ Aplicación web (ver `plan.md`): `backend/` y `frontend/` en la raíz del reposi
 
 **Purpose**: Inicialización del proyecto y estructura básica.
 
-- [ ] T001 Crear la estructura del monorepo (`backend/`, `frontend/`) y los ficheros de raíz `.gitignore`, `.env.example` y `README.md`
+- [X] T001 Crear la estructura del monorepo (`backend/`, `frontend/`) y los ficheros de raíz `.gitignore`, `.env.example` y `README.md`
 - [ ] T002 Inicializar el backend Node.js 22 + JavaScript + Express en `backend/` (`backend/package.json`, `backend/jsconfig.json`)
 - [ ] T003 Inicializar el frontend Vite + React 18 + JavaScript + Chakra UI en `frontend/` (`frontend/package.json`, `frontend/jsconfig.json`, `frontend/vite.config.js`)
 - [ ] T004 [P] Configurar ESLint y Prettier en `backend/.eslintrc.cjs` y `frontend/.eslintrc.cjs`
