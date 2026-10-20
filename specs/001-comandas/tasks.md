@@ -105,7 +105,7 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 - [X] T038 [US1] Acciones de ajustar cantidad, retirar línea y confirmar pedido en `frontend/src/components/Pedido.jsx`
 - [X] T039 [US1] Cliente HTTP de la API, suscripción SSE (`frontend/src/services/realtime.js`) y estado "sin conexión" (bloquear confirmar/modificar y conservar lo escrito) en `frontend/src/services/api.js` y `frontend/src/components/Conexion.jsx`
 - [X] T040 [US1] Añadir `anularPedido(pedidoId)` al cliente HTTP en `frontend/src/services/api.js`
-- [ ] T041 [US1] Añadir la acción «Anular pedido» con diálogo de confirmación en la pantalla de pedido en `frontend/src/components/Pedido.jsx`
+- [X] T041 [US1] Añadir la acción «Anular pedido» con diálogo de confirmación en la pantalla de pedido en `frontend/src/components/Pedido.jsx`
 - [ ] T042 [US1] Actualizar el estado local tras la anulación (cerrar el pedido y marcar la mesa `libre`) en `frontend/src/pages/Mesas.jsx`
 - [ ] T043 [US1] Ejecutar el escenario 10 de `specs/001-comandas/quickstart.md` (anulación) y comprobar SC-006
 - [ ] T044 [US1] Localización es-ES y formato de moneda en euros en `frontend/src/theme/` y `frontend/src/utils/formato.js`

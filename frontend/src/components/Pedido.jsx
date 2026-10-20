@@ -1,4 +1,10 @@
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Badge,
   Box,
   Button,
@@ -11,7 +17,9 @@ import {
   NumberInput,
   NumberInputField,
   Text,
+  useDisclosure,
 } from '@chakra-ui/react';
+import { useRef } from 'react';
 import { formatearEuros } from '../utils/formato.js';
 import { agruparPorPartida, NOMBRES_PARTIDA, PARTIDAS } from '../utils/partidas.js';
 
@@ -22,7 +30,10 @@ export default function Pedido({
   onCambiarCantidad,
   onRetirarLinea,
   onConfirmar,
+  onAnular,
 }) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelarRef = useRef(null);
   const lineas = pedido.lineas ?? [];
   const porPartida = pedido.por_partida ?? agruparPorPartida(lineas);
   const enCurso = pedido.estado === 'en_curso';
@@ -107,7 +118,10 @@ export default function Pedido({
         </Flex>
       </CardBody>
 
-      <CardFooter>
+      <CardFooter gap={3} flexWrap="wrap">
+        <Button colorScheme="red" variant="outline" isDisabled={!editable} onClick={onOpen}>
+          Anular pedido
+        </Button>
         <Button
           colorScheme="teal"
           isDisabled={!editable || lineas.length === 0}
@@ -116,6 +130,35 @@ export default function Pedido({
           Confirmar pedido
         </Button>
       </CardFooter>
+
+      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelarRef} onClose={onClose}>
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Anular pedido
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              ¿Seguro que quieres anular el pedido de {mesa?.identificador ?? 'la mesa'}? La mesa
+              volverá a quedar libre y no se enviará nada a cocina.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelarRef} onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button
+                colorScheme="red"
+                ml={3}
+                onClick={() => {
+                  onClose();
+                  onAnular?.();
+                }}
+              >
+                Sí, anular pedido
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Card>
   );
 }
