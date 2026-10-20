@@ -76,3 +76,7 @@ export function retirarLinea(pedidoId, lineaId) {
 export function confirmarPedido(pedidoId) {
   return apiEnviar(`/pedidos/${pedidoId}/confirmar`, 'POST');
 }
+
+export function anularPedido(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/anular`, 'POST');
+}
