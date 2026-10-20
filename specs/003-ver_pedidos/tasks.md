@@ -164,7 +164,7 @@ recargar; con la conexión cortada, el tiempo de espera sigue avanzando.
 - [X] T052 Run the validation guide in `specs/003-ver_pedidos/quickstart.md` end-to-end and fix gaps found
 - [X] T053 Validar SC-007 (identificar pedido, platos y cantidades de cada pendiente sin ayuda) y SC-008 (con 20 pedidos pendientes, localizar el más urgente en 10 s o menos) según los escenarios de `specs/003-ver_pedidos/quickstart.md`
 - [X] T054 Verify full test suites pass and map results to FR-001…FR-018 in `backend/tests/` and `frontend/tests/`
-- [ ] T055 Verificar que todos los textos visibles (partidas, estados, tiempos, carga/error y avisos) están en español de España en `frontend/tests/i18n/textos.test.jsx`
+- [X] T055 Verificar que todos los textos visibles (partidas, estados, tiempos, carga/error y avisos) están en español de España en `frontend/tests/i18n/textos.test.jsx`
 
 ---
 
