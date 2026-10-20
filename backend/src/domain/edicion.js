@@ -1,5 +1,11 @@
 import { config } from '../config.js';
-import { actualizarBloqueo, limpiarBloqueo, renovarBloqueo } from '../db/pedidos.js';
+import { registrarModificacion } from '../db/modificaciones.js';
+import {
+  actualizarBloqueo,
+  limpiarBloqueo,
+  marcarModificado,
+  renovarBloqueo,
+} from '../db/pedidos.js';
 import { ErrorHttp } from '../middleware/error.js';
 
 /** Solo se edita un pedido ya enviado (FR-012). */
@@ -84,6 +90,22 @@ export function exigirCambiosPendientes(pedido) {
     throw new ErrorHttp(409, 'No hay cambios pendientes de enviar', 'sin_cambios');
   }
   return pedido;
+}
+
+/**
+ * Aplica el efecto de un cambio real sobre un pedido enviado: lo marca como
+ * modificado, refresca el bloqueo y deja la traza en la tabla de modificaciones.
+ */
+export function registrarCambio(db, pedido, camareroId, { tipo, lineaId = null, detalle = null }) {
+  marcarModificado(db, pedido.id);
+  renovarBloqueoEdicion(db, pedido.id);
+  return registrarModificacion(db, {
+    pedidoId: pedido.id,
+    camareroId,
+    tipo,
+    lineaId,
+    detalle,
+  });
 }
 
 /** Libera el bloqueo; es idempotente si no hay bloqueo o ya expiró. */

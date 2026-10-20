@@ -6,7 +6,6 @@ import {
   confirmarPedido,
   limpiarBloqueo,
   marcarCambiosEnviados,
-  marcarModificado,
   modificarLinea,
   obtenerPedido,
   retirarLinea,
@@ -20,7 +19,7 @@ import {
   exigirEditable,
   exigirNoQuedaVacio,
   liberarBloqueoEdicion,
-  renovarBloqueoEdicion,
+  registrarCambio,
 } from '../domain/edicion.js';
 import {
   agruparPorPartida,
@@ -119,8 +118,15 @@ export function pedidosRouter(db) {
       });
 
       if (pedido.estado === 'enviada') {
-        marcarModificado(db, pedido.id);
-        renovarBloqueoEdicion(db, pedido.id);
+        registrarCambio(db, pedido, req.camarero.id, {
+          tipo: 'anadir',
+          lineaId: linea.id,
+          detalle: {
+            plato_id: plato.id,
+            cantidad: datos.cantidad,
+            indicaciones: datos.indicaciones ?? null,
+          },
+        });
       }
 
       res.status(201).json(linea);
@@ -137,8 +143,20 @@ export function pedidosRouter(db) {
       const actualizada = modificarLinea(db, linea.id, datos);
 
       if (pedido.estado === 'enviada') {
-        marcarModificado(db, pedido.id);
-        renovarBloqueoEdicion(db, pedido.id);
+        if (datos.cantidad !== undefined) {
+          registrarCambio(db, pedido, req.camarero.id, {
+            tipo: 'ajustar_cantidad',
+            lineaId: linea.id,
+            detalle: { anterior: linea.cantidad, nueva: datos.cantidad },
+          });
+        }
+        if (datos.indicaciones !== undefined) {
+          registrarCambio(db, pedido, req.camarero.id, {
+            tipo: 'corregir',
+            lineaId: linea.id,
+            detalle: { anterior: linea.indicaciones, nueva: datos.indicaciones },
+          });
+        }
       }
 
       res.json(actualizada);
@@ -155,8 +173,14 @@ export function pedidosRouter(db) {
       retirarLinea(db, linea.id);
 
       if (pedido.estado === 'enviada') {
-        marcarModificado(db, pedido.id);
-        renovarBloqueoEdicion(db, pedido.id);
+        registrarCambio(db, pedido, req.camarero.id, {
+          tipo: 'retirar',
+          detalle: {
+            linea_id: linea.id,
+            plato_id: linea.plato_id,
+            cantidad: linea.cantidad,
+          },
+        });
       }
 
       res.status(204).end();
