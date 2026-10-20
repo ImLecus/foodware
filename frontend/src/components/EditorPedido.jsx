@@ -28,6 +28,7 @@ import {
 } from '../services/api.js';
 import { formatearEuros } from '../utils/formato.js';
 import { agruparPorPartida, NOMBRES_PARTIDA, PARTIDAS } from '../utils/partidas.js';
+import EnviarCambios from './EnviarCambios.jsx';
 import SelectorPlatos from './SelectorPlatos.jsx';
 
 export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar, onActualizado }) {
@@ -252,13 +253,11 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
         <Button variant="outline" onClick={() => onCerrar?.()}>
           Cancelar edición
         </Button>
-        <Button
-          colorScheme="teal"
-          isDisabled={!editable || !pedido.cambios_pendientes}
-          onClick={enviar}
-        >
-          Enviar cambios
-        </Button>
+        <EnviarCambios
+          cambiosPendientes={pedido.cambios_pendientes}
+          enLinea={enLinea}
+          onEnviar={enviar}
+        />
       </CardFooter>
     </Card>
   );
