@@ -84,7 +84,7 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 - [X] T020 [US1] Endpoint `GET /pedidos/{id}/editar` que consulta el estado del bloqueo (`libre`, `bloqueado`, `expirado`) en `backend/src/api/pedidos.js`
 - [X] T021 [US1] Invocar la renovación del bloqueo (`editando_ultima_actividad` y `bloqueo_expira_en`) al guardar cada cambio de línea en `backend/src/api/pedidos.js`
 - [X] T022 [US1] Ampliar los endpoints de líneas para admitir pedidos enviados (añadir/modificar/retirar) en `backend/src/api/pedidos.js`
-- [ ] T023 [US1] Endpoint `POST /pedidos/{id}/enviar-cambios`, que publica el cambio por SSE, en `backend/src/api/pedidos.js`
+- [X] T023 [US1] Endpoint `POST /pedidos/{id}/enviar-cambios`, que publica el cambio por SSE, en `backend/src/api/pedidos.js`
 - [ ] T024 [US1] Liberar el bloqueo de edición al ejecutar `enviar-cambios` (`editando_por`, `editando_desde`, `editando_ultima_actividad` y `bloqueo_expira_en` a nulo) en `backend/src/api/pedidos.js`
 - [ ] T025 [US1] Registrar cada cambio en la tabla de modificaciones (FR-013) en `backend/src/domain/edicion.js`
 - [ ] T026 [US1] Ampliar `GET /pedidos/{id}` con `modificada`, `cambios_pendientes` y estado de bloqueo en `backend/src/api/pedidos.js`

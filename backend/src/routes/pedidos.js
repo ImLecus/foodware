@@ -4,6 +4,7 @@ import {
   anadirLinea,
   anularPedido,
   confirmarPedido,
+  marcarCambiosEnviados,
   marcarModificado,
   modificarLinea,
   obtenerPedido,
@@ -13,6 +14,9 @@ import { obtenerPlato } from '../db/platos.js';
 import {
   adquirirBloqueoEdicion,
   estadoBloqueo,
+  exigirBloqueoPropio,
+  exigirCambiosPendientes,
+  exigirEditable,
   exigirNoQuedaVacio,
   liberarBloqueoEdicion,
   renovarBloqueoEdicion,
@@ -155,6 +159,36 @@ export function pedidosRouter(db) {
       }
 
       res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/:pedidoId/enviar-cambios', (req, res, next) => {
+    try {
+      const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
+      exigirEditable(pedido);
+      exigirBloqueoPropio(pedido, req.camarero.id);
+      exigirCambiosPendientes(pedido);
+
+      marcarCambiosEnviados(db, pedido.id);
+      const actualizado = obtenerPedido(db, pedido.id);
+      const mesa = obtenerMesa(db, actualizado.mesa_id);
+      const porPartida = agruparPorPartida(actualizado.lineas);
+
+      publicar('pedido-modificado', {
+        pedidoId: actualizado.id,
+        mesaId: actualizado.mesa_id,
+        modificada: true,
+        porPartida,
+      });
+
+      res.json({
+        pedido_id: actualizado.id,
+        mesa: { id: mesa.id, identificador: mesa.identificador, estado: mesa.estado },
+        modificada: true,
+        por_partida: porPartida,
+      });
     } catch (error) {
       next(error);
     }
