@@ -11,6 +11,12 @@ vi.mock('../../src/services/api.js', () => ({
 }));
 
 vi.mock('../../src/services/events.js', () => ({
+  EVENTOS_COCINA: [
+    'pedido.nuevo',
+    'pedido.pendientes-cambiado',
+    'linea.actualizada',
+    'pedido.modificado',
+  ],
   suscribirAPartida: vi.fn(() => () => {}),
 }));
 

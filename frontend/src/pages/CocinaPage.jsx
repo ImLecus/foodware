@@ -1,5 +1,6 @@
-import { Badge, Box, Heading, Stack, Text } from '@chakra-ui/react';
+import { Box, Heading, Stack, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import AvisoSinConexion from '../components/AvisoSinConexion.jsx';
 import EstadoCarga from '../components/EstadoCarga.jsx';
 import EstadoError from '../components/EstadoError.jsx';
 import EstadoSinPartida from '../components/EstadoSinPartida.jsx';
@@ -106,11 +107,7 @@ export default function CocinaPage({ cocineroId }) {
         {partida ? `Partida: ${NOMBRES_PARTIDA[partida] ?? partida}` : 'Vista de cocina'}
       </Text>
 
-      {sinConexion && (
-        <Badge colorScheme="red" variant="solid" mb={4}>
-          Sin conexión
-        </Badge>
-      )}
+      {sinConexion && <AvisoSinConexion />}
 
       {cargando && <EstadoCarga />}
 
