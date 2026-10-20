@@ -87,7 +87,7 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 - [X] T023 [US1] Endpoint `POST /pedidos/{id}/enviar-cambios`, que publica el cambio por SSE, en `backend/src/api/pedidos.js`
 - [X] T024 [US1] Liberar el bloqueo de edición al ejecutar `enviar-cambios` (`editando_por`, `editando_desde`, `editando_ultima_actividad` y `bloqueo_expira_en` a nulo) en `backend/src/api/pedidos.js`
 - [X] T025 [US1] Registrar cada cambio en la tabla de modificaciones (FR-013) en `backend/src/domain/edicion.js`
-- [ ] T026 [US1] Ampliar `GET /pedidos/{id}` con `modificada`, `cambios_pendientes` y estado de bloqueo en `backend/src/api/pedidos.js`
+- [X] T026 [US1] Ampliar `GET /pedidos/{id}` con `modificada`, `cambios_pendientes` y estado de bloqueo en `backend/src/api/pedidos.js`
 - [X] T027 [P] [US1] Componente editor de pedido enviado en `frontend/src/components/EditorPedido.jsx`
 - [X] T028 [P] [US1] Componente de la acción "Enviar cambios" en `frontend/src/components/EnviarCambios.jsx`
 - [X] T029 [US1] Aviso de bloqueo (pedido en edición por otro camarero) en `frontend/src/components/EditorPedido.jsx`

@@ -1,4 +1,5 @@
 import { ErrorHttp } from '../middleware/error.js';
+import { estadoBloqueo } from './edicion.js';
 
 export const PARTIDAS = ['entrantes', 'principales', 'postres'];
 
@@ -79,6 +80,13 @@ export function serializarPedido(pedido) {
     estado: pedido.estado,
     creada_en: pedido.creado_en,
     confirmada_en: pedido.enviado_en,
+    modificada: Boolean(pedido.modificada),
+    cambios_pendientes: Boolean(pedido.cambios_pendientes),
+    cambios_enviados_en: pedido.cambios_enviados_en ?? null,
+    editando_por: pedido.editando_por ?? null,
+    editando_desde: pedido.editando_desde ?? null,
+    bloqueo_expira_en: pedido.bloqueo_expira_en ?? null,
+    bloqueo: estadoBloqueo(pedido),
     lineas,
     por_partida: agruparPorPartida(lineas),
   };

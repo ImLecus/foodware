@@ -43,20 +43,6 @@ function buscarLinea(pedido, lineaId) {
   return linea;
 }
 
-/** Pedido con las marcas de edición y el estado de su bloqueo. */
-function conBloqueo(pedido) {
-  return {
-    ...serializarPedido(pedido),
-    modificada: Boolean(pedido.modificada),
-    cambios_pendientes: Boolean(pedido.cambios_pendientes),
-    cambios_enviados_en: pedido.cambios_enviados_en,
-    editando_por: pedido.editando_por,
-    editando_desde: pedido.editando_desde,
-    bloqueo_expira_en: pedido.bloqueo_expira_en,
-    bloqueo: estadoBloqueo(pedido),
-  };
-}
-
 export function pedidosRouter(db) {
   const router = express.Router();
 
@@ -84,7 +70,7 @@ export function pedidosRouter(db) {
     try {
       const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
       adquirirBloqueoEdicion(db, pedido, req.camarero.id);
-      res.json(conBloqueo(obtenerPedido(db, pedido.id)));
+      res.json(serializarPedido(obtenerPedido(db, pedido.id)));
     } catch (error) {
       next(error);
     }
