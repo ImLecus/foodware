@@ -5,6 +5,10 @@ export const EVENTOS_COCINA = [
   'pedido.pendientes-cambiado',
   'linea.actualizada',
   'pedido.modificado',
+  // Eventos publicados por las historias 001 y 002 con su nomenclatura original.
+  'pedido-confirmado',
+  'pedido-modificado',
+  'pedido-anulado',
 ];
 
 /**

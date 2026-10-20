@@ -1,5 +1,5 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CocinaPage from '../../src/pages/CocinaPage.jsx';
 import { obtenerCocinero, obtenerPedidosPendientes } from '../../src/services/api.js';
@@ -61,6 +61,7 @@ describe('CocinaPage en vivo', () => {
     renderizar();
 
     expect(await screen.findByText('Mesa 1')).toBeInTheDocument();
+    await waitFor(() => expect(suscribirAPartida).toHaveBeenCalled());
 
     const opciones = suscribirAPartida.mock.calls[0][1];
     obtenerPedidosPendientes.mockResolvedValueOnce([pedido('pedido-1', 1), pedido('pedido-2', 2)]);
@@ -76,6 +77,7 @@ describe('CocinaPage en vivo', () => {
     obtenerPedidosPendientes.mockResolvedValue([pedido('pedido-1', 1)]);
     renderizar();
     await screen.findByText('Mesa 1');
+    await waitFor(() => expect(suscribirAPartida).toHaveBeenCalled());
 
     const opciones = suscribirAPartida.mock.calls[0][1];
 

@@ -1,3 +1,13 @@
+/** Error de aplicación con un código HTTP y un código estable opcional. */
+export class ErrorHttp extends Error {
+  constructor(status, mensaje, codigo = null) {
+    super(mensaje);
+    this.name = 'ErrorHttp';
+    this.status = status;
+    this.codigo = codigo;
+  }
+}
+
 export function noEncontrado(req, res) {
   res.status(404).json({ error: 'Recurso no encontrado' });
 }
@@ -10,5 +20,6 @@ export function manejadorErrores(error, req, res, next) {
   }
   res.status(estado).json({
     error: estado >= 500 ? 'Error interno del servidor' : error.message,
+    ...(error.codigo ? { codigo: error.codigo } : {}),
   });
 }
