@@ -111,7 +111,7 @@ comprobar que sala lo muestra como listo sin recargar.
 
 - [X] T031 [US2] Implement SSE channel and event emission (`linea.actualizada`, `pedido.pendientes-cambiado`) in `backend/src/realtime/sse.js` and `backend/src/realtime/emit.js`
 - [X] T032 [US2] Emit `linea.actualizada` and `pedido.reabierto` when undoing the last line of a completed order in `backend/src/realtime/emit.js` and `backend/src/services/marcarListo.js`
-- [ ] T033 [US2] Implement `GET /mesas/{mesaId}/estado-platos` in `backend/src/routes/mesas.js` and register it in `backend/src/app.js`
+- [X] T033 [US2] Implement `GET /mesas/{mesaId}/estado-platos` in `backend/src/routes/mesas.js` and register it in `backend/src/app.js`
 - [ ] T034 [P] [US2] Build waiter page showing plate states in `frontend/src/pages/SalaPage.jsx`
 - [ ] T035 [US2] Subscribe the frontend to SSE and update state without reload in `frontend/src/services/events.js` and `frontend/src/state/useEstadoPlatos.js`
 
