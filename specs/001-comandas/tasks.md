@@ -82,7 +82,7 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 - [X] T018 [P] [US1] Prueba de contrato de `POST /api/pedidos/{pedidoId}/anular` (204, 404 y 409) conforme a `specs/001-comandas/contracts/openapi.yaml` en `backend/tests/pedidos.anular.contrato.test.js`
 - [X] T019 [P] [US1] Prueba de integración de la anulación (borra pedido y líneas, deja la mesa `libre`, 404 posterior y ningún evento hacia cocina) en `backend/tests/pedidos.anular.test.js`
 - [X] T020 [P] [US1] Pruebas de componentes de sala (agrupar por partidas, añadir y ajustar líneas) en `frontend/tests/pedido.test.jsx`
-- [ ] T021 [P] [US1] Prueba de componente de «Anular pedido» (confirmación, cancelación y mesa que vuelve a `libre`) en `frontend/tests/anularPedido.test.jsx`
+- [X] T021 [P] [US1] Prueba de componente de «Anular pedido» (confirmación, cancelación y mesa que vuelve a `libre`) en `frontend/tests/anularPedido.test.jsx`
 
 ### Implementation for User Story 1
 
