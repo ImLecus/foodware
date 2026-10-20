@@ -134,7 +134,7 @@ su momento; re-marcar uno ya listo no lo altera.
 
 ### Implementation for User Story 3
 
-- [ ] T038 [US3] Extend the mark/undo service to record `listoEn` on mark and clear it on undo in `backend/src/services/marcarListo.js`
+- [X] T038 [US3] Extend the mark/undo service to record `listoEn` on mark and clear it on undo in `backend/src/services/marcarListo.js`
 - [ ] T039 [US3] Expose `listoEn` in API responses in `backend/src/models/lineaPedido.js` and `backend/src/routes/pedidos.js`
 - [ ] T040 [US3] Show the preparation moment in the plate component in `frontend/src/components/LineaPlato.jsx`
 
