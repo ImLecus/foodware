@@ -79,17 +79,17 @@ describe('Edición · liberación del bloqueo', () => {
       .set(CABECERA_CAMARERO);
     expect(consulta.body.estado).toBe('expirado');
 
-    const apertura = await request(app)
-      .post(`/api/pedidos/${pedidoId}/editar`)
-      .set(CABECERA_CAMARERO_2);
-    expect(apertura.status).toBe(200);
-
     const escritura = await request(app)
       .patch(`/api/pedidos/${pedidoId}/lineas/linea-inexistente`)
       .set(CABECERA_CAMARERO)
       .send({ cantidad: 2 });
     expect(escritura.status).toBe(409);
     expect(escritura.body.codigo).toBe('bloqueo_expirado');
+
+    const apertura = await request(app)
+      .post(`/api/pedidos/${pedidoId}/editar`)
+      .set(CABECERA_CAMARERO_2);
+    expect(apertura.status).toBe(200);
   });
 
   it('el propietario renueva el bloqueo al volver a abrirlo', async () => {
