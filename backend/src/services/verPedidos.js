@@ -1,6 +1,7 @@
 import { listarLineasDePedido } from '../models/lineaPedido.js';
 import { numeroDeMesa } from '../models/mesa.js';
 import { listarPedidosConPendientes } from '../models/pedido.js';
+import { logger } from '../config/logger.js';
 import { aISO } from '../utils/fechas.js';
 
 /**
@@ -9,6 +10,7 @@ import { aISO } from '../utils/fechas.js';
  */
 export function listarPedidosPendientes(db, partidaId) {
   const pedidos = listarPedidosConPendientes(db, partidaId);
+  logger.info('Listado de pedidos pendientes', { partidaId, total: pedidos.length });
 
   return pedidos.map((pedido) => {
     const lineas = listarLineasDePedido(db, pedido.id);

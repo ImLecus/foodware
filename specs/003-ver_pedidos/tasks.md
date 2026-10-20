@@ -159,7 +159,7 @@ recargar; con la conexión cortada, el tiempo de espera sigue avanzando.
 
 **Purpose**: mejoras que afectan a varias historias
 
-- [ ] T050 [P] Add backend logging for list queries and event emission in `backend/src/config/logger.js` and `backend/src/services/verPedidos.js`
+- [X] T050 [P] Add backend logging for list queries and event emission in `backend/src/config/logger.js` and `backend/src/services/verPedidos.js`
 - [ ] T051 [P] Document docker-compose usage and project setup in `README.md`
 - [ ] T052 Run the validation guide in `specs/003-ver_pedidos/quickstart.md` end-to-end and fix gaps found
 - [ ] T053 Validar SC-007 (identificar pedido, platos y cantidades de cada pendiente sin ayuda) y SC-008 (con 20 pedidos pendientes, localizar el más urgente en 10 s o menos) según los escenarios de `specs/003-ver_pedidos/quickstart.md`
