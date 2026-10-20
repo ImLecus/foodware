@@ -36,7 +36,7 @@ Aplicación web (monorepositorio): `backend/src/`, `backend/tests/`, `frontend/s
 - [X] T002 [P] Init backend Node project in `backend/package.json` with `express`, `better-sqlite3`; dev deps `vitest`, `supertest`
 - [X] T003 [P] Init frontend project in `frontend/package.json` and `frontend/vite.config.js` with `vite`, `react`, `react-dom`, `@chakra-ui/react`; dev deps `vitest`, `@testing-library/react`, `jsdom`
 - [X] T004 [P] Configure ESLint + Prettier in `backend/.eslintrc.cjs` and `frontend/.eslintrc.cjs`
-- [ ] T005 [P] Create `backend/Dockerfile` and `frontend/Dockerfile`
+- [X] T005 [P] Create `backend/Dockerfile` and `frontend/Dockerfile`
 - [ ] T006 [P] Create frontend entry with Chakra provider in `frontend/src/main.jsx` and `frontend/src/App.jsx`
 
 ---
