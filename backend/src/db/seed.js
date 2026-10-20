@@ -62,6 +62,20 @@ const asociaciones = [
   ['plato-6', 'ing-6'],
 ];
 
+// Pedido ya enviado de ejemplo para poder probar la edición (historia 002).
+const pedidosEnviados = [
+  {
+    id: 'pedido-enviado-1',
+    mesaId: 'mesa-2',
+    camareroId: 'camarero-2',
+    lineas: [
+      { id: 'linea-enviada-1', platoId: 'plato-1', cantidad: 2, precio: 850 },
+      { id: 'linea-enviada-2', platoId: 'plato-3', cantidad: 1, precio: 1800 },
+      { id: 'linea-enviada-3', platoId: 'plato-6', cantidad: 1, precio: 600 },
+    ],
+  },
+];
+
 const cargar = db.transaction(() => {
   const insertarPartida = db.prepare(
     'INSERT OR IGNORE INTO partidas (codigo, nombre, orden) VALUES (?, ?, ?)',
@@ -104,9 +118,30 @@ const cargar = db.transaction(() => {
   for (const [platoId, ingredienteId] of asociaciones) {
     insertarAsociacion.run(platoId, ingredienteId);
   }
+
+  const insertarPedido = db.prepare(
+    `INSERT OR IGNORE INTO pedidos (id, mesa_id, camarero_id, estado, creado_en, enviado_en)
+     VALUES (?, ?, ?, 'enviada', datetime('now'), datetime('now'))`,
+  );
+  const insertarLinea = db.prepare(
+    `INSERT OR IGNORE INTO lineas_pedido
+       (id, pedido_id, plato_id, cantidad, precio_centimos)
+     VALUES (?, ?, ?, ?, ?)`,
+  );
+  const ocuparMesa = db.prepare("UPDATE mesas SET estado = 'ocupada' WHERE id = ?");
+
+  for (const pedido of pedidosEnviados) {
+    insertarPedido.run(pedido.id, pedido.mesaId, pedido.camareroId);
+    for (const linea of pedido.lineas) {
+      insertarLinea.run(linea.id, pedido.id, linea.platoId, linea.cantidad, linea.precio);
+    }
+    ocuparMesa.run(pedido.mesaId);
+  }
 });
 
 cargar();
 db.close();
 
-console.log('Datos de referencia cargados: partidas, usuarios, mesas, carta e ingredientes.');
+console.log(
+  'Datos de referencia cargados: partidas, usuarios, mesas, carta, ingredientes y un pedido enviado.',
+);

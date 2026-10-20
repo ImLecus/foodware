@@ -15,6 +15,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import EditorPedido from '../components/EditorPedido.jsx';
 import Pedido from '../components/Pedido.jsx';
 import SelectorPlatos from '../components/SelectorPlatos.jsx';
 import {
@@ -35,6 +36,7 @@ export default function Mesas() {
   const [platos, setPlatos] = useState([]);
   const [pedido, setPedido] = useState(null);
   const [mesaSeleccionadaId, setMesaSeleccionadaId] = useState(null);
+  const [editando, setEditando] = useState(false);
   const [enLinea, setEnLinea] = useState(true);
   const [cargando, setCargando] = useState(true);
   const [aviso, setAviso] = useState(null);
@@ -107,12 +109,14 @@ export default function Mesas() {
     conexion.addEventListener('error', alFallar);
     conexion.addEventListener('pedido-confirmado', alCambiar);
     conexion.addEventListener('pedido-anulado', alCambiar);
+    conexion.addEventListener('pedido-modificado', alCambiar);
 
     return () => {
       conexion.removeEventListener('open', alConectar);
       conexion.removeEventListener('error', alFallar);
       conexion.removeEventListener('pedido-confirmado', alCambiar);
       conexion.removeEventListener('pedido-anulado', alCambiar);
+      conexion.removeEventListener('pedido-modificado', alCambiar);
       conexion.close();
     };
   }, [cargarMesas]);
@@ -129,6 +133,7 @@ export default function Mesas() {
 
   async function seleccionarMesa(mesa) {
     setAviso(null);
+    setEditando(false);
     setMesaSeleccionadaId(mesa.id);
 
     if (!mesa.pedido_en_curso_id) {
@@ -179,7 +184,7 @@ export default function Mesas() {
     if (!pedido) return;
 
     try {
-      await modificarLinea(pedido.id, lineaId, cantidad);
+      await modificarLinea(pedido.id, lineaId, { cantidad });
       await recargarPedido();
     } catch (error) {
       mostrarError(error);
@@ -315,15 +320,41 @@ export default function Mesas() {
 
         <Box>
           {pedido ? (
-            <Pedido
-              pedido={pedido}
-              mesa={mesaSeleccionada}
-              enLinea={enLinea}
-              onCambiarCantidad={cambiarCantidad}
-              onRetirarLinea={quitarLinea}
-              onConfirmar={confirmar}
-              onAnular={anular}
-            />
+            pedido.estado === 'enviada' && editando ? (
+              <EditorPedido
+                pedidoId={pedido.id}
+                mesa={mesaSeleccionada}
+                enLinea={enLinea}
+                onCerrar={() => {
+                  setEditando(false);
+                  recargarPedido();
+                }}
+                onActualizado={(actualizado) => {
+                  if (actualizado) setPedido(actualizado);
+                }}
+              />
+            ) : (
+              <Stack spacing={3}>
+                {pedido.estado === 'enviada' && (
+                  <Button
+                    colorScheme="purple"
+                    isDisabled={!enLinea}
+                    onClick={() => setEditando(true)}
+                  >
+                    Editar pedido
+                  </Button>
+                )}
+                <Pedido
+                  pedido={pedido}
+                  mesa={mesaSeleccionada}
+                  enLinea={enLinea}
+                  onCambiarCantidad={cambiarCantidad}
+                  onRetirarLinea={quitarLinea}
+                  onConfirmar={confirmar}
+                  onAnular={anular}
+                />
+              </Stack>
+            )
           ) : (
             <Card>
               <CardBody>
