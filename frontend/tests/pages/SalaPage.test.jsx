@@ -48,10 +48,10 @@ describe('SalaPage (US2)', () => {
   it('actualiza el estado al recibir un evento sin recargar', async () => {
     obtenerEstadoPlatos.mockResolvedValueOnce([lineaPendiente]);
     renderizar();
-    await screen.findByText('Croquetas');
+    await screen.findByText(/Croquetas/);
     await waitFor(() => expect(suscribirSala).toHaveBeenCalled());
 
-    const opciones = suscribirSala.mock.calls.at(-1)[1];
+    const opciones = suscribirSala.mock.calls.at(-1)[0];
     obtenerEstadoPlatos.mockResolvedValueOnce([
       { ...lineaPendiente, estado: 'listo', listoEn: '2026-10-20T10:05:00.000Z' },
     ]);
