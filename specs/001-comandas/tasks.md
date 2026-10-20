@@ -76,7 +76,7 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 
 ### Tests for User Story 1 (write first, ensure they FAIL) ⚠️
 
-- [ ] T015 [P] [US1] Prueba de API para abrir mesa e iniciar pedido (incluye 409 si ya hay pedido en curso) en `backend/tests/pedidos.abrir.test.js`
+- [X] T015 [P] [US1] Prueba de API para abrir mesa e iniciar pedido (incluye 409 si ya hay pedido en curso) en `backend/tests/pedidos.abrir.test.js`
 - [X] T016 [P] [US1] Prueba de API para añadir, modificar, retirar y repetir el mismo plato en líneas, y para el precio fijado al pedir, en `backend/tests/pedidos.lineas.test.js`
 - [X] T017 [P] [US1] Prueba de API para confirmar el pedido (pedido agrupado por partidas, evento SSE `pedido-confirmado`) y para impedir confirmar un pedido vacío, en `backend/tests/pedidos.confirmar.test.js`
 - [X] T018 [P] [US1] Prueba de contrato de `POST /api/pedidos/{pedidoId}/anular` (204, 404 y 409) conforme a `specs/001-comandas/contracts/openapi.yaml` en `backend/tests/pedidos.anular.contrato.test.js`
