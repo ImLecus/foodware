@@ -1,12 +1,6 @@
 import { Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
-
-function formatearEspera(minutos) {
-  if (minutos < 60) return `${minutos} min`;
-  const horas = Math.floor(minutos / 60);
-  const resto = minutos % 60;
-  return resto === 0 ? `${horas} h` : `${horas} h ${resto} min`;
-}
+import { calcularMinutos, formatearEspera } from '../state/tiempoEspera.js';
 
 /** Tiempo transcurrido desde el envío original, actualizado con el reloj local. */
 export default function TiempoEspera({ enviadoEn }) {
@@ -17,7 +11,7 @@ export default function TiempoEspera({ enviadoEn }) {
     return () => clearInterval(intervalo);
   }, []);
 
-  const minutos = Math.max(0, Math.floor((ahora - new Date(enviadoEn).getTime()) / 60_000));
+  const minutos = calcularMinutos(enviadoEn, ahora);
 
   return (
     <Text as="span" fontSize="sm" color="gray.700">

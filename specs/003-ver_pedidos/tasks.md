@@ -149,7 +149,7 @@ recargar; con la conexión cortada, el tiempo de espera sigue avanzando.
 - [X] T046 [US3] Subscribe the kitchen page to SSE and refetch/reorder the list on events in `frontend/src/services/events.js` and `frontend/src/pages/CocinaPage.jsx`
 - [X] T047 [US3] Handle `pedido.modificado` in the subscription to refresh the «Modificado» notice without resetting time or position in `frontend/src/services/events.js` and `frontend/src/pages/CocinaPage.jsx`
 - [X] T048 [US3] Implement the offline indicator and reconnect resync (no duplicated/lost orders) in `frontend/src/components/AvisoSinConexion.jsx` and `frontend/src/services/events.js`
-- [ ] T049 [US3] Replace any frozen timer with local-clock elapsed time so it keeps advancing while offline in `frontend/src/components/TiempoEspera.jsx` and `frontend/src/state/tiempoEspera.js`
+- [X] T049 [US3] Replace any frozen timer with local-clock elapsed time so it keeps advancing while offline in `frontend/src/components/TiempoEspera.jsx` and `frontend/src/state/tiempoEspera.js`
 
 **Checkpoint**: las tres historias funcionan de forma independiente
 
