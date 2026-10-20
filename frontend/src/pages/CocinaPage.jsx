@@ -1,12 +1,13 @@
-import { Box, Heading, Stack, Text } from '@chakra-ui/react';
+import { Alert, AlertDescription, AlertIcon, Box, Heading, Stack, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import AvisoPedidoCompletado from '../components/AvisoPedidoCompletado.jsx';
 import AvisoSinConexion from '../components/AvisoSinConexion.jsx';
 import EstadoCarga from '../components/EstadoCarga.jsx';
 import EstadoError from '../components/EstadoError.jsx';
 import EstadoSinPartida from '../components/EstadoSinPartida.jsx';
 import EstadoVacio from '../components/EstadoVacio.jsx';
 import PedidoCard from '../components/PedidoCard.jsx';
-import { obtenerCocinero, obtenerPedidosPendientes } from '../services/api.js';
+import { obtenerCocinero, obtenerPedidosPendientes, marcarEstado } from '../services/api.js';
 import { suscribirAPartida, EVENTOS_COCINA } from '../services/events.js';
 
 const NOMBRES_PARTIDA = {
@@ -29,6 +30,8 @@ export default function CocinaPage({ cocineroId }) {
   const [error, setError] = useState(null);
   const [intento, setIntento] = useState(0);
   const [sinConexion, setSinConexion] = useState(false);
+  const [errorAccion, setErrorAccion] = useState(null);
+  const [avisoCompletado, setAvisoCompletado] = useState(null);
 
   useEffect(() => {
     let cancelado = false;
@@ -98,6 +101,22 @@ export default function CocinaPage({ cocineroId }) {
     });
   }, [partida]);
 
+  async function cambiarEstado(pedido, linea, estado) {
+    if (sinConexion) return;
+    setErrorAccion(null);
+
+    try {
+      const resultado = await marcarEstado(pedido.id, linea.id, estado, partida);
+      const datosPedidos = await obtenerPedidosPendientes(partida);
+      setPedidos(datosPedidos);
+      if (resultado?.pedidoCompletado) {
+        setAvisoCompletado({ pedidoId: pedido.id, lineaId: linea.id });
+      }
+    } catch (fallo) {
+      setErrorAccion(fallo.message ?? 'No se pudo cambiar el estado del plato');
+    }
+  }
+
   return (
     <Box>
       <Heading size="lg" mb={1}>
@@ -108,6 +127,24 @@ export default function CocinaPage({ cocineroId }) {
       </Text>
 
       {sinConexion && <AvisoSinConexion />}
+
+      {avisoCompletado && (
+        <AvisoPedidoCompletado
+          pedidoId={avisoCompletado.pedidoId}
+          lineaId={avisoCompletado.lineaId}
+          onDeshacer={({ pedidoId, lineaId }) =>
+            cambiarEstado({ id: pedidoId }, { id: lineaId }, 'pendiente')
+          }
+          onCerrar={() => setAvisoCompletado(null)}
+        />
+      )}
+
+      {errorAccion && (
+        <Alert status="error" borderRadius="md" mb={4}>
+          <AlertIcon />
+          <AlertDescription>{errorAccion}</AlertDescription>
+        </Alert>
+      )}
 
       {cargando && <EstadoCarga />}
 
@@ -122,7 +159,13 @@ export default function CocinaPage({ cocineroId }) {
       {!cargando && !error && partida !== null && pedidos.length > 0 && (
         <Stack spacing={4}>
           {pedidos.map((pedido) => (
-            <PedidoCard key={pedido.id} pedido={pedido} />
+            <PedidoCard
+              key={pedido.id}
+              pedido={pedido}
+              onMarcarListo={(linea) => cambiarEstado(pedido, linea, 'listo')}
+              onDeshacer={(linea) => cambiarEstado(pedido, linea, 'pendiente')}
+              deshabilitado={sinConexion}
+            />
           ))}
         </Stack>
       )}

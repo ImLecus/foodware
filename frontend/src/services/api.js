@@ -55,6 +55,19 @@ export function obtenerPedidosPendientes(partidaId) {
   return apiGet(`/partidas/${encodeURIComponent(partidaId)}/pedidos-pendientes`);
 }
 
+export function marcarEstado(pedidoId, lineaId, estado, partidaId) {
+  const consulta = partidaId ? `?partida=${encodeURIComponent(partidaId)}` : '';
+  return apiEnviar(
+    `/pedidos/${encodeURIComponent(pedidoId)}/lineas/${encodeURIComponent(lineaId)}/estado${consulta}`,
+    'PUT',
+    { estado },
+  );
+}
+
+export function obtenerEstadoPlatos(mesaId) {
+  return apiGet(`/mesas/${encodeURIComponent(mesaId)}/estado-platos`);
+}
+
 /* Sala: mesas, carta y pedidos (historia 001) */
 
 export function listarMesas() {
