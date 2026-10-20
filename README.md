@@ -127,9 +127,31 @@ Cada historia tiene su especificación, plan y tareas en `specs/00X-.../`. Para 
   revisión y commit antes de continuar.
 - Toda funcionalidad debe incluir pruebas automatizadas.
 
+## Verificación de la historia 003
+
+```bash
+docker compose up --build
+docker compose exec backend npm run seed
+
+# API
+curl http://localhost:3000/api/cocineros/cocinero-entrantes
+curl http://localhost:3000/api/partidas/entrantes/pedidos-pendientes
+curl -N http://localhost:3000/api/partidas/entrantes/eventos
+
+# Interfaz
+# http://localhost:5173/cocina?cocinero=cocinero-entrantes
+
+# Pruebas
+npm test
+```
+
+La vista de cocina identifica al cocinero con `?cocinero=<id>` (por defecto
+`cocinero-entrantes`). El canal SSE se abre por partida y refresca la lista sin recargar.
+
 ## Alcance actual
 
-Este incremento implementa **solo el esqueleto compartido**: estructura, Docker, configuración,
-conexión a SQLite, migración base, hub SSE, cliente HTTP/SSE, tema, rutas provisionales y pruebas
-de humo. **No implementa** todavía los flujos de las historias 001–008; eso corresponde a las
-tareas de cada `tasks.md`.
+- Esqueleto compartido: estructura, Docker, SQLite, hub SSE, cliente HTTP/SSE, tema y pruebas de
+  humo.
+- Historia **003 completa**: pedidos pendientes por partida, tiempo de espera, detalle de platos,
+  marcado accesible, aviso «Modificado», actualización en vivo, sin conexión y reintento.
+- Las historias `001`, `002` y `004`–`008` siguen pendientes.
