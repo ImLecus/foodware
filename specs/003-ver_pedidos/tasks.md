@@ -143,7 +143,7 @@ recargar; con la conexión cortada, el tiempo de espera sigue avanzando.
 
 ### Implementation for User Story 3
 
-- [ ] T043 [US3] Implement the SSE channel per partida and event emission in `backend/src/realtime/sse.js` and `backend/src/realtime/emit.js`
+- [X] T043 [US3] Implement the SSE channel per partida and event emission in `backend/src/realtime/sse.js` and `backend/src/realtime/emit.js`
 - [ ] T044 [US3] Implement `GET /partidas/{partidaId}/eventos` and register it in `backend/src/routes/partidas.js` and `backend/src/app.js`
 - [ ] T045 [US3] Emit `pedido.modificado` for orders edited after sending in `backend/src/realtime/emit.js` and `backend/src/realtime/sse.js`
 - [ ] T046 [US3] Subscribe the kitchen page to SSE and refetch/reorder the list on events in `frontend/src/services/events.js` and `frontend/src/pages/CocinaPage.jsx`
