@@ -97,7 +97,7 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 - [X] T030 [US1] Endpoint de carta `GET /api/platos` en `backend/src/api/platos.js`
 - [X] T031 [US1] Endpoints de pedido `GET /api/pedidos/{id}`, `POST/PATCH/DELETE` de líneas y `POST /confirmar` en `backend/src/api/pedidos.js`
 - [X] T032 [US1] Endpoint `POST /api/pedidos/{pedidoId}/anular` (204, 404 y 409) en `backend/src/api/pedidos.js`
-- [ ] T033 [US1] Publicar los eventos SSE `pedido-confirmado` (al confirmar el pedido) y `pedido-anulado` (con la mesa liberada) en `backend/src/realtime/hub.js`
+- [X] T033 [US1] Publicar los eventos SSE `pedido-confirmado` (al confirmar el pedido) y `pedido-anulado` (con la mesa liberada) en `backend/src/realtime/hub.js`
 - [ ] T034 [US1] Fijar el precio del plato en la línea al pedirla (FR-018) en `backend/src/db/pedidos.js`
 - [ ] T035 [P] [US1] Pantalla de mesas (listar y abrir) en `frontend/src/pages/Mesas.jsx`
 - [ ] T036 [P] [US1] Componente de pedido agrupada por partidas en `frontend/src/components/Pedido.jsx`

@@ -10,6 +10,7 @@ import {
 } from '../db/pedidos.js';
 import { obtenerPlato } from '../db/platos.js';
 import {
+  agruparPorPartida,
   exigirAnulable,
   exigirConfirmable,
   exigirEnCurso,
@@ -19,6 +20,7 @@ import {
 } from '../domain/pedidos.js';
 import { identificarCamarero } from '../middleware/camarero.js';
 import { ErrorHttp } from '../middleware/error.js';
+import { publicar } from '../realtime/hub.js';
 import { validarLineaPatch, validarNuevaLinea } from '../schemas/pedidos.js';
 
 function cargarPedidoEnCurso(db, pedidoId) {
@@ -97,6 +99,12 @@ export function pedidosRouter(db) {
       const confirmado = confirmarPedido(db, pedido.id);
       const mesa = obtenerMesa(db, confirmado.mesa_id);
 
+      publicar('pedido-confirmado', {
+        pedidoId: confirmado.id,
+        mesaId: confirmado.mesa_id,
+        porPartida: agruparPorPartida(confirmado.lineas),
+      });
+
       res.json(serializarPedidoConfirmado(confirmado, mesa));
     } catch (error) {
       next(error);
@@ -107,6 +115,8 @@ export function pedidosRouter(db) {
     try {
       const pedido = exigirAnulable(exigirPedido(obtenerPedido(db, req.params.pedidoId)));
       anularPedido(db, pedido.id);
+
+      publicar('pedido-anulado', { pedidoId: pedido.id, mesaId: pedido.mesa_id });
 
       res.status(204).end();
     } catch (error) {
