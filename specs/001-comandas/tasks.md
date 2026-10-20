@@ -56,7 +56,7 @@ Aplicación web (ver `plan.md`): `backend/` y `frontend/` en la raíz del reposi
 - [X] T011 Implementar el script de datos de ejemplo (mesas y carta) en `backend/src/db/seed.js`
 - [X] T012 Montar el esqueleto de la app Express con router base, middleware de errores y hub SSE compartido (`backend/src/realtime/hub.js`) en `backend/src/app.js` y `backend/src/index.js`
 - [X] T013 Implementar el endpoint de salud `GET /api/health` en `backend/src/api/health.js` con su prueba en `backend/tests/health.test.js`
-- [ ] T014 Implementar el middleware de identidad del camarero (sesión existente) en `backend/src/api/middleware/camarero.js`
+- [X] T014 Implementar el middleware de identidad del camarero (sesión existente) en `backend/src/api/middleware/camarero.js`
 
 **Checkpoint**: Base lista — puede comenzar la historia US1.
 
