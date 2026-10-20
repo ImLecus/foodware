@@ -93,7 +93,7 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 - [X] T026 [US1] Dominio de pedidos: agrupación por partidas y reglas (un pedido en curso por mesa, pedido no vacía) en `backend/src/domain/pedidos.js`
 - [X] T027 [US1] Dominio de pedidos: regla de anulación (solo `en_curso`; un pedido `enviada` devuelve conflicto) en `backend/src/domain/pedidos.js`
 - [X] T028 [US1] Esquemas de validación zod para las peticiones en `backend/src/schemas/pedidos.js`
-- [ ] T029 [US1] Endpoints de mesas `GET /api/mesas` y `POST /api/mesas/{mesaId}/abrir` en `backend/src/api/mesas.js`
+- [X] T029 [US1] Endpoints de mesas `GET /api/mesas` y `POST /api/mesas/{mesaId}/abrir` en `backend/src/api/mesas.js`
 - [ ] T030 [US1] Endpoint de carta `GET /api/platos` en `backend/src/api/platos.js`
 - [ ] T031 [US1] Endpoints de pedido `GET /api/pedidos/{id}`, `POST/PATCH/DELETE` de líneas y `POST /confirmar` en `backend/src/api/pedidos.js`
 - [ ] T032 [US1] Endpoint `POST /api/pedidos/{pedidoId}/anular` (204, 404 y 409) en `backend/src/api/pedidos.js`

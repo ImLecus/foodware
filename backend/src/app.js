@@ -4,6 +4,7 @@ import { config } from './config.js';
 import { manejadorErrores, noEncontrado } from './middleware/error.js';
 import { eventsRouter } from './routes/events.js';
 import { healthRouter } from './routes/health.js';
+import { mesasRouter } from './routes/mesas.js';
 
 /**
  * Construye la aplicación Express. Recibe la conexión a la base de datos
@@ -17,6 +18,7 @@ export function createApp(db) {
 
   app.use('/api/health', healthRouter(db));
   app.use('/api/eventos', eventsRouter);
+  app.use('/api/mesas', mesasRouter(db));
 
   app.use(noEncontrado);
   app.use(manejadorErrores);
