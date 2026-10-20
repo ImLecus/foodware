@@ -72,7 +72,7 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 - [X] T011 [P] [US1] Prueba de integración de la liberación del bloqueo al enviar cambios, al cancelar/salir y por expiración de inactividad en `backend/tests/edicion.bloqueo.liberacion.test.js`
 - [X] T012 [P] [US1] Prueba de API de añadir/retirar/ajustar líneas sobre pedido enviado y del 409 al dejar el pedido vacío en `backend/tests/edicion.lineas.test.js`
 - [X] T013 [P] [US1] Prueba de API de marcado como modificada, de no marcar sin cambios y del 409 al editar pedido no editable (cerrada) en `backend/tests/edicion.estado.test.js`
-- [ ] T014 [P] [US1] Prueba de API de `enviar-cambios` explícito (0 envíos automáticos al guardar) en `backend/tests/edicion.enviar-cambios.test.js`
+- [X] T014 [P] [US1] Prueba de API de `enviar-cambios` explícito (0 envíos automáticos al guardar) en `backend/tests/edicion.enviar-cambios.test.js`
 - [ ] T015 [P] [US1] Prueba de UI de liberación al cancelar/salir y del manejo de 423/`bloqueo_expirado` en `frontend/tests/edicion.bloqueo.test.jsx`
 - [ ] T016 [P] [US1] Pruebas de UI del editor de pedido (editar, marcar como modificado, enviar cambios y aviso de bloqueo) en `frontend/tests/edicion.test.jsx`
 
