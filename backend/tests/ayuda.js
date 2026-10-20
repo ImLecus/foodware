@@ -1,8 +1,10 @@
 import { createApp } from '../src/app.js';
 import { createDb } from '../src/db/index.js';
+import request from 'supertest';
 
 export const CAMARERO_ID = 'camarero-1';
 export const CABECERA_CAMARERO = { 'X-Camarero-Id': CAMARERO_ID };
+export const CABECERA_CAMARERO_2 = { 'X-Camarero-Id': 'camarero-2' };
 
 /**
  * Base de datos en memoria con las partidas fijas, dos camareros, dos mesas y
@@ -52,4 +54,22 @@ export function clienteSseFalso() {
   };
   const peticion = { on: () => {} };
   return { respuesta, peticion, escrito };
+}
+
+/** Crea y confirma un pedido enviado con una línea de cada partida. */
+export async function crearPedidoEnviado(app, { mesaId = 'mesa-1' } = {}) {
+  const abierto = await request(app).post(`/api/mesas/${mesaId}/abrir`).set(CABECERA_CAMARERO);
+
+  const pedidoId = abierto.body.id;
+
+  for (const plato of ['plato-entrante', 'plato-principal', 'plato-postre']) {
+    await request(app)
+      .post(`/api/pedidos/${pedidoId}/lineas`)
+      .set(CABECERA_CAMARERO)
+      .send({ plato_id: plato, cantidad: 1 });
+  }
+
+  await request(app).post(`/api/pedidos/${pedidoId}/confirmar`).set(CABECERA_CAMARERO);
+
+  return pedidoId;
 }

@@ -67,7 +67,7 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 
 ### Tests for User Story 1 (write first, ensure they FAIL) ⚠️
 
-- [ ] T009 [P] [US1] Prueba de API del bloqueo de edición (423 si está ocupada) y su liberación en `backend/tests/edicion.bloqueo.test.js`
+- [X] T009 [P] [US1] Prueba de API del bloqueo de edición (423 si está ocupada) y su liberación en `backend/tests/edicion.bloqueo.test.js`
 - [ ] T010 [P] [US1] Prueba de contrato de `GET`/`POST`/`DELETE /pedidos/{id}/editar` (200/204, 423 y 409 con `codigo`) en `backend/tests/edicion.bloqueo.contrato.test.js`
 - [ ] T011 [P] [US1] Prueba de integración de la liberación del bloqueo al enviar cambios, al cancelar/salir y por expiración de inactividad en `backend/tests/edicion.bloqueo.liberacion.test.js`
 - [ ] T012 [P] [US1] Prueba de API de añadir/retirar/ajustar líneas sobre pedido enviado y del 409 al dejar el pedido vacío en `backend/tests/edicion.lineas.test.js`
