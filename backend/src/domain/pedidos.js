@@ -51,6 +51,14 @@ export function exigirConfirmable(pedido) {
   return pedido;
 }
 
+/** Solo se puede anular un pedido en curso (FR-019). */
+export function exigirAnulable(pedido) {
+  if (pedido.estado !== 'en_curso') {
+    throw new ErrorHttp(409, 'Solo se puede anular un pedido en curso');
+  }
+  return pedido;
+}
+
 export function serializarLinea(linea) {
   return {
     id: linea.id,
