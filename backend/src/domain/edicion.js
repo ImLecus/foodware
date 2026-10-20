@@ -71,6 +71,21 @@ export function renovarBloqueoEdicion(db, pedidoId) {
   renovarBloqueo(db, pedidoId, config.bloqueoInactividadMinutos);
 }
 
+/** Un pedido no puede quedarse sin líneas tras una edición (FR-011). */
+export function exigirNoQuedaVacio(cantidadLineas) {
+  if (cantidadLineas === 0) {
+    throw new ErrorHttp(409, 'El pedido no puede quedarse sin platos', 'pedido_vacio');
+  }
+}
+
+/** Los cambios solo se comunican si hay algo pendiente (FR-014). */
+export function exigirCambiosPendientes(pedido) {
+  if (!pedido.cambios_pendientes) {
+    throw new ErrorHttp(409, 'No hay cambios pendientes de enviar', 'sin_cambios');
+  }
+  return pedido;
+}
+
 /** Libera el bloqueo; es idempotente si no hay bloqueo o ya expiró. */
 export function liberarBloqueoEdicion(db, pedido, camareroId) {
   const bloqueo = estadoBloqueo(pedido);
