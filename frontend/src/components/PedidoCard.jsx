@@ -12,7 +12,7 @@ import AvisoModificado from './AvisoModificado.jsx';
 import LineaPlato from './LineaPlato.jsx';
 import TiempoEspera from './TiempoEspera.jsx';
 
-export default function PedidoCard({ pedido }) {
+export default function PedidoCard({ pedido, onMarcarListo, onDeshacer, deshabilitado = false }) {
   return (
     <Card data-testid={`pedido-${pedido.id}`}>
       <CardBody>
@@ -26,7 +26,12 @@ export default function PedidoCard({ pedido }) {
         <UnorderedList spacing={1} fontSize="sm">
           {pedido.lineas.map((linea) => (
             <ListItem key={linea.id}>
-              <LineaPlato linea={linea} />
+              <LineaPlato
+                linea={linea}
+                onMarcarListo={onMarcarListo}
+                onDeshacer={onDeshacer}
+                deshabilitado={deshabilitado}
+              />
             </ListItem>
           ))}
         </UnorderedList>
