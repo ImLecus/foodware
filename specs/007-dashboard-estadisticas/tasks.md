@@ -43,8 +43,8 @@ independientes.
 
 - [X] T006 Crear el esquema SQLite de `cuentas`, `platos`, `usuarios` y `pedidos`/`lineas_pedido` en `backend/migrations/001_init.sql` (esquema canónico compartido; ya en el esqueleto)
 - [X] T007 [P] Configurar el cliente de SQLite en `backend/src/db/index.js` (ya en el esqueleto)
-- [ ] T008 [P] Definir los tipos de entidad compartidos (`Cuenta`, `Consumo`, `Camarero`, `Plato`, `InformeDiario`) en `backend/src/models/types.js`
-- [ ] T009 Implementar el middleware de autorización por rol `encargado` en `backend/src/middleware/auth.js`
+- [X] T008 [P] Tipos de entidad compartidos: no aplica (JavaScript sin TypeScript); las entidades quedan documentadas en `data-model.md`
+- [X] T009 Implementar el middleware de autorización por rol `encargado` en `backend/src/middleware/authorize.js` (identidad por cabecera `x-usuario-id`)
 - [X] T010 Configurar el enrutador de la API y el middleware de errores en `backend/src/app.js` y `backend/src/middleware/error.js` (ya en el esqueleto)
 - [X] T011 Implementar utilidades de límites del día natural Europe/Madrid en `backend/src/services/dayTime.js`
 - [ ] T012 [P] Crear el script de datos semilla con cuentas cerradas en dos días distintos en `backend/db/seed.js`
