@@ -6,7 +6,7 @@ import EstadoSinPartida from '../components/EstadoSinPartida.jsx';
 import EstadoVacio from '../components/EstadoVacio.jsx';
 import PedidoCard from '../components/PedidoCard.jsx';
 import { obtenerCocinero, obtenerPedidosPendientes } from '../services/api.js';
-import { suscribirAPartida } from '../services/events.js';
+import { suscribirAPartida, EVENTOS_COCINA } from '../services/events.js';
 
 const NOMBRES_PARTIDA = {
   entrantes: 'Entrantes',
@@ -80,8 +80,12 @@ export default function CocinaPage({ cocineroId }) {
     }
 
     return suscribirAPartida(partida, {
-      onEvento: () => {
-        refrescar();
+      onEvento: (nombre) => {
+        if (EVENTOS_COCINA.includes(nombre)) {
+          // pedido.modificado refresca el aviso sin reiniciar el tiempo ni la posición:
+          // el tiempo se deriva de enviadoEn y el orden lo fija el backend.
+          refrescar();
+        }
       },
       onEstadoConexion: (estado) => {
         const desconectado = estado === 'sin-conexion';
