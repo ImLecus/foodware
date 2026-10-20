@@ -1,9 +1,10 @@
-/** Error de aplicación con un código HTTP asociado. */
+/** Error de aplicación con un código HTTP y un código estable opcional. */
 export class ErrorHttp extends Error {
-  constructor(status, mensaje) {
+  constructor(status, mensaje, codigo = null) {
     super(mensaje);
     this.name = 'ErrorHttp';
     this.status = status;
+    this.codigo = codigo;
   }
 }
 
@@ -19,5 +20,6 @@ export function manejadorErrores(error, req, res, next) {
   }
   res.status(estado).json({
     error: estado >= 500 ? 'Error interno del servidor' : error.message,
+    ...(error.codigo ? { codigo: error.codigo } : {}),
   });
 }
