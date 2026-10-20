@@ -94,7 +94,7 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 - [X] T030 [US1] Cliente de API de edición, bloqueo, enviar-cambios y suscripción SSE en `frontend/src/services/api.js` y `frontend/src/services/realtime.js`
 - [X] T031 [US1] Marca visual de "modificada" y "cambios pendientes" en `frontend/src/components/EditorPedido.jsx`
 - [X] T032 [US1] Llamar a la liberación del bloqueo (`DELETE /pedidos/{id}/editar`) al cancelar o salir de la edición en `frontend/src/components/EditorPedido.jsx`
-- [ ] T033 [US1] Indicar pedido bloqueado y manejar 423 (`pedido_bloqueado`) y 409 (`bloqueo_expirado`) con aviso y opción de reabrir en `frontend/src/components/EditorPedido.jsx` y `frontend/src/services/api.js`
+- [X] T033 [US1] Indicar pedido bloqueado y manejar 423 (`pedido_bloqueado`) y 409 (`bloqueo_expirado`) con aviso y opción de reabrir en `frontend/src/components/EditorPedido.jsx` y `frontend/src/services/api.js`
 - [ ] T034 [US1] Liberar el bloqueo en el desmontaje/cierre del editor para no dejar bloqueos huérfanos en `frontend/src/components/EditorPedido.jsx`
 
 **Checkpoint**: US1 funcional y verificable de forma independiente (MVP).

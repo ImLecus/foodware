@@ -75,6 +75,15 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
       return;
     }
 
+    if (error?.codigo === 'bloqueo_expirado') {
+      setAviso({
+        tipo: 'warning',
+        expirado: true,
+        texto: 'El bloqueo de edición ha expirado. Vuelve a abrir el pedido.',
+      });
+      return;
+    }
+
     setAviso({ tipo: 'error', texto: error?.message || 'No se pudo completar la operación.' });
   }
 
@@ -83,6 +92,16 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
     setPedido(actualizado);
     onActualizado?.(actualizado);
     return actualizado;
+  }
+
+  async function reabrir() {
+    try {
+      await abrirEdicion(pedidoId);
+      setAviso(null);
+      await recargar();
+    } catch (error) {
+      manejarError(error);
+    }
   }
 
   async function anadirPlato(platoId, cantidad) {
@@ -209,6 +228,12 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
             <AlertIcon />
             <AlertDescription>{aviso.texto}</AlertDescription>
           </Alert>
+        )}
+
+        {aviso?.expirado && (
+          <Button colorScheme="teal" mb={4} onClick={reabrir}>
+            Reabrir edición
+          </Button>
         )}
 
         {PARTIDAS.map((partida) => (
