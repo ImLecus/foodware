@@ -35,7 +35,7 @@ Aplicación web (monorepositorio): `backend/src/`, `backend/tests/`, `frontend/s
 
 **Purpose**: Inicialización del proyecto y estructura básica
 
-- [ ] T001 Create monorepo structure (`backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/tests/`) and root `docker-compose.yml` per plan
+- [X] T001 Create monorepo structure (`backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/tests/`) and root `docker-compose.yml` per plan
 - [ ] T002 [P] Init backend Node project in `backend/package.json` with `express`, `better-sqlite3`; dev deps `vitest`, `supertest`
 - [ ] T003 [P] Init frontend project in `frontend/package.json` and `frontend/vite.config.js` with `vite`, `react`, `react-dom`, `@chakra-ui/react`; dev deps `vitest`, `@testing-library/react`, `jsdom`
 - [ ] T004 [P] Configure ESLint + Prettier in `backend/.eslintrc.cjs` and `frontend/.eslintrc.cjs`
