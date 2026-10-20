@@ -1,8 +1,5 @@
 import { apiGet } from './api.js';
-
-// Sin login implementado, la identidad del usuario viaja en la cabecera
-// `x-usuario-id` (ver specs/001-comandas/research.md). Configurable por entorno.
-export const USUARIO_ID = import.meta.env.VITE_USUARIO_ID ?? 'encargado-1';
+import { USUARIO_ID } from './sesion.js';
 
 /**
  * Obtiene el informe diario del dashboard. Si se omite `fecha`, el backend usa el
