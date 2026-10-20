@@ -64,6 +64,15 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
   }, [pedidoId]);
 
   function manejarError(error) {
+    if (error?.status === 423 || error?.codigo === 'pedido_bloqueado') {
+      setAviso({
+        tipo: 'error',
+        bloqueado: true,
+        texto: 'El pedido está bloqueado por otro camarero.',
+      });
+      return;
+    }
+
     setAviso({ tipo: 'error', texto: error?.message || 'No se pudo completar la operación.' });
   }
 
@@ -125,6 +134,20 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
       <Flex justify="center" py={12}>
         <Spinner size="lg" />
       </Flex>
+    );
+  }
+
+  if (aviso?.bloqueado) {
+    return (
+      <Card>
+        <CardBody>
+          <Alert status="error" borderRadius="md" mb={4}>
+            <AlertIcon />
+            <AlertDescription>{aviso.texto}</AlertDescription>
+          </Alert>
+          <Button onClick={() => onCerrar?.()}>Volver</Button>
+        </CardBody>
+      </Card>
     );
   }
 
