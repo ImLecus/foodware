@@ -109,7 +109,7 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 - [ ] T036 Ejecutar la validación manual de `specs/002-editar-comanda/quickstart.md` (escenarios 1–15) y corregir lo necesario
 - [X] T037 Validar en `specs/002-editar-comanda/quickstart.md` la liberación al cancelar/salir (escenario 12) y la expiración por inactividad (escenario 13)
 - [X] T038 [P] Revisar los textos en español de España y el formato de moneda en `frontend/src/components/EditorPedido.jsx`, `frontend/src/components/EnviarCambios.jsx` y `frontend/src/utils/formato.js`
-- [ ] T039 Ejecutar la suite completa (`docker compose run --rm backend npm test` y `frontend npm test`) sobre `backend/tests/` y `frontend/tests/` y dejar todo en verde
+- [X] T039 Ejecutar la suite completa (`docker compose run --rm backend npm test` y `frontend npm test`) sobre `backend/tests/` y `frontend/tests/` y dejar todo en verde
 
 ---
 
