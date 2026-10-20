@@ -4,6 +4,7 @@ import {
   anadirLinea,
   anularPedido,
   confirmarPedido,
+  limpiarBloqueo,
   marcarCambiosEnviados,
   marcarModificado,
   modificarLinea,
@@ -172,6 +173,7 @@ export function pedidosRouter(db) {
       exigirCambiosPendientes(pedido);
 
       marcarCambiosEnviados(db, pedido.id);
+      limpiarBloqueo(db, pedido.id);
       const actualizado = obtenerPedido(db, pedido.id);
       const mesa = obtenerMesa(db, actualizado.mesa_id);
       const porPartida = agruparPorPartida(actualizado.lineas);
