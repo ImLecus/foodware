@@ -21,6 +21,7 @@ import { useEffect, useState } from 'react';
 import {
   abrirEdicion,
   anadirLinea,
+  cerrarEdicion,
   enviarCambios,
   listarPlatos,
   modificarLinea,
@@ -118,6 +119,15 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
     } catch (error) {
       manejarError(error);
     }
+  }
+
+  async function cancelar() {
+    try {
+      await cerrarEdicion(pedidoId);
+    } catch {
+      // La salida del editor no debe bloquearse aunque falle la liberación.
+    }
+    onCerrar?.();
   }
 
   async function enviar() {
@@ -280,7 +290,7 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
       </CardBody>
 
       <CardFooter gap={3} flexWrap="wrap">
-        <Button variant="outline" onClick={() => onCerrar?.()}>
+        <Button variant="outline" onClick={cancelar}>
           Cancelar edición
         </Button>
         <EnviarCambios
