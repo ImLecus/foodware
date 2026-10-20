@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { marcarMesaOcupada } from './mesas.js';
+import { liberarMesa, marcarMesaOcupada } from './mesas.js';
 
 const LINEA_CAMPOS = `l.id,
                       l.pedido_id,
@@ -78,4 +78,18 @@ export function confirmarPedido(db, pedidoId) {
     "UPDATE pedidos SET estado = 'enviada', enviado_en = datetime('now') WHERE id = ?",
   ).run(pedidoId);
   return obtenerPedido(db, pedidoId);
+}
+
+/**
+ * Anula el pedido en curso: elimina el pedido y sus líneas (en cascada) y deja
+ * la mesa libre, todo en la misma transacción (FR-019).
+ */
+export function anularPedido(db, pedidoId) {
+  const pedido = db.prepare('SELECT mesa_id FROM pedidos WHERE id = ?').get(pedidoId);
+  const anular = db.transaction(() => {
+    db.prepare('DELETE FROM pedidos WHERE id = ?').run(pedidoId);
+    liberarMesa(db, pedido.mesa_id);
+  });
+  anular();
+  return pedido.mesa_id;
 }

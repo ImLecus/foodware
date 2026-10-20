@@ -19,3 +19,7 @@ export function obtenerMesa(db, mesaId) {
 export function marcarMesaOcupada(db, mesaId) {
   db.prepare("UPDATE mesas SET estado = 'ocupada' WHERE id = ?").run(mesaId);
 }
+
+export function liberarMesa(db, mesaId) {
+  db.prepare("UPDATE mesas SET estado = 'libre' WHERE id = ?").run(mesaId);
+}
