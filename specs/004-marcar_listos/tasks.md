@@ -130,7 +130,7 @@ su momento; re-marcar uno ya listo no lo altera.
 ### Tests for User Story 3 ⚠️
 
 - [X] T036 [P] [US3] Unit test for `listoEn` semantics (set once, unchanged on re-mark, cleared on undo) in `backend/tests/unit/momento-listo.test.js`
-- [ ] T037 [P] [US3] Contract test asserting `listoEn` appears in API responses in `backend/tests/contract/listo-en.test.js`
+- [X] T037 [P] [US3] Contract test asserting `listoEn` appears in API responses in `backend/tests/contract/listo-en.test.js`
 
 ### Implementation for User Story 3
 
