@@ -163,9 +163,42 @@ El contrato completo está en
 [`specs/001-comandas/contracts/openapi.yaml`](specs/001-comandas/contracts/openapi.yaml) y la
 validación manual en [`specs/001-comandas/quickstart.md`](specs/001-comandas/quickstart.md).
 
+## Editar pedidos enviados (historia 002)
+
+Sobre la pantalla de sala, al seleccionar un pedido en estado `enviada` aparece el botón
+**Editar pedido**, que abre el editor:
+
+1. **Edición directa**: no hay que "reabrir" nada; al entrar se toma el bloqueo de edición.
+2. **Añadir, retirar y ajustar**: se pueden añadir platos de la carta, cambiar cantidades, corregir
+   indicaciones y retirar líneas (nunca la última). Cada cambio se aplica al mismo pedido y a la
+   misma mesa, y lo marca como **Modificada** con **Cambios pendientes**.
+3. **Enviar cambios**: los cambios no se comunican a cocina hasta pulsar explícitamente
+   **Enviar cambios**; entonces se publica el evento SSE `pedido-modificado`.
+4. **Bloqueo**: solo un camarero puede editar el pedido a la vez. Si otro lo tiene, la API responde
+   `423 pedido_bloqueado`. Si el bloqueo caduca por inactividad, al guardar se responde
+   `409 bloqueo_expirado` y el editor ofrece **Reabrir edición**.
+5. **Liberación**: el bloqueo se libera al enviar los cambios, al cancelar o salir del editor y
+   automáticamente tras `BLOQUEO_INACTIVIDAD_MINUTOS` (15 por defecto) sin actividad.
+
+### API de la historia 002
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `GET` | `/api/pedidos/{id}/editar` | Estado del bloqueo (`libre`, `bloqueado`, `expirado`) |
+| `POST` | `/api/pedidos/{id}/editar` | Toma el bloqueo (`423` si es de otro, `409` si no es editable) |
+| `DELETE` | `/api/pedidos/{id}/editar` | Libera el bloqueo (idempotente) |
+| `POST` | `/api/pedidos/{id}/enviar-cambios` | Comunica los cambios a cocina y libera el bloqueo |
+| `GET` | `/api/pedidos/{id}` | Incluye `modificada`, `cambios_pendientes` y el bloqueo |
+
+Los endpoints de líneas (`POST`/`PATCH`/`DELETE`) admiten pedidos `enviada` cuando el camarero
+tiene el bloqueo. Detalles en
+[`specs/002-editar-comanda/quickstart.md`](specs/002-editar-comanda/quickstart.md) y
+[`specs/002-editar-comanda/contracts/openapi.yaml`](specs/002-editar-comanda/contracts/openapi.yaml).
+
 ## Alcance actual
 
 Este incremento implementa el **esqueleto compartido** (estructura, Docker, configuración, conexión
-a SQLite, migración base, hub SSE, cliente HTTP/SSE, tema y rutas provisionales) y la **historia
-001 (Sala: abrir mesa y tomar pedido)**. El resto de módulos (cocina, cuentas, dashboard y carta)
-siguen mostrando su página provisional hasta que se implementen sus historias.
+a SQLite, migración base, hub SSE, cliente HTTP/SSE, tema y rutas provisionales), la **historia
+001 (Sala: abrir mesa y tomar pedido)** y la **historia 002 (Editar un pedido enviado)**. El resto
+de módulos (cocina, cuentas, dashboard y carta) siguen mostrando su página provisional hasta que se
+implementen sus historias.
