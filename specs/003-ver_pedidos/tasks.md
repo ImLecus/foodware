@@ -146,7 +146,7 @@ recargar; con la conexión cortada, el tiempo de espera sigue avanzando.
 - [X] T043 [US3] Implement the SSE channel per partida and event emission in `backend/src/realtime/sse.js` and `backend/src/realtime/emit.js`
 - [X] T044 [US3] Implement `GET /partidas/{partidaId}/eventos` and register it in `backend/src/routes/partidas.js` and `backend/src/app.js`
 - [X] T045 [US3] Emit `pedido.modificado` for orders edited after sending in `backend/src/realtime/emit.js` and `backend/src/realtime/sse.js`
-- [ ] T046 [US3] Subscribe the kitchen page to SSE and refetch/reorder the list on events in `frontend/src/services/events.js` and `frontend/src/pages/CocinaPage.jsx`
+- [X] T046 [US3] Subscribe the kitchen page to SSE and refetch/reorder the list on events in `frontend/src/services/events.js` and `frontend/src/pages/CocinaPage.jsx`
 - [ ] T047 [US3] Handle `pedido.modificado` in the subscription to refresh the «Modificado» notice without resetting time or position in `frontend/src/services/events.js` and `frontend/src/pages/CocinaPage.jsx`
 - [ ] T048 [US3] Implement the offline indicator and reconnect resync (no duplicated/lost orders) in `frontend/src/components/AvisoSinConexion.jsx` and `frontend/src/services/events.js`
 - [ ] T049 [US3] Replace any frozen timer with local-clock elapsed time so it keeps advancing while offline in `frontend/src/components/TiempoEspera.jsx` and `frontend/src/state/tiempoEspera.js`

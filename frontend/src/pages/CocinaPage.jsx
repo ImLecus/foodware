@@ -1,4 +1,4 @@
-import { Box, Heading, Stack, Text } from '@chakra-ui/react';
+import { Badge, Box, Heading, Stack, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import EstadoCarga from '../components/EstadoCarga.jsx';
 import EstadoError from '../components/EstadoError.jsx';
@@ -6,6 +6,7 @@ import EstadoSinPartida from '../components/EstadoSinPartida.jsx';
 import EstadoVacio from '../components/EstadoVacio.jsx';
 import PedidoCard from '../components/PedidoCard.jsx';
 import { obtenerCocinero, obtenerPedidosPendientes } from '../services/api.js';
+import { suscribirAPartida } from '../services/events.js';
 
 const NOMBRES_PARTIDA = {
   entrantes: 'Entrantes',
@@ -26,6 +27,7 @@ export default function CocinaPage({ cocineroId }) {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [intento, setIntento] = useState(0);
+  const [sinConexion, setSinConexion] = useState(false);
 
   useEffect(() => {
     let cancelado = false;
@@ -65,6 +67,32 @@ export default function CocinaPage({ cocineroId }) {
 
   const partida = cocinero?.partida ?? null;
 
+  useEffect(() => {
+    if (!partida) return undefined;
+
+    async function refrescar() {
+      try {
+        const datosPedidos = await obtenerPedidosPendientes(partida);
+        setPedidos(datosPedidos);
+      } catch {
+        // Se conserva la última lista conocida.
+      }
+    }
+
+    return suscribirAPartida(partida, {
+      onEvento: () => {
+        refrescar();
+      },
+      onEstadoConexion: (estado) => {
+        const desconectado = estado === 'sin-conexion';
+        setSinConexion(desconectado);
+        if (!desconectado) {
+          refrescar();
+        }
+      },
+    });
+  }, [partida]);
+
   return (
     <Box>
       <Heading size="lg" mb={1}>
@@ -73,6 +101,12 @@ export default function CocinaPage({ cocineroId }) {
       <Text color="gray.600" mb={6}>
         {partida ? `Partida: ${NOMBRES_PARTIDA[partida] ?? partida}` : 'Vista de cocina'}
       </Text>
+
+      {sinConexion && (
+        <Badge colorScheme="red" variant="solid" mb={4}>
+          Sin conexión
+        </Badge>
+      )}
 
       {cargando && <EstadoCarga />}
 
