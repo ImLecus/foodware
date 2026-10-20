@@ -37,7 +37,7 @@ Aplicación web (monorepositorio): `backend/src/`, `backend/tests/`, `frontend/s
 
 - [X] T001 Create monorepo structure (`backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/tests/`) and root `docker-compose.yml` per plan
 - [X] T002 [P] Init backend Node project in `backend/package.json` with `express`, `better-sqlite3`; dev deps `vitest`, `supertest`
-- [ ] T003 [P] Init frontend project in `frontend/package.json` and `frontend/vite.config.js` with `vite`, `react`, `react-dom`, `@chakra-ui/react`; dev deps `vitest`, `@testing-library/react`, `jsdom`
+- [X] T003 [P] Init frontend project in `frontend/package.json` and `frontend/vite.config.js` with `vite`, `react`, `react-dom`, `@chakra-ui/react`; dev deps `vitest`, `@testing-library/react`, `jsdom`
 - [ ] T004 [P] Configure ESLint + Prettier in `backend/.eslintrc.cjs` and `frontend/.eslintrc.cjs`
 - [ ] T005 [P] Create `backend/Dockerfile` and `frontend/Dockerfile`
 - [ ] T006 [P] Create frontend entry with Chakra provider and route to the kitchen view in `frontend/src/main.jsx` and `frontend/src/App.jsx`
