@@ -124,3 +124,16 @@ su justificación.
   reproducible en cualquier máquina del equipo.
 - **Alternativas consideradas**: dos contenedores con proxy inverso aparte (más piezas de las
   necesarias en v1).
+
+## D13. Asociación plato–ingrediente y recálculo de disponibilidad
+
+- **Decisión**: la relación muchos-a-muchos se modela con la tabla `PlatoIngrediente`
+  (`platoId`, `ingredienteId`, par único) y se gestiona enviando `ingredienteIds` en el alta o la
+  edición del plato, validando que los ingredientes existen. La disponibilidad no se recalcula ni se
+  persiste al cambiar el estado de un ingrediente: se deriva en cada lectura (D1), de modo que el
+  cambio de `estado` afecta automáticamente a todos los platos asociados.
+- **Razón**: cubre FR-015 y el caso límite del ingrediente compartido con una estructura mínima y una
+  única fuente de verdad, coherente con la simplicidad (constitución, I).
+- **Alternativas consideradas**: guardar una lista de ingredientes en el plato (dificulta consultas y
+  validación); persistir y sincronizar la disponibilidad al cambiar el estado (duplica la verdad y
+  puede quedar obsoleta, ya descartado en D1).

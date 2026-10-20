@@ -60,29 +60,32 @@ código. No incluye código de implementación: los detalles están en
    el total (FR-007, FR-008, FR-009, FR-015).
 4. Comprobar que todas las partes muestran su importe (US2, scenario 3).
 
-### E. Pago por partes y cierre (US3, P3)
+### E. Pago por partes y cierre automático (US3, P3)
 
 1. Con la cuenta dividida, marcar **cada parte como pagada por separado**.
-2. **Esperado**: mientras quede alguna parte pendiente, la mesa **no** se puede cerrar
-   (FR-016, SC-007); al marcar la última, el cierre se habilita (FR-011).
-3. Confirmar el cierre.
-4. **Esperado**: la mesa queda cerrada y deja de aparecer en sala.
+2. **Esperado**: mientras quede alguna parte pendiente, la mesa **no** se cierra y no se emite
+   ningún ticket (FR-016, SC-007, SC-008).
+3. Marcar la **última** parte pendiente.
+4. **Esperado**: la mesa se cierra automáticamente, se muestra el ticket y la mesa deja de
+   aparecer en sala (FR-011).
 
-### F. Ticket final (US3, P3)
+### F. Ticket final único (US3, P3)
 
-1. Tras el cierre, abrir el **ticket** de la mesa.
+1. Tras pagar la última parte (o confirmar un pago único), abrir el **ticket** de la mesa.
 2. **Esperado**: muestra el **total** de la cuenta y el **desglose de cada parte** con su
    importe (FR-010, SC-004).
-3. Con la cuenta aún abierta, intentar ver el ticket.
-4. **Esperado**: se indica que la cuenta todavía no está cerrada.
+3. Con la cuenta aún abierta, aunque haya partes ya pagadas, intentar ver el ticket.
+4. **Esperado**: se indica que el ticket todavía no se ha emitido; no existe hasta la última
+   parte (SC-008).
 
 ### G. La cuenta cambia durante la división (FR-017)
 
 1. Iniciar la división de una cuenta (sin confirmar).
 2. Desde otra pantalla, **añadir o retirar un plato** de esa mesa (historia 02).
-3. Intentar confirmar el cierre con la división antigua.
-4. **Esperado**: el sistema **rechaza** el cierre porque la cuenta cambió; al recargar, el
-   total es el nuevo y hay que **rehacer la división** (FR-017).
+3. Intentar confirmar la división (o, si ya estaba confirmada, marcar una parte como pagada)
+   con el total antiguo.
+4. **Esperado**: el sistema **rechaza** la operación porque la cuenta cambió, descarta la
+   división y, al recargar, el total es el nuevo y hay que **rehacer la división** (FR-017).
 5. Cancelar y volver a abrir la cuenta: **Esperado**: el total refleja lo consumido
    actualmente.
 
@@ -94,10 +97,41 @@ código. No incluye código de implementación: los detalles están en
 ### I. Sin conexión (suposición compartida)
 
 1. Abrir la cuenta y cortar la conexión.
-2. **Esperado**: aparece el indicador **"sin conexión"** y no se permite confirmar el cierre;
-   lo compuesto en pantalla (división, partes) se conserva (contract §5).
-3. Restaurar la conexión y confirmar.
-4. **Esperado**: el cierre se completa con normalidad.
+2. **Esperado**: aparece el indicador **"sin conexión"** y no se permite confirmar la
+   división, ni marcar o deshacer el pago de una parte, ni confirmar el cierre; lo compuesto
+   en pantalla (división, partes) se conserva (contract §8).
+3. Restaurar la conexión y continuar el cobro.
+4. **Esperado**: la operación se completa con normalidad.
+
+### J. Partes intermedias sin ticket (FR-010, SC-008)
+
+1. Dividir una cuenta en **tres partes** y pagar las dos primeras.
+2. **Esperado**: cada parte pagada muestra su estado y la mesa sigue **abierta**.
+3. Intentar abrir el ticket antes de pagar la tercera.
+4. **Esperado**: el sistema indica que el ticket **no se ha emitido**; no hay ningún ticket
+   provisional por las partes intermedias (SC-008).
+
+### K. Ticket único al pagar la última parte (FR-010, SC-008)
+
+1. Con la cuenta dividida y dos de tres partes pagadas, marcar la **última** parte pendiente.
+2. **Esperado**: se emite **un único ticket** con el total y el desglose completo de las tres
+   partes; la mesa queda cerrada (FR-010, FR-011, SC-004, SC-008).
+3. Volver a consultar el ticket y repetir la operación de pago.
+4. **Esperado**: el ticket consultado es el mismo y el sistema rechaza cualquier nuevo pago o
+   cierre por estar la mesa cerrada; no se generan tickets duplicados (FR-012, FR-014,
+   SC-008).
+
+### L. Reversión de una parte pagada con la mesa abierta (FR-016, SC-009)
+
+1. Con la cuenta dividida y la mesa abierta, pagar una parte y después **deshacer su pago**.
+2. **Esperado**: la parte vuelve a **pendiente**, la mesa sigue abierta y no se ha emitido
+   ningún ticket (FR-016, SC-009).
+3. Intentar cerrar la mesa dejando esa parte pendiente.
+4. **Esperado**: el sistema no cierra la mesa hasta que la parte vuelva a estar pagada
+   (SC-007, SC-009).
+5. Pagar de nuevo la parte y, si es la última, comprobar que se emite el ticket único.
+6. Con la mesa ya cerrada, intentar deshacer el pago de una parte.
+7. **Esperado**: el sistema lo rechaza porque la mesa ya no está abierta (FR-016, SC-009).
 
 ## Criterios de éxito a comprobar
 
@@ -108,6 +142,8 @@ código. No incluye código de implementación: los detalles están en
 - [ ] SC-005: una mesa cerrada rechaza el 100 % de las nuevas operaciones.
 - [ ] SC-006: completar la división entre varios comensales se hace en menos de 3 minutos.
 - [ ] SC-007: una cuenta dividida mantiene la mesa abierta hasta que el 100 % de sus partes están pagadas.
+- [ ] SC-008: en el 100 % de las cuentas divididas se genera un único ticket final al pagarse la última parte, y ninguno antes.
+- [ ] SC-009: el 100 % de las partes marcadas como pagadas puede volver a pendiente mientras la mesa esté abierta; ninguna mesa se cierra con partes pendientes.
 
 ## Referencias
 

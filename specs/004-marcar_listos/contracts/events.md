@@ -36,7 +36,8 @@ Se emite cuando una línea de pedido cambia de estado (marcar o deshacer).
 
 ### `pedido.pendientes-cambiado`
 Se emite cuando el conjunto de pedidos pendientes de una partida cambia (llega un pedido nuevo,
-se completa uno o se reordena), para que la pantalla de cocina actualice la lista y su orden.
+se completa uno, se reabre uno o se reordena), para que la pantalla de cocina actualice la lista y
+su orden.
 
 ```json
 {
@@ -45,10 +46,28 @@ se completa uno o se reordena), para que la pantalla de cocina actualice la list
 }
 ```
 
+### `pedido.reabierto`
+Se emite cuando se deshace la marca de la última línea de un pedido completado y este vuelve a estar
+pendiente, de modo que reaparece en la lista de cocina (FR-014, FR-015). La pantalla de cocina del
+cocinero que usó «Deshacer» ya actualiza la lista con la respuesta REST; este evento mantiene
+coherentes las demás pantallas.
+
+```json
+{
+  "tipo": "pedido.reabierto",
+  "pedidoId": "p-123",
+  "mesa": 7,
+  "partida": "principales",
+  "lineaId": "l-9"
+}
+```
+
 ## Semántica
 
 - Los eventos son notificaciones de cambio; el cliente puede (y debe) poder reconstruir el estado
   consultando los endpoints REST si detecta un hueco de conexión.
+- Al deshacer una marca se emite `linea.actualizada` con `estado: "pendiente"` y `listoEn: null`; si
+  el pedido estaba completado, se emite además `pedido.reabierto`.
 - Ante una desconexión, `EventSource` reintenta; al reconectar, el cliente vuelve a pedir la lista
   vigente (FR-010, FR-011).
 - Los eventos no transportan datos sensibles más allá de los operativos del servicio.

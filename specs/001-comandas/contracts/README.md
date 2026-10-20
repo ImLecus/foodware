@@ -22,6 +22,7 @@ Interfaces que esta funcionalidad expone al resto del sistema.
 | PATCH | `/pedidos/{pedidoId}/lineas/{lineaId}` | Modificar cantidad | FR-011 |
 | DELETE | `/pedidos/{pedidoId}/lineas/{lineaId}` | Retirar plato | FR-012 |
 | POST | `/pedidos/{pedidoId}/confirmar` | Confirmar y devolver pedido agrupado | FR-013, FR-014, FR-015, FR-016, FR-017 |
+| POST | `/pedidos/{pedidoId}/anular` | Anular pedido en curso y liberar la mesa | FR-019 |
 
 ## Eventos SSE (tiempo real)
 
@@ -32,7 +33,7 @@ Interfaces que esta funcionalidad expone al resto del sistema.
 
 - Pantalla de **mesas**: muestra cada mesa con su estado (`libre`/`ocupada`) y permite abrirla.
 - Pantalla de **pedido**: muestra los platos **agrupados por partidas**, permite añadir platos con
-  cantidad, ajustar/retirar líneas y confirmar.
+  cantidad, ajustar/retirar líneas, anular el pedido en curso y confirmar.
 - Estado **sin conexión**: indicador visible; las acciones de confirmar/modificar quedan
   deshabilitadas y se conserva lo escrito en pantalla.
 - Idioma: español de España; importes en euros.

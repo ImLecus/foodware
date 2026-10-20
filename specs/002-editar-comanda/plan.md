@@ -1,6 +1,6 @@
 # Plan de Implementación: Editar un pedido enviado
 
-**Rama**: `002-editar-comanda` | **Fecha**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
+**Rama**: `feature/002-editar-comanda` | **Fecha**: 2026-10-20 | **Spec**: [spec.md](./spec.md)
 
 **Entrada**: Especificación de la funcionalidad en `/specs/002-editar-comanda/spec.md`
 
@@ -12,10 +12,13 @@ El camarero reabre directamente un pedido ya enviado y lo modifica sobre la marc
 retirar y ajustar platos e indicaciones), sin crear un pedido nuevo. Los cambios se aplican sobre
 el pedido original, que queda **marcado como modificado** y vinculada a la misma mesa. Los cambios
 no se comunican a cocina solos: el camarero debe ejecutar explícitamente **"enviar cambios"**.
-Mientras un camarero edita el pedido, este queda **bloqueado** para los demás. El enfoque técnico
-reutiliza el stack y la infraestructura de la historia 001 (React + Chakra UI, ExpressJS,
-SQLite, Docker) y añade el estado de modificación, el registro de cambios, el bloqueo de
-edición y el envío explícito de cambios, que se publica por SSE (hub compartido del proyecto).
+Mientras un camarero edita el pedido, este queda **bloqueado** para los demás; el bloqueo se libera
+al **enviar los cambios**, al **cancelar o salir de la edición** y **automáticamente tras un periodo
+de inactividad** configurable (15 minutos por defecto), de modo que ningún pedido quede bloqueado
+indefinidamente. El enfoque técnico reutiliza el stack y la infraestructura de la historia 001
+(React + Chakra UI, ExpressJS, SQLite, Docker) y añade el estado de modificación, el registro de
+cambios, el bloqueo de edición con su caducidad y el envío explícito de cambios, que se publica por
+SSE (hub compartido del proyecto).
 
 ## Contexto Técnico
 
@@ -45,15 +48,31 @@ entorno reproducible con Docker; ningún secreto en el repositorio.
 **Escala/Alcance**: Un único restaurante; decenas de mesas; ~4 camareros; edición de pedidos ya
 enviadas; versión 1.
 
+### Mecanismo de bloqueo y liberación
+
+- Al abrir un pedido `enviada`, `POST /pedidos/{id}/editar` toma el bloqueo y guarda en el propio
+  pedido `editando_por`, `editando_desde`, `editando_ultima_actividad` y `bloqueo_expira_en`
+  (última actividad + periodo de inactividad).
+- El bloqueo se libera al **enviar los cambios**, al **cancelar o salir de la edición** y
+  **automáticamente por inactividad**. La caducidad se comprueba de forma **perezosa** en cada
+  operación que toca el pedido: si `bloqueo_expira_en` ya pasó, el bloqueo se considera libre y se
+  limpia. No hay temporizadores ni procesos en segundo plano.
+- El periodo de inactividad es configurable con la variable de entorno
+  `BLOQUEO_INACTIVIDAD_MINUTOS` (por defecto **15**). La comprobación usa el reloj del servidor y
+  columnas de SQLite ya previstas: **no añade dependencias**.
+- Si otro camarero mantiene un bloqueo vigente, la API responde `423`; si el solicitante perdió su
+  propio bloqueo por expiración, responde `409` con `codigo: bloqueo_expirado` y debe reabrir el
+  pedido.
+
 ## Verificación de la Constitución
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 | Principio / regla | Comprobación | Estado |
 |-------------------|--------------|--------|
-| I. Simplicidad | Reutiliza la base de la 001; solo añade modificación, registro de cambios, bloqueo y envío explícito; sin capas extra | Pasa |
+| I. Simplicidad | Reutiliza la base de la 001; solo añade modificación, registro de cambios, bloqueo con caducidad perezosa y envío explícito; sin capas ni dependencias extra | Pasa |
 | II. Español de España y euro | UI y mensajes en español; importes en € | Pasa |
-| III. Cero alcance fantasma | Solo FR-001…FR-015; cocina, listos, señales, cierre, dashboard y carta quedan fuera | Pasa |
+| III. Cero alcance fantasma | Solo FR-001…FR-015 (FR-015 ampliado: liberación al enviar, al cancelar/salir y por inactividad); cocina, listos, señales, cierre, dashboard y carta quedan fuera | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` valida desde la interfaz | Pasa |
 | V. Datos con respeto | Solo identidad del camarero y datos del pedido/modificación; secretos por variables de entorno | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |
@@ -89,7 +108,7 @@ backend/
 │   ├── api/
 │   │   ├── middleware/
 │   │   │   ├── camarero.js       # identidad (historia 001)
-│   │   │   └── bloqueo.js        # comprobación del bloqueo de edición
+│   │   │   └── bloqueo.js        # comprobación y caducidad del bloqueo de edición
 │   │   ├── mesas.js              # historia 001
 │   │   ├── platos.js             # historia 001
 │   │   └── pedidos.js           # se amplía: edición, bloqueo y enviar-cambios
@@ -98,7 +117,7 @@ backend/
 │   │   └── edicion.js            # reglas de edición, marcado y envío de cambios
 │   ├── db/
 │   │   ├── db.js               # historia 001
-│   │   ├── pedidos.js           # se amplía: estado, modificada, cambios_pendientes, bloqueo
+│   │   ├── pedidos.js           # se amplía: estado, modificada, cambios_pendientes, bloqueo (última actividad y expiración)
 │   │   └── modificaciones.js     # registro de cambios (trazabilidad)
 │   ├── schemas/
 │   │   └── edicion.js            # validación zod de la edición
@@ -106,7 +125,7 @@ backend/
 │   │   └── hub.js
 │   ├── app.js
 │   └── index.js
-├── migrations/                   # nueva migración: modificada, cambios_pendientes, bloqueo, modificaciones
+├── migrations/                   # nueva migración: modificada, cambios_pendientes, bloqueo (última actividad, expiración), modificaciones
 └── tests/                        # edicion.*.test.js (API)
 
 frontend/

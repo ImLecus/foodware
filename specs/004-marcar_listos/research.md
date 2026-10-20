@@ -66,3 +66,20 @@ pruebas). Se resuelven aquí con una decisión, su justificación y las alternat
 - **Alternatives considered**: operación «toggle» (no idempotente, produce duplicados o cambios
   inesperados); uso de marcas de versión optimista explícitas (más complejo de lo necesario para
   este dominio).
+
+## R7. Reversión desde un aviso temporal
+
+- **Decision**: mostrar un toast de Chakra UI («Pedido completado») en la pantalla de cocina que
+  conserva en el estado del cliente `pedidoId`/`lineaId` de la última marca y ofrece «Deshacer»
+  durante al menos 10 s. La acción reutiliza la operación idempotente de desmarcar
+  (`PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` con `estado: pendiente`); no se crea ningún
+  endpoint ni entidad nuevos.
+- **Rationale**: al completarse el pedido, este desaparece de la lista de cocina (FR-006) y el
+  cocinero perdería el acceso a la línea; el aviso mantiene la reversión accesible sin retrasar la
+  desaparición ni añadir complejidad. La duración mínima de 10 s se controla con un temporizador del
+  navegador y se valida con temporizadores simulados en las pruebas del componente (SC-009,
+  FR-014).
+- **Alternatives considered**: modal bloqueante (interrumpe el servicio y exige cerrarlo antes de
+  seguir); endpoint específico de «deshacer» con testigo del servidor (más piezas y estado que
+  mantener para un caso que ya resuelve la asignación de estado); retrasar la desaparición del
+  pedido para permitir deshacerlo (contradice FR-006 y SC-005).

@@ -43,6 +43,7 @@ mesas, un cocinero por partida y pedidos enviados con varias líneas.
 | 9 | Re-marcar no altera el momento (US3.2) | Vuelve a marcar una línea ya lista | `listoEn` no cambia |
 | 10 | Marcado simultáneo (edge case) | Desde dos pantallas de cocina de la misma partida, marca la misma línea | Un único `listoEn`, sin duplicados |
 | 11 | Corte momentáneo (edge case) | Detén y reinicia el backend; vuelve a marcar | La marca no se pierde y el estado es coherente |
+| 12 | Deshacer tras completar el pedido (US1.6, FR-014, SC-009) | Marca todas las líneas del pedido y, en el aviso «Pedido completado», pulsa «Deshacer» dentro de los 10 s siguientes | El pedido reaparece como pendiente en cocina con la última línea en `pendiente`; el aviso se retira y sala refleja el cambio |
 
 ## Cómo ver las pruebas automatizadas
 
@@ -54,8 +55,9 @@ cd backend && npm test
 cd frontend && npm test
 ```
 
-Las pruebas cubren la regla de negocio de marcar/deshacer (idempotencia y momento único), los
-contratos REST (`contracts/openapi.yaml`) y los flujos de la pantalla de cocina y de sala.
+Las pruebas cubren la regla de negocio de marcar/deshacer (idempotencia y momento único), el aviso
+temporal con «Deshacer» (duración mínima y reversión del pedido completado), los contratos REST
+(`contracts/openapi.yaml`) y los flujos de la pantalla de cocina y de sala.
 
 ## Fuera de alcance de esta guía
 

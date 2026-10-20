@@ -21,6 +21,15 @@ Se emite cuando sala envía un pedido nuevo para la partida.
 { "tipo": "pedido.nuevo", "partida": "principales", "pedidoId": "p-130" }
 ```
 
+### `pedido.modificado`
+Se emite cuando un pedido ya enviado se edita después (historia 02). La vista muestra el aviso
+«Modificado» junto al pedido, sin detallar qué platos cambiaron, y conserva el tiempo de espera y la
+posición originales (FR-015, FR-018, SC-012).
+
+```json
+{ "tipo": "pedido.modificado", "partida": "principales", "pedidoId": "p-130", "modificado": true }
+```
+
 ### `pedido.pendientes-cambiado`
 Se emite cuando cambia el conjunto de pedidos pendientes de la partida (un pedido se completa, se
 cancela/retira o se reordena), para que la vista recargue la lista ordenada.
@@ -42,5 +51,8 @@ vista actualice el marcado de ese plato.
 - Los eventos son notificaciones; ante un hueco de conexión el cliente vuelve a pedir la lista por
   REST, que ya llega ordenada y filtrada por partida.
 - Ante desconexión, la vista muestra el indicador de «sin conexión» y marca la información como no
-  actualizada hasta reconectar (edge case de conexión).
+  actualizada hasta reconectar (edge case de conexión). El tiempo de espera de los pedidos ya
+  mostrados sigue avanzando con el reloj local a partir de `enviadoEn` (FR-006, SC-003).
+- La representación REST del pedido incluye `modificado`; el evento `pedido.modificado` solo avisa
+  del cambio para que la vista refresque el aviso (FR-018).
 - El canal de una partida solo transporta pedidos de esa partida.

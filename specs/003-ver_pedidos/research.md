@@ -70,3 +70,23 @@ aquí con su justificación y alternativas.
   otras partidas.
 - **Alternatives considered**: filtrar en cliente todos los pedidos (más datos y riesgo de fuga de
   pedidos ajenos a la partida).
+
+## R8. Cálculo local del tiempo transcurrido sin conexión
+
+- **Decision**: el tiempo de espera se calcula siempre en el cliente como `ahora − enviadoEn` con
+  el reloj local; al perderse la conexión se mantiene el temporizador y solo se marca la lista como
+  «sin conexión / no actualizada».
+- **Rationale**: el instante de envío ya se conoce y no depende de la red, así que el dato sigue
+  siendo correcto y avanza con el reloj del dispositivo (FR-006, SC-003), sin congelar la cifra ni
+  añadir sincronizaciones.
+- **Alternatives considered**: congelar el tiempo hasta reconectar (incumple FR-006); pedir la hora
+  al servidor durante el corte (imposible sin conexión).
+
+## R9. Distinción accesible de platos listos
+
+- **Decision**: los platos listos se muestran con un color/estilo distinto **y** un símbolo o
+  etiqueta de texto (por ejemplo, «listo»), de modo que la distinción no dependa solo del color.
+- **Rationale**: cumple FR-007 y SC-010 y hace la vista legible para personas con daltonismo o
+  pantallas con poco contraste, sin complejidad adicional.
+- **Alternatives considered**: usar solo color (incumple el requisito de accesibilidad); añadir solo
+  un icono sin texto (menos explícito para una persona no técnica).

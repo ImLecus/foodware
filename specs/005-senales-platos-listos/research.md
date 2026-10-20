@@ -112,3 +112,21 @@ junto a la funcionalidad" y no requieren configuración exótica.
 
 **Alternativas consideradas**: un único runner para todo (posible, pero con peor encaje en
 cada entorno).
+
+## 9. Descarte global del aviso y sincronización de pantallas (FR-009, FR-010, SC-009)
+
+**Decisión**: el descarte se persiste como estado **global de la mesa** (aviso
+`activo → descartado`) y el backend lo difunde a **todos** los clientes conectados al hub
+SSE compartido mediante el evento `aviso-descartado`. La pantalla que origina el descarte
+actualiza su estado al recibir la confirmación HTTP; el resto lo hace al recibir el evento.
+Todas las pantallas convergen al mismo estado en ≤ 5 s.
+
+**Rationale**: la clarificación del 2026-10-20 exige que el aviso desaparezca para todos
+los camareros y en todas las pantallas. Un estado global en la base de datos, sumado a la
+difusión por el mismo canal SSE que ya mantiene la vista al día, evita guardar estado por
+dispositivo y garantiza coherencia entre pantallas. La instantánea de `GET
+/api/sala/mesas` al reconectar corrige cualquier evento perdido (FR-014).
+
+**Alternativas consideradas**: estado de descarte local por dispositivo o por camarero
+(contradice FR-009/FR-010 y produce avisos incoherentes); sondeo periódico para propagar
+el descarte (mayor latencia y peticiones innecesarias).

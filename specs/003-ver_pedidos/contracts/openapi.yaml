@@ -63,13 +63,18 @@ components:
   schemas:
     PedidoCocina:
       type: object
-      required: [id, mesa, partida, enviadoEn, estado, lineas]
+      required: [id, mesa, partida, enviadoEn, modificado, estado, lineas]
       properties:
         id: { type: string }
         mesa: { type: integer, description: número de mesa (FR-016) }
         partida: { type: string, enum: [entrantes, principales, postres] }
         enviadoEn: { type: string, format: date-time, description: envío original (FR-005) }
         modificadoEn: { type: string, format: date-time, nullable: true, description: marca de edición (historia 02) }
+        modificado:
+          type: boolean
+          description: >
+            true si el pedido se editó tras su envío; el cliente muestra el aviso «Modificado» sin
+            detallar qué líneas cambiaron (FR-018, SC-012).
         estado: { type: string, enum: [pendiente, completado] }
         lineas:
           type: array

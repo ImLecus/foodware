@@ -32,7 +32,7 @@ independientes.
 - [ ] T004 [P] Configurar Vitest y Supertest en el backend en `backend/vitest.config.js`
 - [ ] T005 [P] Configurar Vitest y React Testing Library en el frontend en `frontend/vitest.config.js`
 - [ ] T006 [P] Configurar ESLint y Prettier en `backend/.eslintrc.cjs` y `frontend/.eslintrc.cjs`
-- [ ] T007 Crear `Dockerfile` de backend y frontend y el `docker-compose.yml` raíz
+- [ ] T007 Crear `backend/Dockerfile`, `frontend/Dockerfile` y el `docker-compose.yml` raíz
 
 ---
 
@@ -43,14 +43,15 @@ independientes.
 **⚠️ CRÍTICO**: ninguna historia puede empezar hasta completar esta fase.
 
 - [ ] T008 Crear el esquema SQLite (`plato`, `ingrediente`, `plato_ingrediente`) en `backend/db/schema.sql`
-- [ ] T009 [P] Crear el script de datos semilla (platos e ingredientes) en `backend/db/seed.js`
-- [ ] T010 Implementar modelos y acceso a datos `Plato`, `Ingrediente`, `PlatoIngrediente` en `backend/src/models/carta.js`
-- [ ] T011 [P] Implementar middleware de autorización por rol `requireRole` en `backend/src/middleware/authorize.js`
-- [ ] T012 [P] Definir esquemas de validación zod (plato e ingrediente) en `backend/src/api/cartaSchemas.js`
-- [ ] T013 Implementar el cálculo de disponibilidad derivada (`ofrecible`/`motivo`) en `backend/src/services/cartaService.js`
-- [ ] T014 Configurar el router de la API y el manejo de errores HTTP en `backend/src/api/index.js`
-- [ ] T015 [P] Crear el cliente HTTP de carta (`fetch`) en `frontend/src/services/cartaClient.js`
-- [ ] T016 [P] Crear la utilidad de formato de precio y número es-ES en `frontend/src/utils/format.js`
+- [ ] T009 Crear la migración que garantiza las tablas `ingrediente` y `plato_ingrediente` (claves foráneas y par único) sobre bases existentes en `backend/db/migrations/002-ingredientes.sql`
+- [ ] T010 [P] Crear el script de datos semilla (platos e ingredientes) en `backend/db/seed.js`
+- [ ] T011 Implementar modelos y acceso a datos `Plato`, `Ingrediente`, `PlatoIngrediente` en `backend/src/models/carta.js`
+- [ ] T012 [P] Implementar middleware de autorización por rol `requireRole` en `backend/src/middleware/authorize.js`
+- [ ] T013 [P] Definir esquemas de validación zod (plato e ingrediente) en `backend/src/api/cartaSchemas.js`
+- [ ] T014 Implementar el cálculo de disponibilidad derivada (`ofrecible`/`motivo`) en `backend/src/services/cartaService.js`
+- [ ] T015 Configurar el router de la API y el manejo de errores HTTP en `backend/src/api/index.js`
+- [ ] T016 [P] Crear el cliente HTTP de carta (`fetch`) en `frontend/src/services/cartaClient.js`
+- [ ] T017 [P] Crear la utilidad de formato de precio y número es-ES en `frontend/src/utils/format.js`
 
 **Punto de control**: base lista; las historias pueden empezar.
 
@@ -66,19 +67,19 @@ independientes.
 
 > **NOTA: escribir primero y comprobar que fallan antes de implementar**
 
-- [ ] T017 [P] [US1] Prueba de contrato de `GET/POST/PATCH /api/admin/platos` en `backend/tests/contract/carta-admin.test.js`
-- [ ] T018 [P] [US1] Prueba unitaria de validación de precio y partida en `backend/tests/unit/validacion-plato.test.js`
-- [ ] T019 [P] [US1] Prueba de componente del formulario de alta/edición en `frontend/tests/components/FormularioPlato.test.jsx`
+- [ ] T018 [P] [US1] Prueba de contrato de `GET/POST/PATCH /api/admin/platos` en `backend/tests/contract/carta-admin.test.js`
+- [ ] T019 [P] [US1] Prueba unitaria de validación de precio y partida en `backend/tests/unit/validacion-plato.test.js`
+- [ ] T020 [P] [US1] Prueba de componente del formulario de alta/edición en `frontend/tests/components/FormularioPlato.test.jsx`
 
 ### Implementación de la US1
 
-- [ ] T020 [US1] Implementar el alta de plato (`crearPlato`) y la validación de precio/partida en `backend/src/services/cartaService.js`
-- [ ] T021 [US1] Implementar la edición de plato (`actualizarPlato` de nombre/partida/precio) en `backend/src/services/cartaService.js`
-- [ ] T022 [US1] Implementar los endpoints `GET/POST/PATCH /api/admin/platos` en `backend/src/api/cartaAdminRouter.js`
-- [ ] T023 [US1] Crear el componente `FormularioPlato` (alta/edición, validación y avisos) en `frontend/src/components/FormularioPlato.jsx`
-- [ ] T024 [US1] Crear el componente `TablaPlatos` (nombre, partida, precio en €) en `frontend/src/components/TablaPlatos.jsx`
-- [ ] T025 [US1] Crear la página `PaginaGestionCarta` (carga, alta y edición) en `frontend/src/pages/PaginaGestionCarta.jsx`
-- [ ] T026 [US1] Registrar la ruta `/admin/carta` protegida por rol en `frontend/src/App.jsx`
+- [ ] T021 [US1] Implementar el alta de plato (`crearPlato`) y la validación de precio/partida en `backend/src/services/cartaService.js`
+- [ ] T022 [US1] Implementar la edición de plato (`actualizarPlato` de nombre/partida/precio) en `backend/src/services/cartaService.js`
+- [ ] T023 [US1] Implementar los endpoints `GET/POST/PATCH /api/admin/platos` en `backend/src/api/cartaAdminRouter.js`
+- [ ] T024 [US1] Crear el componente `FormularioPlato` (alta/edición, validación y avisos) en `frontend/src/components/FormularioPlato.jsx`
+- [ ] T025 [US1] Crear el componente `TablaPlatos` (nombre, partida, precio en €) en `frontend/src/components/TablaPlatos.jsx`
+- [ ] T026 [US1] Crear la página `PaginaGestionCarta` (carga, alta y edición) en `frontend/src/pages/PaginaGestionCarta.jsx`
+- [ ] T027 [US1] Registrar la ruta `/admin/carta` protegida por rol en `frontend/src/App.jsx`
 
 **Punto de control**: la US1 es funcional y verificable de forma independiente.
 
@@ -94,16 +95,16 @@ de sala.
 
 ### Pruebas de la US2 ⚠️
 
-- [ ] T027 [P] [US2] Prueba de contrato de `PATCH /api/admin/platos/:id` (`activo`) y `GET /api/carta` en `backend/tests/contract/carta-disponibilidad.test.js`
-- [ ] T028 [P] [US2] Prueba de integración de baja/alta manual sobre datos sembrados en `backend/tests/integration/disponibilidad-manual.test.js`
-- [ ] T029 [P] [US2] Prueba de componente del control de disponibilidad en `frontend/tests/components/TablaPlatos.test.jsx`
+- [ ] T028 [P] [US2] Prueba de contrato de `PATCH /api/admin/platos/:id` (`activo`) y `GET /api/carta` en `backend/tests/contract/carta-disponibilidad.test.js`
+- [ ] T029 [P] [US2] Prueba de integración de baja/alta manual sobre datos sembrados en `backend/tests/integration/disponibilidad-manual.test.js`
+- [ ] T030 [P] [US2] Prueba de componente del control de disponibilidad en `frontend/tests/components/TablaPlatos.test.jsx`
 
 ### Implementación de la US2
 
-- [ ] T030 [US2] Implementar el cambio de disponibilidad manual (`cambiarActivo`) en `backend/src/services/cartaService.js`
-- [ ] T031 [US2] Implementar el endpoint `GET /api/carta` (solo platos ofrecibles, agrupados por partida) en `backend/src/api/cartaRouter.js`
-- [ ] T032 [US2] Añadir el control activar/desactivar por fila en `frontend/src/components/TablaPlatos.jsx`
-- [ ] T033 [US2] Refrescar la disponibilidad en la página tras guardar un cambio en `frontend/src/pages/PaginaGestionCarta.jsx`
+- [ ] T031 [US2] Implementar el cambio de disponibilidad manual (`cambiarActivo`) en `backend/src/services/cartaService.js`
+- [ ] T032 [US2] Implementar el endpoint `GET /api/carta` (solo platos ofrecibles, agrupados por partida) en `backend/src/api/cartaRouter.js`
+- [ ] T033 [US2] Añadir el control activar/desactivar por fila en `frontend/src/components/TablaPlatos.jsx`
+- [ ] T034 [US2] Refrescar la disponibilidad en la página tras guardar un cambio en `frontend/src/pages/PaginaGestionCarta.jsx`
 
 **Punto de control**: US1 y US2 funcionan de forma independiente.
 
@@ -111,24 +112,38 @@ de sala.
 
 ## Fase 5: Historia de usuario 3 - Actualización automática por agotamiento de ingrediente (Priority: P2)
 
-**Objetivo**: al poner un ingrediente a agotado, los platos que lo usan dejan de ofrecerse sin
+**Objetivo**: el administrador crea y edita ingredientes, los asocia a uno o varios platos y cambia
+su estado; al poner un ingrediente a agotado, los platos que lo usan dejan de ofrecerse sin
 desactivarlos; al reponerlo, vuelven si siguen manualmente activos (regla combinada).
 
-**Prueba independiente**: poner un ingrediente a agotado y comprobar que el plato desaparece de la
-carta de sala sin que el administrador lo desactive.
+**Prueba independiente**: crear un ingrediente, asociarlo a un plato y ponerlo a agotado, y
+comprobar que el plato desaparece de la carta de sala sin que el administrador lo desactive.
 
 ### Pruebas de la US3 ⚠️
 
-- [ ] T034 [P] [US3] Prueba de integración de agotamiento de ingrediente en `backend/tests/integration/ingrediente-agotado.test.js`
-- [ ] T035 [P] [US3] Prueba unitaria de la regla combinada (`activo` AND ingredientes disponibles) en `backend/tests/unit/disponibilidad-combinada.test.js`
-- [ ] T036 [P] [US3] Prueba de componente del panel de ingredientes y el estado combinado en `frontend/tests/components/PanelIngredientes.test.jsx`
+- [ ] T035 [P] [US3] Prueba de integración de agotamiento de ingrediente en `backend/tests/integration/ingrediente-agotado.test.js`
+- [ ] T036 [P] [US3] Prueba unitaria de la regla combinada (`activo` AND ingredientes disponibles) en `backend/tests/unit/disponibilidad-combinada.test.js`
+- [ ] T037 [P] [US3] Prueba de componente del panel de ingredientes y el estado combinado en `frontend/tests/components/PanelIngredientes.test.jsx`
+- [ ] T038 [P] [US3] Prueba de contrato de alta y edición de ingredientes y rechazo de estado inválido en `backend/tests/contract/ingredientes-admin.test.js`
+- [ ] T039 [P] [US3] Prueba de integración de asociación `ingredienteIds`, ingrediente compartido que oculta todos sus platos y restauración según disponibilidad manual en `backend/tests/integration/ingrediente-compartido.test.js`
+- [ ] T040 [P] [US3] Prueba de componente de alta, edición y estado de ingrediente en `frontend/tests/components/FormularioIngrediente.test.jsx`
+- [ ] T041 [P] [US3] Prueba de componente del selector de asociación de ingredientes en `frontend/tests/components/SelectorIngredientes.test.jsx`
 
 ### Implementación de la US3
 
-- [ ] T037 [US3] Implementar los endpoints `GET/PATCH /api/admin/ingredientes` en `backend/src/api/cartaAdminRouter.js`
-- [ ] T038 [US3] Implementar el cálculo de `motivo` por ingredientes agotados en `backend/src/services/cartaService.js`
-- [ ] T039 [US3] Crear el componente `PanelIngredientes` (estado disponible/agotado) en `frontend/src/components/PanelIngredientes.jsx`
-- [ ] T040 [US3] Mostrar el motivo de no disponibilidad e integrar el panel en `frontend/src/pages/PaginaGestionCarta.jsx`
+- [ ] T042 [US3] Ampliar los esquemas zod con nombre/estado de ingrediente e `ingredienteIds` (existencia y sin duplicados) en `backend/src/api/cartaSchemas.js`
+- [ ] T043 [US3] Implementar el alta y la edición de ingredientes (`crearIngrediente`, `actualizarIngrediente`) en `backend/src/services/cartaService.js`
+- [ ] T044 [US3] Implementar la asociación N:M mediante `ingredienteIds` (sustitución del conjunto completo) en `backend/src/services/cartaService.js`
+- [ ] T045 [US3] Implementar los endpoints `GET/PATCH /api/admin/ingredientes` en `backend/src/api/cartaAdminRouter.js`
+- [ ] T046 [US3] Implementar el endpoint `POST /api/admin/ingredientes` y completar `PATCH` con nombre y estado en `backend/src/api/cartaAdminRouter.js`
+- [ ] T047 [US3] Extender la disponibilidad derivada para asociaciones e ingrediente compartido en `backend/src/services/cartaService.js`
+- [ ] T048 [US3] Implementar el cálculo de `motivo` por ingredientes agotados en `backend/src/services/cartaService.js`
+- [ ] T049 [US3] Crear el componente `PanelIngredientes` (estado disponible/agotado) en `frontend/src/components/PanelIngredientes.jsx`
+- [ ] T050 [US3] Crear el componente `FormularioIngrediente` (alta/edición de nombre y estado) en `frontend/src/components/FormularioIngrediente.jsx`
+- [ ] T051 [US3] Ampliar `PanelIngredientes` con las acciones de alta y edición y conectarlas en `PaginaGestionCarta` en `frontend/src/components/PanelIngredientes.jsx` y `frontend/src/pages/PaginaGestionCarta.jsx`
+- [ ] T052 [US3] Crear el componente `SelectorIngredientes` (selección múltiple de ingredientes) en `frontend/src/components/SelectorIngredientes.jsx`
+- [ ] T053 [US3] Integrar `SelectorIngredientes` en el formulario de plato para enviar `ingredienteIds` en `frontend/src/components/FormularioPlato.jsx`
+- [ ] T054 [US3] Mostrar el motivo de no disponibilidad e integrar el panel en `frontend/src/pages/PaginaGestionCarta.jsx`
 
 **Punto de control**: las tres historias funcionan de forma independiente.
 
@@ -138,13 +153,15 @@ carta de sala sin que el administrador lo desactive.
 
 **Propósito**: mejoras que afectan a varias historias.
 
-- [ ] T041 [P] Crear el componente `EstadoConexion` (sin conexión, conserva lo escrito) en `frontend/src/components/EstadoConexion.jsx`
-- [ ] T042 [P] Añadir pruebas de estados de la página (cargando, vacío, error) en `frontend/tests/components/PaginaGestionCarta.test.jsx`
-- [ ] T043 [P] Añadir índices SQLite (`plato.partida`, `plato_ingrediente.ingredienteId`) en `backend/db/schema.sql`
-- [ ] T044 [P] Actualizar documentación de puesta en marcha en `docs/`
-- [ ] T045 Revisar accesibilidad (etiquetas, teclado) de `frontend/src/components/`
-- [ ] T046 Ejecutar los escenarios E1–E11 de `quickstart.md` y validar el contrato `contracts/carta-api.md`
-- [ ] T047 Verificar rendimiento (<3 s) y reflejo inmediato en sala (SC-002) según `specs/008-gestion-carta/quickstart.md` (E11)
+- [ ] T055 [P] Crear el componente `EstadoConexion` (sin conexión, conserva lo escrito) en `frontend/src/components/EstadoConexion.jsx`
+- [ ] T056 [P] Añadir pruebas de estados de la página (cargando, vacío, error) en `frontend/tests/components/PaginaGestionCarta.test.jsx`
+- [ ] T057 [P] Añadir índices SQLite (`plato.partida`, `plato_ingrediente.ingredienteId`) en `backend/db/schema.sql`
+- [ ] T058 [P] Actualizar documentación de puesta en marcha en `docs/`
+- [ ] T059 Revisar accesibilidad (etiquetas, teclado) de `frontend/src/components/`
+- [ ] T060 Ejecutar los escenarios E1–E11 de `quickstart.md` y validar el contrato `contracts/carta-api.md`
+- [ ] T061 Ejecutar el escenario E12 de `specs/008-gestion-carta/quickstart.md` (alta de ingrediente, asociación y agotamiento) y validar SC-006
+- [ ] T062 Verificar rendimiento (<3 s) y reflejo inmediato en sala (SC-002) según `specs/008-gestion-carta/quickstart.md` (E11)
+- [ ] T063 [P] Añadir prueba de inmutabilidad del precio histórico (un cambio de precio no altera líneas ya pedidas ni cuentas pasadas, FR-014) en `backend/tests/integration/precio-historico.test.js`
 
 ---
 
@@ -166,7 +183,8 @@ carta de sala sin que el administrador lo desactive.
 ### Dentro de cada historia
 
 - Pruebas primero (deben fallar antes de implementar) → modelos → servicios → endpoints → UI.
-- Las tareas sobre un mismo fichero son secuenciales (p. ej. T020 y T021 en `cartaService.js`).
+- Las tareas sobre un mismo fichero son secuenciales (p. ej. las de alta y edición en
+  `cartaService.js`).
 
 ---
 
@@ -194,7 +212,7 @@ Task: "Prueba de componente en frontend/tests/components/FormularioPlato.test.js
 1. Setup + Fundacional.
 2. US1 → probar → demo (MVP).
 3. US2 → probar → demo (disponibilidad manual).
-4. US3 → probar → demo (baja automática por ingrediente).
+4. US3 → probar → demo (ingredientes, asociación y baja automática).
 5. Pulido.
 
 ### Estrategia en equipo
@@ -211,5 +229,6 @@ Task: "Prueba de componente en frontend/tests/components/FormularioPlato.test.js
 - La constitución obliga a parar y esperar revisión/commit tras **cada** tarea durante
   `/speckit.implement`.
 - Commits con Conventional Commits en español (constitución, VI).
-- No hay `DELETE` de platos: la baja es `activo = false` (FR-014).
+- No hay `DELETE` de platos: la baja es `activo = false` (supuesto de la spec: preservar el historial de ventas).
+- No hay `DELETE` de ingredientes: esta historia cubre alta y edición (FR-015).
 - Evitar: tareas vagas, conflictos en el mismo fichero y dependencias cruzadas entre historias.

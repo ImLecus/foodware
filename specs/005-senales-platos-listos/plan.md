@@ -1,6 +1,6 @@
 # Plan de Implementación: Señales de platos listos por mesa
 
-**Rama**: `005-senales-platos-listos` | **Fecha**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
+**Rama**: `feature/005-senales-platos-listos` | **Fecha**: 2026-10-20 | **Spec**: [spec.md](./spec.md)
 
 **Entrada**: Especificación de la funcionalidad en `/specs/005-senales-platos-listos/spec.md`
 
@@ -10,13 +10,19 @@
 
 El camarero necesita ver, sin recargar, el estado (pendiente/listo) de los platos de
 todas las mesas abiertas y recibir un aviso perceptible cuando una mesa queda completa,
-pudiendo descartarlo. El estado de cada plato lo produce la historia 04 (cocina) y esta
-historia solo lo consume y lo muestra; el único dato que esta historia crea es el aviso
-de mesa (activo/descartado).
+pudiendo descartarlo. El descarte es **global** (FR-009, FR-010): cuando un camarero
+descarta el aviso, deja de mostrarse para todos los camareros y en todas las pantallas
+del restaurante hasta que se marque un nuevo plato como listo en esa mesa (SC-009). El
+estado de cada plato lo produce la historia 04 (cocina) y esta historia solo lo consume
+y lo muestra; el único dato que esta historia crea es el aviso de mesa
+(activo/descartado), compartido por toda la sala.
 
 Enfoque técnico: una vista web de sala (React + Chakra UI) que obtiene el estado por la
 API HTTP de Express y lo mantiene al día mediante **Server-Sent Events (SSE)** nativos
-del navegador. No hay inicio de sesión ni asignación de mesas por camarero: todas las
+del navegador. El backend publica los cambios en un **hub SSE compartido**, de modo que
+todos los clientes conectados reciben el mismo evento; al descartar un aviso se emite un
+evento de difusión que lo retira de todas las pantallas, garantizando su coherencia entre
+dispositivos. No hay inicio de sesión ni asignación de mesas por camarero: todas las
 mesas son compartidas (FR-011). La aplicación exige conexión; al perderse muestra un
 indicador de "sin conexión", marca los datos como no actualizados y se resincroniza al
 recuperarla (FR-014).
@@ -42,7 +48,8 @@ ejecución reproducible con Docker (Linux).
 
 **Objetivos de rendimiento**: un cambio de estado se ve en ≤ 5 s (SC-002/FR-004); resincronización
 tras reconexión en ≤ 10 s (SC-008); identificar los platos listos en ≤ 2 s (SC-001);
-descartar el aviso en ≤ 2 s (SC-005).
+descartar el aviso en ≤ 2 s (SC-005); el descarte se refleja en todas las pantallas en ≤ 5 s
+(SC-009).
 
 **Restricciones**: requiere conexión a la red del restaurante (FR-014); UI solo con Chakra UI;
 sin frameworks adicionales sin enmienda; todos los textos en español de España; arranque
@@ -60,7 +67,7 @@ y avisos por mesa.
 |-------------------|------------|--------|
 | I. Simplicidad ante todo | Vista + API + SSE; sin capas, ni gestor de estado global, ni ORM | Pasa |
 | II. Español de España y euro | Todos los textos de la vista en español; sin importes en esta historia | Pasa |
-| III. Cero alcance fantasma | Solo se implementa lo especificado (estado de platos, aviso, descarte, sin conexión) | Pasa |
+| III. Cero alcance fantasma | Solo se implementa lo especificado (FR-001…FR-015): estado de platos, aviso, descarte global para todos los camareros y pantallas (FR-009, FR-010) y sin conexión | Pasa |
 | IV. Verificable por no técnico | Comprobable desde la interfaz (marcar en cocina → ver en sala; aviso; descarte) | Pasa |
 | V. Datos con respeto | Sin datos personales más allá de la identidad ya existente; secretos por variables de entorno, nunca en el repo | Pasa |
 | VI. Conventional Commits | Proceso de commits del equipo; no afecta al diseño | Pasa |

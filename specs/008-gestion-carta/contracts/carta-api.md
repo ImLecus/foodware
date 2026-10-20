@@ -80,10 +80,16 @@ Reglas del cuerpo:
 - `precio` se valida en euros y debe ser `> 0` (FR-004); no se guarda un valor inválido.
 - No existe `DELETE`: la baja se hace con `PATCH { "activo": false }` (FR-014).
 - Un cambio de `precio` no altera líneas de pedido ya tomadas (FR-014).
+- `ingredienteIds` debe referenciar ingredientes existentes y sin duplicados; en `PATCH` sustituye
+  el conjunto completo de asociaciones (un array vacío las elimina) (FR-015).
+- Asociar o desasociar ingredientes se refleja en la disponibilidad derivada en la siguiente
+  lectura, sin acciones adicionales (FR-009/FR-015).
 
 ## Gestión de ingredientes (rol `administrador`)
 
 ### `GET /api/admin/ingredientes`
+
+Devuelve el catálogo de ingredientes con su estado.
 
 Respuesta `200 OK`:
 
@@ -94,15 +100,54 @@ Respuesta `200 OK`:
 ]
 ```
 
+### `POST /api/admin/ingredientes`
+
+Crea un ingrediente.
+
+Cuerpo:
+
+| Campo | Tipo | Obligatorio | Descripción |
+|-------|------|-------------|-------------|
+| `nombre` | string | Sí | Nombre no vacío. |
+| `estado` | enum | No | `disponible` \| `agotado` (por defecto `disponible`). |
+
+Respuesta `201 Created`: el ingrediente creado (misma forma que en el listado).
+
 ### `PATCH /api/admin/ingredientes/:id`
 
-Cambia el estado de un ingrediente; el efecto sobre la oferta de los platos se deriva en la lectura.
+Modifica el nombre y/o el estado de un ingrediente. Los campos omitidos no cambian. El efecto del
+estado sobre la oferta de los platos se deriva en la lectura.
 
-Cuerpo: `{ "estado": "disponible" | "agotado" }`.
+Cuerpo (cualquier subconjunto): `{ "nombre": "Jamón ibérico", "estado": "agotado" }`.
 
 Respuesta `200 OK`: el ingrediente actualizado.
 
-Errores: `400` (estado no válido), `401`, `403`, `404` (`:id` inexistente), `500`.
+Errores de esta sección:
+
+| Código | Cuándo |
+|--------|--------|
+| `400 Bad Request` | `nombre` vacío, `estado` no válido o cuerpo malformado |
+| `401 Unauthorized` | Sin autenticación |
+| `403 Forbidden` | Autenticado sin rol `administrador` |
+| `404 Not Found` | `:id` de ingrediente inexistente |
+| `500 Internal Server Error` | Error inesperado (respuesta de error estándar) |
+
+Reglas del cuerpo:
+- No existe `DELETE` para ingredientes: esta historia cubre alta y edición (FR-015).
+- Un ingrediente puede estar asociado a uno o varios platos; cambiar su estado afecta a todos ellos
+  (caso límite del ingrediente compartido).
+
+### Asociación de ingredientes con platos
+
+La asociación se gestiona desde el plato, sin endpoints propios: `POST /api/admin/platos` y
+`PATCH /api/admin/platos/:id` aceptan `ingredienteIds`.
+
+- Los identificadores deben existir; si alguno no existe, se responde `400` y no se guarda el
+  cambio (FR-015).
+- En `PATCH` el array representa el conjunto completo: sustituye las asociaciones anteriores; un
+  array vacío las elimina.
+- Asociar un ingrediente agotado oculta el plato en la siguiente lectura; retirarlo puede volver a
+  ofrecerlo si el plato sigue `activo` (FR-012/FR-015).
 
 ## Consulta de la carta vigente (cualquier rol autenticado)
 

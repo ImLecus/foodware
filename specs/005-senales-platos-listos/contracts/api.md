@@ -53,7 +53,7 @@ detectar conexiones muertas.
 | `plato-estado` | `{ "mesaId": 12, "platoId": 302, "estado": "listo", "marcadoEn": "..." }` | Cocina marca/deshace un plato |
 | `aviso-activo` | `{ "avisoId": 55, "mesaId": 12, "generadoEn": "..." }` | Una mesa abierta pasa a completa |
 | `aviso-retirado` | `{ "mesaId": 12 }` | Un plato vuelve a `pendiente` y la mesa deja de estar completa |
-| `aviso-descartado` | `{ "avisoId": 55, "mesaId": 12, "descartadoEn": "..." }` | Otro camarero descarta el aviso (sincroniza todas las pantallas) |
+| `aviso-descartado` | `{ "avisoId": 55, "mesaId": 12, "descartadoEn": "..." }` | Cualquier camarero descarta el aviso; se difunde a **todos** los clientes conectados (descarte global, SC-009) |
 
 **Ejemplo**
 
@@ -70,7 +70,9 @@ data: {"avisoId":55,"mesaId":12,"generadoEn":"2026-10-13T12:35:10.100Z"}
 
 ## 3. `POST /api/sala/avisos/{avisoId}/descartar`
 
-Registra el descarte del aviso por parte del camarero (FR-009, FR-010).
+Registra el descarte del aviso por parte del camarero (FR-009, FR-010). El descarte es
+**global**: cambia el estado del aviso para toda la sala y el aviso deja de mostrarse en
+todas las pantallas de camarero (SC-009).
 
 **Respuesta 200**
 
@@ -81,9 +83,14 @@ Registra el descarte del aviso por parte del camarero (FR-009, FR-010).
 **Reglas y errores**:
 - Idempotente: si el aviso ya estaba `descartado`, devuelve `200` sin cambiar `descartadoEn`.
 - `404` si el aviso no existe.
+- `500` si falla el acceso a datos; la vista muestra el estado "sin conexión / no
+  actualizado" y reintenta al recuperar la conexión.
 - Sin conexión, la vista **no envía** la petición y deshabilita la acción, mostrando el
   indicador de "sin conexión" (FR-014).
-- Al descartar, el backend emite además `aviso-descartado` por SSE para el resto de pantallas.
+- Al descartar, el backend emite `aviso-descartado` por SSE a **todos** los clientes del
+  hub compartido, incluida la pantalla que originó la acción, para que todas converjan al
+  mismo estado en ≤ 5 s (SC-009). La pantalla que descarta puede actualizar su vista al
+  recibir la respuesta `200`, pero el evento es la fuente de verdad para el resto.
 
 ## 4. Semántica de "sin conexión"
 

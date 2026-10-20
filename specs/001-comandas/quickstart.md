@@ -1,6 +1,6 @@
 # Quickstart — Validación de la historia 001 (Abrir mesa y tomar pedido)
 
-**Feature**: `001-comandas` | **Date**: 2026-10-13
+**Feature**: `001-comandas` | **Date**: 2026-10-20
 
 Guía para levantar el sistema y comprobar, **desde la interfaz y sin leer código**, que la
 funcionalidad cumple la spec. Los detalles de datos y API están en
@@ -83,12 +83,18 @@ Cada escenario corresponde a un criterio de aceptación de la spec.
    Detén el backend (`docker compose stop backend`) con un pedido abierto. Resultado esperado: la
    pantalla muestra "sin conexión", no permite confirmar y conserva en pantalla lo ya anotado.
 
+10. **Anular un pedido en curso (FR-019)**
+    Con una mesa abierta y algún plato anotado (sin confirmar), pulsa "Anular pedido" y confirma la
+    acción. Resultado esperado: el pedido desaparece de la pantalla, la mesa vuelve a mostrarse
+    como libre, no se envía nada a cocina y el pedido ya no existe (`GET /api/pedidos/{id}` → `404`).
+
 ## Criterios de éxito a comprobar
 
 - **SC-001**: abrir mesa y confirmar un pedido de 3 platos (una por partida) en menos de 2 min.
 - **SC-002**: el pedido confirmado llega agrupado por partidas sin mezclar partidas.
 - **SC-003**: 0 pedidos duplicados por mesa abierta.
 - **SC-005**: al confirmar, el 100 % de los platos anotados aparece en el pedido enviado.
+- **SC-006**: al anular, la mesa queda libre y sin pedido en curso, y no llega nada a cocina.
 
 ## Fuera de alcance (no se valida aquí)
 

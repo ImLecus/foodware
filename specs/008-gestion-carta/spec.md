@@ -1,6 +1,6 @@
 # Feature Specification: Gestión de la carta
 
-**Feature Branch**: `008-gestion-carta`
+**Feature Branch**: `feature/008-gestion-carta`
 
 **Created**: 2026-10-13
 
@@ -17,6 +17,10 @@
 - Q: ¿La gestión del administrador incluye crear y modificar partidas, o son fijas? → A: Las partidas son fijas (entrantes, principales y postres); el administrador solo asigna la partida de cada plato, sin gestionar categorías.
 - Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
 - Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar el pedido y no cambia después.
+
+### Session 2026-10-20
+
+- Q: La historia dice que el administrador actualiza el estado de los ingredientes, pero no dice cómo se crean los ingredientes ni cómo se asocian a los platos; ¿qué debe incluir esta historia sobre esa gestión? (FR-007, FR-008) → A: Crear y editar ingredientes, asociarlos a platos y cambiar su estado (disponible/agotado), todo desde la gestión de la carta.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -67,15 +71,15 @@ disponible y comprobando que deja de aparecer en la carta de sala.
 2. **Given** un plato marcado como no disponible, **When** el administrador lo marca como
    disponible de nuevo, **Then** el plato vuelve a ofrecerse en la carta de sala.
 3. **Given** que el resto de los usuarios consulta la carta, **When** la disponibilidad de un plato
-   cambia, **Then** solo ven el estado actualizado del plato y no información obsoleta.
+   cambia, **Then** el plato deja de aparecer como pedible y no se muestra información obsoleta.
 
 ---
 
 ### User Story 3 - Actualización automática por agotamiento de ingrediente (Priority: P2)
 
 Si un ingrediente se agota, el plato correspondiente debe dejar de ofrecerse automáticamente.
-El sistema registra el estado de cada ingrediente (disponible o agotado) y el administrador lo
-actualiza; cuando un ingrediente pasa a agotado, los platos que lo usan se ocultan en las
+El administrador gestiona el catálogo de ingredientes, los asocia a los platos y actualiza su
+estado; cuando un ingrediente pasa a agotado, los platos que lo usan se ocultan en las
 tabletas de sala sin más intervención. Cuando el ingrediente vuelve a estar disponible, los
 platos asociados recuperan la oferta de forma automática.
 
@@ -99,6 +103,9 @@ administrador tenga que desactivar el plato.
 4. **Given** un plato deshabilitado manualmente por el administrador y con un ingrediente
    agotado, **When** ese ingrediente vuelve a estar disponible, **Then** el plato no vuelve a
    ofrecerse porque sigue deshabilitado manualmente.
+5. **Given** un ingrediente existente sin asociar a ningún plato, **When** el administrador lo
+   asocia a un plato y lo marca como agotado, **Then** ese plato deja de ofrecerse en la carta de
+   sala.
 
 ---
 
@@ -116,6 +123,8 @@ administrador tenga que desactivar el plato.
   cambios se aplican a la carta vigente y se reflejan en las tabletas de sala.
 - Un ingrediente agotado y reabastecido dentro del mismo servicio: el plato se oculta y se
   vuelve a ofrecer según el estado del ingrediente registrado en el sistema en cada momento.
+- Un ingrediente asociado a varios platos: al pasar a agotado se ocultan todos los platos
+  asociados; al restaurarse se ofrecen de nuevo según su disponibilidad manual.
 - El administrador asigna a un plato una partida que no existe entre las fijas: el sistema lo
   rechaza con un aviso y conserva la partida válida anterior.
 - Un plato deshabilitado manualmente mientras un ingrediente se agota: el plato permanece
@@ -144,6 +153,12 @@ administrador tenga que desactivar el plato.
   ingrediente asociado pasa a estado agotado, registrado en el sistema por el administrador.
 - **FR-008**: El sistema MUST volver a ofrecer un plato cuando el ingrediente agotado pasa de
   nuevo a estado disponible, siempre que la disponibilidad manual del plato lo permita.
+- **FR-009**: Cualquier cambio de la carta (platos, precios o disponibilidad) MUST reflejarse de
+  inmediato en la carta vigente que ven las tabletas de sala.
+- **FR-010**: El sistema MUST mostrar al resto de usuarios siempre la carta vigente, sin
+  información obsoleta tras un cambio del administrador.
+- **FR-011**: Los platos gestionados siguen el formato de precio en euros y las convenciones
+  españolas de número y fecha.
 - **FR-012**: El sistema MUST ofrecer un plato únicamente cuando está manualmente activo y
   todos sus ingredientes están disponibles; la baja manual y la baja automática conviven con
   esta regla combinada (aclarado en la sesión de clarificación).
@@ -152,12 +167,8 @@ administrador tenga que desactivar el plato.
   crear ni modificar partidas (aclarado en la sesión de clarificación).
 - **FR-014**: Un cambio de precio MUST NOT alterar el precio ya fijado en los platos pedidos con
   anterioridad; afecta solo a la carta vigente y a los nuevos pedidos.
-- **FR-009**: Cualquier cambio de la carta (platos, precios o disponibilidad) MUST reflejarse de
-  inmediato en la carta vigente que ven las tabletas de sala.
-- **FR-010**: El sistema MUST mostrar al resto de usuarios siempre la carta vigente, sin
-  información obsoleta tras un cambio del administrador.
-- **FR-011**: Los platos gestionados siguen el formato de precio en euros y las convenciones
-  españolas de número y fecha.
+- **FR-015**: El sistema MUST permitir al administrador crear y editar ingredientes, asociarlos a
+  uno o varios platos y cambiar su estado (disponible o agotado) desde la gestión de la carta.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -165,8 +176,9 @@ administrador tenga que desactivar el plato.
   estado de disponibilidad; puede agruparse por partidas.
 - **Carta**: conjunto de platos vigentes que se ofrece en las tabletas de sala; cambia con las
   modificaciones del administrador.
-- **Ingrediente**: componente de un plato con estado registrado (disponible o agotado), cuyo
-  paso a agotado desencadena la baja automática de la oferta de los platos que lo usan.
+- **Ingrediente**: componente de un plato con nombre y estado registrado (disponible o agotado);
+  se asocia a uno o varios platos y su paso a agotado desencadena la baja automática de la oferta
+  de esos platos. Su catálogo y sus asociaciones se gestionan desde la administración de la carta.
 
 ## Success Criteria *(mandatory)*
 
@@ -183,6 +195,9 @@ administrador tenga que desactivar el plato.
   técnica desde la interfaz.
 - **SC-005**: El resto de los usuarios ve siempre la carta vigente y no puede modificar platos,
   precios ni disponibilidad.
+- **SC-006**: El administrador puede crear un ingrediente, asociarlo a un plato y marcarlo como
+  agotado en menos de 1 minuto; el plato deja de ofrecerse en las tabletas de sala en 3 segundos o
+  menos.
 
 ## Assumptions
 

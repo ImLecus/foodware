@@ -1,6 +1,6 @@
 # Phase 1 — Data Model: Abrir mesa y tomar pedido
 
-**Feature**: `001-comandas` | **Date**: 2026-10-13
+**Feature**: `001-comandas` | **Date**: 2026-10-20
 
 Modelo de datos derivado de las entidades clave de la spec. Los importes se guardan como enteros en
 céntimos. La base de datos es SQLite.
@@ -44,7 +44,8 @@ Puesto del restaurante que el camarero abre.
 | `identificador` | texto | Obligatorio y único en el local (p. ej. "Mesa 5") |
 | `estado` | texto | `libre` o `ocupada` |
 
-- **Estados**: `libre` → `ocupada` al abrir la mesa. La vuelta a `libre` (cierre) pertenece a 006.
+- **Estados**: `libre` → `ocupada` al abrir la mesa; `ocupada` → `libre` al anular el pedido en
+  curso. La vuelta a `libre` por cierre de cuenta pertenece a 006.
 - **Relaciones**: una `Mesa` puede tener una `Pedido` en curso (como máximo una).
 
 ## Pedido
@@ -64,6 +65,9 @@ Pedido tomado para una mesa.
   (restricción única parcial sobre `mesa_id` donde `estado = 'en_curso'`).
 - **Estados**: `en_curso` → `enviada` al confirmar. La modificación posterior (`modificada`) es
   objeto de la historia 002.
+- **Anulación**: un pedido `en_curso` puede anularse; el pedido y sus `LineaPedido` se **eliminan**
+  de la base de datos y no se conserva un estado `anulada` (decisión en `research.md` §11). Un
+  pedido `enviada` no se puede anular.
 - **Relaciones**: una `Pedido` tiene muchas `LineaPedido`; pertenece a una `Mesa`.
 
 ## LineaPedido
@@ -81,6 +85,7 @@ Cada plato anotado dentro de un pedido.
 
 - **Reglas**: se permite repetir el mismo `plato_id` en varias líneas (una por repetición) o
   aumentar la `cantidad` de una línea; ambas opciones son válidas y equivalentes funcionalmente.
+- **Anulación**: al anular el pedido, sus líneas se eliminan con él (borrado en cascada).
 - **Precio**: fijado al crear la línea (decisión de clarificación; ver `research.md` §4).
 
 ## Camarero (referenciado)
@@ -91,8 +96,9 @@ Cada plato anotado dentro de un pedido.
 ## Transiciones de estado
 
 ```text
-Mesa:     libre ──(abrir mesa)──▶ ocupada
+Mesa:     libre ──(abrir mesa)──▶ ocupada ──(anular pedido)──▶ libre
 Pedido:  (crear) ──▶ en_curso ──(confirmar)──▶ enviada
+                        └──(anular)──▶ (eliminado)
 ```
 
 Reglas de validación asociadas a la transición:
@@ -101,6 +107,9 @@ Reglas de validación asociadas a la transición:
 - No se puede confirmar un pedido sin líneas (FR-014).
 - Al confirmar, el pedido pasa a `enviada`, queda vinculado a su mesa (FR-017) y el pedido se
   devuelve/expone agrupado por partidas (FR-016).
+- Al anular, solo se admite un pedido `en_curso`: se eliminan el pedido y sus líneas, la mesa pasa
+  a `libre` y no se publica ningún pedido hacia cocina (FR-019). Un pedido `enviada` devuelve
+  conflicto.
 - El precio de la línea se fija al añadirla (FR-018).
 
 ## Vista de pedido agrupado por partidas
@@ -123,4 +132,5 @@ Pedido
 ## Eventos SSE
 
 El hub SSE compartido (`backend/src/realtime/hub.js`) emite eventos de estado; esta historia publica
-«pedido-confirmado» y el frontend se suscribe vía `GET /api/eventos`.
+«pedido-confirmado» al confirmar y «pedido-anulado» al anular (para que sala refresque la mesa
+como `libre`), y el frontend se suscribe vía `GET /api/eventos`.

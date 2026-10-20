@@ -1,6 +1,6 @@
 # Phase 0 — Research: Abrir mesa y tomar pedido
 
-**Feature**: `001-comandas` | **Date**: 2026-10-13
+**Feature**: `001-comandas` | **Date**: 2026-10-20
 
 Este documento resuelve las incógnitas del *Technical Context* del plan. No quedan marcadores
 `NEEDS CLARIFICATION` pendientes.
@@ -92,3 +92,16 @@ Este documento resuelve las incógnitas del *Technical Context* del plan. No que
 - **Rationale**: refleja el stack de dos capas y el requisito de contenedores; mantiene el arranque
   en un único comando.
 - **Alternatives considered**: dos repositorios separados (más fricción para un equipo de 4).
+
+## 11. Anulación de un pedido en curso
+
+- **Decision**: al anular, se **eliminan** el pedido y sus líneas de la base de datos y la mesa
+  vuelve a `libre`; no se persiste un estado `anulada` ni se emite ningún pedido hacia cocina.
+- **Rationale**: la clarificación de la spec (2026-10-20) dice que el pedido "se descarta" y nada
+  se envía; borrarlo es la opción más simple, no obliga a añadir un estado al enum, ni a filtrar
+  pedidos anulados en consultas y en la restricción única parcial, y deja la mesa lista para un
+  nuevo pedido. El borrado de líneas va en cascada dentro de la misma transacción que libera la
+  mesa. Se publica un evento SSE «pedido-anulado» para que sala refresque el estado.
+- **Alternatives considered**: estado `anulada` (conserva historial, pero añade complejidad y
+  migración sin requisito que lo justifique); borrado lógico (mismo coste que el estado y residuos
+  en la base de datos).

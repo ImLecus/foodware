@@ -119,16 +119,21 @@
 ### Tests for User Story 3 ⚠️
 
 - [ ] T039 [P] [US3] Test de contrato de `POST /api/sala/avisos/:id/descartar` (200, idempotente, 404) en `backend/tests/contract/avisos-descartar.test.js`
-- [ ] T040 [P] [US3] Test de integración de descarte y regeneración del aviso en `backend/tests/integration/aviso-descarte.test.js`
-- [ ] T041 [P] [US3] Test de componente de la acción de descartar (una sola acción; deshabilitada sin conexión) en `frontend/tests/components/DescartarAviso.test.jsx`
+- [ ] T040 [P] [US3] Test de contrato del descarte global idempotente (200, 404 y ya descartado sin cambiar `descartadoEn`) en `backend/tests/contract/avisos-descartar-global.test.js`
+- [ ] T041 [P] [US3] Test de integración de descarte y regeneración del aviso en `backend/tests/integration/aviso-descarte.test.js`
+- [ ] T042 [P] [US3] Test de integración de la difusión de `aviso-descartado` a todos los clientes SSE y de la coherencia al reconectar en `backend/tests/integration/aviso-descarte-global.test.js`
+- [ ] T043 [P] [US3] Test de componente de la acción de descartar (una sola acción; deshabilitada sin conexión) en `frontend/tests/components/DescartarAviso.test.jsx`
+- [ ] T044 [P] [US3] Test de componente de descarte global en dos pantallas (una descarta y el aviso desaparece en ambas) en `frontend/tests/integration/descarte-global.test.jsx`
 
 ### Implementation for User Story 3
 
-- [ ] T042 [US3] Implementar la lógica de descarte del aviso (idempotente) en `backend/src/services/avisosService.js`
-- [ ] T043 [US3] Implementar `POST /api/sala/avisos/:id/descartar` en `backend/src/routes/avisos.js`
-- [ ] T044 [US3] Difundir el evento `aviso-descartado` al descartar en `backend/src/routes/avisos.js`
-- [ ] T045 [US3] Añadir la acción de descartar en `frontend/src/components/AvisoMesa.jsx`
-- [ ] T046 [US3] Gestionar el evento SSE `aviso-descartado` en `useSala` en `frontend/src/hooks/useSala.js`
+- [ ] T045 [US3] Implementar la lógica de descarte del aviso (idempotente) en `backend/src/services/avisosService.js`
+- [ ] T046 [US3] Implementar `POST /api/sala/avisos/:id/descartar` en `backend/src/routes/avisos.js`
+- [ ] T047 [US3] Difundir el evento `aviso-descartado` al descartar en `backend/src/routes/avisos.js`
+- [ ] T048 [US3] Implementar la transición global `activo→descartado`, publicar `aviso-descartado` a todos los clientes y garantizar la coherencia de la instantánea al reconectar en `backend/src/services/avisosService.js`, `backend/src/routes/avisos.js` y `backend/src/services/mesasService.js`
+- [ ] T049 [US3] Añadir la acción de descartar en `frontend/src/components/AvisoMesa.jsx`
+- [ ] T050 [US3] Gestionar el evento SSE `aviso-descartado` en `useSala` en `frontend/src/hooks/useSala.js`
+- [ ] T051 [US3] Gestionar el descarte global en el estado de sala (retirada del aviso en todas las pantallas y coherencia tras reconectar) en `frontend/src/hooks/useSala.js` y `frontend/src/pages/SalaCamarero.jsx`
 
 **Checkpoint**: Las tres historias funcionan de forma independiente
 
@@ -138,12 +143,13 @@
 
 **Purpose**: Mejoras que afectan a varias historias
 
-- [ ] T047 [P] Actualizar la documentación de puesta en marcha y de la funcionalidad en `README.md`
-- [ ] T048 [P] Revisar que todos los textos visibles están en español de España en `frontend/src/`
-- [ ] T049 Revisar la coherencia del comportamiento sin conexión y la resincronización en `frontend/src/hooks/useSala.js` y `backend/src/realtime/eventos.js`
-- [ ] T050 [P] Verificar que `.gitignore` excluye `.env` y que no hay secretos en el repositorio (`.gitignore`)
-- [ ] T051 Verificar la reproducibilidad de Docker con `docker compose up --build` (`docker-compose.yml`)
-- [ ] T052 Ejecutar los escenarios de validación A–G de `specs/005-senales-platos-listos/quickstart.md`
+- [ ] T052 [P] Actualizar la documentación de puesta en marcha y de la funcionalidad en `README.md`
+- [ ] T053 [P] Revisar que todos los textos visibles están en español de España en `frontend/src/`
+- [ ] T054 Revisar y probar la coherencia del comportamiento sin conexión (indicador, información marcada como no actualizada) y la resincronización en `frontend/src/hooks/useSala.js` y `backend/src/realtime/eventos.js`
+- [ ] T055 [P] Verificar que `.gitignore` excluye `.env` y que no hay secretos en el repositorio (`.gitignore`)
+- [ ] T056 Verificar la reproducibilidad de Docker con `docker compose up --build` (`docker-compose.yml`)
+- [ ] T057 Ejecutar los escenarios de validación A–G de `specs/005-senales-platos-listos/quickstart.md`
+- [ ] T058 Ejecutar el escenario H (descarte global desde dos pantallas) de `specs/005-senales-platos-listos/quickstart.md`
 
 ---
 

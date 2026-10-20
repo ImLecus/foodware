@@ -15,7 +15,8 @@ implementación; el detalle técnico está en `plan.md`, `data-model.md` y `cont
 # Levantar backend y frontend
 docker compose up --build
 
-# (Opcional) cargar datos semilla: cuentas cerradas de ayer y hoy
+# (Opcional) cargar datos semilla: cuentas cerradas de ayer y de hoy
+# (las de hoy deben quedar fuera del dashboard hasta que termine el día natural)
 docker compose exec backend npm run seed
 ```
 
@@ -39,7 +40,7 @@ contrato del endpoint; estados de la página).
 
 ### E1. Visión global del total (US1, SC-001, FR-002)
 1. Iniciar sesión como **encargado** y abrir `/dashboard`.
-2. **Esperado**: se ve el total del día en euros en primer plano (`1.287,50 €`).
+2. **Esperado**: se ve el total del último día completado en euros en primer plano (`1.287,50 €`).
 
 ### E2. Desglose por camarero (US2, FR-003)
 1. En el mismo dashboard, mirar la tabla "por camarero".
@@ -66,10 +67,10 @@ contrato del endpoint; estados de la página).
 2. **Esperado**: no aparece la entrada de navegación y la ruta muestra "acceso restringido".
 3. Llamar a `GET /api/reports/daily` sin rol encargado → `403`.
 
-### E7. Consistencia con las cuentas cerradas (SC-004, FR-008)
-1. Cerrar una cuenta nueva (historia 06) para hoy.
-2. Recargar el dashboard.
-3. **Esperado**: el total del día aumenta exactamente en el importe de esa cuenta.
+### E7. Consistencia con las cuentas cerradas de un día completado (SC-004, FR-008)
+1. Consultar el dashboard para el último día natural completado (o el día cerrado de los datos semilla).
+2. Sumar manualmente los importes de las cuentas cerradas de ese día.
+3. **Esperado**: el total del dashboard coincide exactamente con esa suma.
 
 ### E8. Sin conexión (aclaración de la spec)
 1. Con el dashboard abierto, cortar la red o detener el backend.
@@ -79,6 +80,14 @@ contrato del endpoint; estados de la página).
 ### E9. Rendimiento (SC-005)
 1. Con un día de datos representativo, cronometrar la carga del dashboard.
 2. **Esperado**: los datos se muestran en menos de 3 s.
+
+### E10. Día anterior sin ventas (FR-011, SC-006)
+1. Preparar los datos con el día anterior sin ninguna cuenta cerrada y el día actual con ventas.
+2. Abrir el dashboard del día actual y observar el bloque de comparación.
+3. **Esperado**: se muestra la diferencia en euros (por ejemplo, `+350,00 €`) con la etiqueta
+   «sin base de comparación»; **no** aparece ningún porcentaje.
+4. **Comprobación de API**: `GET /api/reports/daily?date=<día actual>` devuelve
+   `comparacion.sinBaseComparacion = true` y `comparacion.diferenciaPorcentaje = null`.
 
 ## Comprobación del contrato de la API
 

@@ -42,7 +42,7 @@ mesas y las líneas de pedido (consumos) de las historias 01–04.
 **⚠️ CRITICAL**: Ninguna historia puede empezar hasta completar esta fase
 
 - [ ] T005 Implementar el conexión a SQLite en `backend/src/db.js`
-- [ ] T006 Crear la migración de la historia 006 (`cuentas`, `cuentas_partes`, `cuentas_parte_consumos`) en `backend/src/migrations/002_cuentas.sql` (solo tablas propias de 006; NO crear `mesas` ni líneas de pedido, que pertenecen a las historias 01–04)
+- [ ] T006 Crear la migración de la historia 006 (`cuentas`, `cuentas_partes` con `id`, `cuenta_id`, `orden`, `comensal`, `importe_cent`, `estado`, `pagada_en`; y `cuentas_parte_consumos`) en `backend/src/migrations/002_cuentas.sql` (solo tablas propias de 006; NO crear `mesas` ni líneas de pedido, que pertenecen a las historias 01–04)
 - [ ] T007 [P] Ampliar los datos de ejemplo con una mesa abierta con consumos y precios fijados al pedir en `backend/scripts/seed.js`
 - [ ] T008 [P] Reutilizar el hub SSE de la historia 005 y exponer la emisión del evento `mesa-cerrada` en `backend/src/realtime/eventos.js`
 - [ ] T009 Implementar el bootstrap de la app Express y del servidor HTTP (montaje de rutas y uso del hub) en `backend/src/app.js` y `backend/src/server.js`
@@ -100,15 +100,15 @@ mesas y las líneas de pedido (consumos) de las historias 01–04.
 ### Implementation for User Story 2
 
 - [ ] T027 [US2] Implementar `divisionService` (partes iguales con reparto de céntimos de uno en uno, por consumo con porciones, y validación de la suma y del total base) en `backend/src/services/divisionService.js`
-- [ ] T028 [US2] Extender `cuentasService` para persistir las partes y las asignaciones en la transacción de cierre en `backend/src/services/cuentasService.js`
-- [ ] T029 [US2] Extender `POST .../cuenta/cierre` para aceptar `modo` `iguales`/`por_consumo` con `partes` y `asignaciones`, validando `422` (suma y total base) en `backend/src/routes/cuentas.js`
+- [ ] T028 [US2] Extender `cuentasService` para persistir las partes (incluido `comensal`) y las asignaciones en la transacción de cierre en `backend/src/services/cuentasService.js`
+- [ ] T029 [US2] Extender `POST .../cuenta/cierre` para aceptar `modo` `iguales`/`por_consumo` con `partes` (incluido `comensal` obligatorio) y `asignaciones`, validando `422` (comensal, suma y total base) e invalidando cualquier división persistida anterior (FR-017) en `backend/src/routes/cuentas.js` y `backend/src/services/cuentasService.js`
 - [ ] T030 [US2] Ampliar las llamadas del frontend con el cierre por división en `frontend/src/services/api.js`
 - [ ] T031 [P] [US2] Implementar el componente `DivisionCuenta` (elección de partes iguales o por consumo y número de partes) en `frontend/src/components/DivisionCuenta.jsx`
 - [ ] T032 [P] [US2] Implementar el componente `AsignarConsumos` (asignación de platos o porciones a las partes) en `frontend/src/components/AsignarConsumos.jsx`
 - [ ] T033 [US2] Implementar el componente `ParteCuenta` (importe y comensal de una parte) en `frontend/src/components/ParteCuenta.jsx`
 - [ ] T034 [US2] Extender `useCuenta` (construcción de la división, total base y reinicio al cambiar la cuenta) en `frontend/src/hooks/useCuenta.js`
 - [ ] T035 [US2] Integrar la división en la página `CierreCuenta` en `frontend/src/pages/CierreCuenta.jsx`
-- [ ] T036 [US2] Test de integración de la división (partes iguales con redondeo y división por consumo) en `backend/tests/integration/cierre-division.test.js`
+- [ ] T036 [US2] Test de integración de la división (partes iguales con redondeo, división por consumo, persistencia del comensal de cada parte y reinicio de una división persistida al cambiar la cuenta) en `backend/tests/integration/cierre-division.test.js`
 
 **Checkpoint**: User Stories 1 y 2 funcionan de forma independiente
 
@@ -116,30 +116,42 @@ mesas y las líneas de pedido (consumos) de las historias 01–04.
 
 ## Phase 5: User Story 3 - Ticket final y cierre de la mesa (Priority: P3)
 
-**Goal**: Al confirmar el cobro (de una cuenta completa o de todas las partes de una dividida), el sistema genera el ticket con el total y el desglose de cada parte, cierra la mesa y rechaza cualquier operación posterior sobre ella.
+**Goal**: Al pagarse la última parte de una cuenta dividida (o al confirmar el pago único), el sistema emite un único ticket con el total y el desglose de cada parte, cierra la mesa y rechaza cualquier operación posterior sobre ella. Mientras la mesa siga abierta, una parte pagada puede volver a pendiente.
 
-**Independent Test**: Confirmar el cobro de una cuenta dividida con todas las partes pagadas, comprobar que el ticket refleja el total y cada parte, y que la mesa cerrada rechaza nuevas operaciones.
+**Independent Test**: Confirmar el cobro de una cuenta dividida pagando las partes una a una, comprobar que no hay ticket hasta la última y que entonces se emite uno único con el total y cada parte; deshacer un pago con la mesa abierta y comprobar que la mesa no se cierra con partes pendientes.
 
 > **Dependencia**: extiende la ruta de cierre y los ficheros de US1/US2; implementar US3 después de US1 y US2.
 
 ### Tests for User Story 3 ⚠️
 
 - [ ] T037 [P] [US3] Test unitario de `ticketService` (total y desglose de partes) en `backend/tests/unit/ticketService.test.js`
-- [ ] T038 [P] [US3] Test de contrato de `GET .../cuenta/ticket` y de `POST .../cuenta/cierre` con partes pendientes (201, `422`, `409`) en `backend/tests/contract/ticket-cierre.test.js`
+- [ ] T038 [P] [US3] Test de contrato de `GET .../cuenta/ticket` (409 `ticket_no_emitido` antes de la última parte) y de `POST .../cuenta/cierre` con división o partes pendientes (409, 422) en `backend/tests/contract/ticket-cierre.test.js`
 - [ ] T039 [P] [US3] Test de componente de `TicketFinal` (total y desglose de cada parte) en `frontend/tests/components/TicketFinal.test.jsx`
+- [ ] T040 [P] [US3] Test de contrato del marcado y reversión de pagos y de la emisión única del ticket (marcar parte: `200`, `404`, `409` con mesa cerrada; partes intermedias con `ticketEstado = no_emitido` y `ticket = null`; ticket único al pagar la última; `200` al deshacer con mesa abierta y `409` con mesa cerrada) en `backend/tests/contract/ticket-reversion.test.js`
+- [ ] T041 [P] [US3] Test de componente de `ParteCuenta` (deshacer el pago con confirmación, vuelta a `pendiente` y mesa abierta) en `frontend/tests/components/ParteCuenta.test.jsx`
+- [ ] T042 [US3] Test de componente del aviso «sin ticket hasta el pago completo» (cuenta abierta con partes pagadas y `ticketEstado = no_emitido`) en `frontend/tests/components/TicketFinal.test.jsx`
 
 ### Implementation for User Story 3
 
-- [ ] T040 [US3] Implementar `ticketService` (composición del ticket con el total y las partes) en `backend/src/services/ticketService.js`
-- [ ] T041 [US3] Exigir que todas las partes estén pagadas en el cierre (`422` si alguna queda pendiente) y devolver el ticket en `backend/src/routes/cuentas.js`
-- [ ] T042 [US3] Implementar `GET /api/sala/mesas/:mesaId/cuenta/ticket` (200, `404`/`409` si no está cerrada) en `backend/src/routes/cuentas.js`
-- [ ] T043 [US3] Marcar la mesa como cerrada (`abierta = false`) dentro de la transacción de cierre y rechazar nuevas operaciones sobre una mesa cerrada (`409`) en `backend/src/services/cuentasService.js` y `backend/src/routes/cuentas.js`
-- [ ] T044 [US3] Emitir el evento `mesa-cerrada` por el hub SSE al confirmar el cierre en `backend/src/routes/cuentas.js` y `backend/src/realtime/eventos.js`
-- [ ] T045 [P] [US3] Implementar el componente `TicketFinal` (total y desglose de partes) en `frontend/src/components/TicketFinal.jsx`
-- [ ] T046 [US3] Añadir el marcado de pago por parte en `frontend/src/components/ParteCuenta.jsx`
-- [ ] T047 [US3] Extender `useCuenta` y la página `CierreCuenta` (pago por partes, habilitar el cierre solo con todas pagadas y mostrar el ticket) en `frontend/src/hooks/useCuenta.js` y `frontend/src/pages/CierreCuenta.jsx`
-- [ ] T048 [US3] Test de integración del cierre con pago por partes, ticket y mesa cerrada en `backend/tests/integration/cierre-ticket.test.js`
-- [ ] T049 [US3] Test de integración del flujo de cierre en el frontend (total → división → pago → ticket) en `frontend/tests/integration/cierre-cuenta.test.jsx`
+- [ ] T043 [US3] Implementar `ticketService` (composición del ticket con el total y las partes) en `backend/src/services/ticketService.js`
+- [ ] T044 [US3] Implementar el estado derivado del ticket (`no_emitido`/`emitido`) y su exposición en la cuenta, el pago y la reversión en `backend/src/services/ticketService.js`
+- [ ] T045 [US3] Implementar `POST /api/sala/mesas/:mesaId/cuenta/partes/:parteId/pago` (200, 404, 409 si la mesa está cerrada) y exigir que todas las partes estén pagadas para cerrar la mesa (el cierre de una cuenta dividida solo se produce al pagar la última parte), devolviendo el ticket único en `backend/src/routes/cuentas.js` y `backend/src/services/cuentasService.js`
+- [ ] T046 [US3] Implementar `GET /api/sala/mesas/:mesaId/cuenta/ticket` (200 solo si la cuenta está cerrada y el ticket emitido; `404` y `409` con `ticketEstado = no_emitido` en caso contrario) en `backend/src/routes/cuentas.js`
+- [ ] T047 [US3] Marcar la mesa como cerrada (`abierta = false`) dentro de la transacción de cierre y rechazar nuevas operaciones sobre una mesa cerrada (`409`) en `backend/src/services/cuentasService.js` y `backend/src/routes/cuentas.js`
+- [ ] T048 [US3] Emitir el ticket dentro de la misma transacción que marca la última parte pendiente como pagada, sin emitirlo en partes intermedias, en `backend/src/services/cuentasService.js`
+- [ ] T049 [US3] Emitir el evento `mesa-cerrada` por el hub SSE al confirmar el cierre en `backend/src/routes/cuentas.js` y `backend/src/realtime/eventos.js`
+- [ ] T050 [US3] Implementar `DELETE /api/sala/mesas/:mesaId/cuenta/partes/:parteId/pago` para devolver una parte pagada a pendiente (200, 404, 409 con mesa cerrada, 422) en `backend/src/routes/cuentas.js` y `backend/src/services/cuentasService.js`
+- [ ] T051 [US3] Recalcular el estado de la mesa al deshacer un pago (sigue abierta si quedan partes pendientes) y emitir, si procede, el evento de actualización en `backend/src/services/cuentasService.js` y `backend/src/realtime/eventos.js`
+- [ ] T052 [P] [US3] Implementar el componente `TicketFinal` (total y desglose de partes) en `frontend/src/components/TicketFinal.jsx`
+- [ ] T053 [US3] Añadir el marcado de pago por parte llamando a `POST .../partes/:parteId/pago` en `frontend/src/components/ParteCuenta.jsx` y `frontend/src/services/api.js`
+- [ ] T054 [P] [US3] Añadir la llamada `DELETE` de deshacer el pago de una parte en `frontend/src/services/api.js`
+- [ ] T055 [US3] Implementar en `ParteCuenta` la acción de deshacer el pago con confirmación y el paso a `pendiente` en `frontend/src/components/ParteCuenta.jsx`
+- [ ] T056 [US3] Extender `useCuenta` para deshacer el pago de una parte y recalcular el estado de la mesa en `frontend/src/hooks/useCuenta.js`
+- [ ] T057 [US3] Mostrar el aviso «sin ticket hasta el pago completo» mientras la cuenta siga abierta en `frontend/src/components/TicketFinal.jsx`
+- [ ] T058 [US3] Extender `useCuenta` y la página `CierreCuenta` (pago por partes, impedir el cierre con partes pendientes, mostrar el ticket único y reflejar el estado de la mesa) en `frontend/src/hooks/useCuenta.js` y `frontend/src/pages/CierreCuenta.jsx`
+- [ ] T059 [US3] Test de integración del cierre con pago por partes, ticket y mesa cerrada en `backend/tests/integration/cierre-ticket.test.js`
+- [ ] T060 [US3] Test de integración de la emisión única del ticket y de la reversión de partes (intermedias sin ticket, ticket único al pagar la última, 409 al deshacer con mesa cerrada y reversión válida con mesa abierta) en `backend/tests/integration/ticket-unico-reversion.test.js`
+- [ ] T061 [US3] Test de integración del flujo de cierre en el frontend (total → división → pago → ticket) en `frontend/tests/integration/cierre-cuenta.test.jsx`
 
 **Checkpoint**: Las tres historias funcionan de forma independiente
 
@@ -149,12 +161,13 @@ mesas y las líneas de pedido (consumos) de las historias 01–04.
 
 **Purpose**: Mejoras que afectan a varias historias
 
-- [ ] T050 [P] Actualizar la documentación de puesta en marcha y de la funcionalidad en `README.md`
-- [ ] T051 [P] Revisar que todos los textos visibles estén en español de España y los importes en € con formato español en `frontend/src/`
-- [ ] T052 Revisar la frontera de datos: 006 solo escribe sus tablas y cierra la mesa, sin escrituras en mesas ni consumos ajenos en `backend/src/services/cuentasService.js`
-- [ ] T053 [P] Verificar que `.gitignore` excluye `.env` y que no hay secretos en el repositorio (`.gitignore`)
-- [ ] T054 Verificar la reproducibilidad de Docker con `docker compose up --build` (`docker-compose.yml`)
-- [ ] T055 Ejecutar los escenarios de validación A–I de `specs/006-cierre-cuenta-division/quickstart.md`
+- [ ] T062 [P] Actualizar la documentación de puesta en marcha y de la funcionalidad en `README.md`
+- [ ] T063 [P] Revisar que todos los textos visibles estén en español de España y los importes en € con formato español en `frontend/src/`
+- [ ] T064 Revisar la frontera de datos: 006 solo escribe sus tablas y cierra la mesa, sin escrituras en mesas ni consumos ajenos en `backend/src/services/cuentasService.js`
+- [ ] T065 [P] Verificar que `.gitignore` excluye `.env` y que no hay secretos en el repositorio (`.gitignore`)
+- [ ] T066 Verificar la reproducibilidad de Docker con `docker compose up --build` (`docker-compose.yml`)
+- [ ] T067 Ejecutar los escenarios de validación A–I de `specs/006-cierre-cuenta-division/quickstart.md`
+- [ ] T068 Ejecutar los escenarios de validación J, K y L de `specs/006-cierre-cuenta-division/quickstart.md`
 
 ---
 
@@ -172,7 +185,7 @@ mesas y las líneas de pedido (consumos) de las historias 01–04.
 
 - **US1 (P1)**: Empieza tras Foundational; sin dependencias de otras historias
 - **US2 (P2)**: Empieza tras Foundational; **extiende** el cierre y la API creados en US1 (`routes/cuentas.js`, `cuentasService.js`, `api.js`, `useCuenta.js`, `CierreCuenta.jsx`). Se implementa después de US1
-- **US3 (P3)**: Empieza tras Foundational; **extiende** el cierre de US1/US2 (pago por partes, ticket, bloqueo de mesa). Se implementa después de US1 y US2
+- **US3 (P3)**: Empieza tras Foundational; **extiende** el cierre de US1/US2 (pago y reversión de partes, emisión única del ticket, bloqueo de mesa). Se implementa después de US1 y US2
 
 ### Within Each User Story
 
@@ -185,9 +198,12 @@ mesas y las líneas de pedido (consumos) de las historias 01–04.
 
 - `backend/src/routes/cuentas.js` (US1 → US2 → US3)
 - `backend/src/services/cuentasService.js` (US1 → US2 → US3)
-- `frontend/src/services/api.js` (US1 → US2)
+- `backend/src/services/ticketService.js` (US3)
+- `frontend/src/services/api.js` (US1 → US2 → US3)
 - `frontend/src/hooks/useCuenta.js` (US1 → US2 → US3)
 - `frontend/src/pages/CierreCuenta.jsx` (US1 → US2 → US3)
+- `frontend/src/components/ParteCuenta.jsx` (US2 → US3)
+- `frontend/src/components/TicketFinal.jsx` (US3)
 
 ### Parallel Opportunities
 
@@ -220,6 +236,15 @@ Task: "Implementar DivisionCuenta en frontend/src/components/DivisionCuenta.jsx"
 Task: "Implementar AsignarConsumos en frontend/src/components/AsignarConsumos.jsx"
 ```
 
+## Parallel Example: User Story 3
+
+```bash
+# Pruebas de US3 en paralelo:
+Task: "Test de contrato de emisión única y reversión en backend/tests/contract/ticket-reversion.test.js"
+Task: "Test de componente de ParteCuenta en frontend/tests/components/ParteCuenta.test.jsx"
+Task: "Test de componente del aviso sin ticket en frontend/tests/components/TicketFinal.test.jsx"
+```
+
 ---
 
 ## Implementation Strategy
@@ -237,7 +262,7 @@ Task: "Implementar AsignarConsumos en frontend/src/components/AsignarConsumos.js
 1. Setup + Foundational → base lista
 2. Añadir US1 → probar → demostrar (MVP: cobrar la mesa con el total correcto)
 3. Añadir US2 → probar → demostrar (reparto entre comensales)
-4. Añadir US3 → probar → demostrar (ticket y cierre de la mesa)
+4. Añadir US3 → probar → demostrar (pago por partes, reversión, ticket único y cierre de la mesa)
 5. Cada historia añade valor sin romper las anteriores
 
 ### Parallel Team Strategy
@@ -251,6 +276,7 @@ ficheros (`routes/cuentas.js`, `cuentasService.js`, `useCuenta.js`, `CierreCuent
 ## Notes
 
 - [P] = ficheros distintos, sin dependencias
+- T039 debe completarse antes de T042 (ambas escriben `frontend/tests/components/TicketFinal.test.jsx`)
 - [Story] mapea cada tarea a su historia para trazabilidad
 - Verificar que cada prueba falla antes de implementar
 - **Parada por tarea (constitución)**: al implementar con `/speckit.implement`, el agente MUST detenerse tras cada tarea, resumir lo hecho y esperar la revisión y el commit del usuario antes de continuar

@@ -70,9 +70,9 @@ total del día y la página `/dashboard` lo muestra en euros; un día sin ventas
 
 ### Implementación de US1
 
-- [ ] T018 [US1] Implementar la agregación del total diario por fecha en `backend/src/services/reportingService.js` (depende de T007, T008, T011)
+- [ ] T018 [US1] Implementar la agregación del total diario por fecha (por defecto, el último día natural completado) en `backend/src/services/reportingService.js` (depende de T007, T008, T011)
 - [ ] T019 [US1] Implementar el endpoint `GET /api/reports/daily` devolviendo el total en `backend/src/api/reportsRouter.js` (depende de T018)
-- [ ] T020 [US1] Añadir validación del parámetro `date` y errores 400 en `backend/src/api/reportsRouter.js`
+- [ ] T020 [US1] Añadir validación del parámetro `date` (formato, fecha válida, rechazo del día en curso y de fechas futuras con `400`) en `backend/src/api/reportsRouter.js`
 - [ ] T021 [US1] Aplicar la autorización de rol `encargado` al endpoint en `backend/src/api/reportsRouter.js` (depende de T009)
 - [ ] T022 [US1] Implementar utilidades de formato es-ES de importes y fechas en `frontend/src/utils/format.js`
 - [ ] T023 [US1] Construir la página del dashboard con total y estados cargando/vacío/sin conexión en `frontend/src/pages/PaginaDashboard.jsx`
@@ -110,25 +110,32 @@ por camarero y la cantidad/importe por plato, mostrando `0,00 €` en los que no
 ## Fase 5: US3 - Comparación con días anteriores (P2)
 
 **Objetivo**: Comparar el día actual con el día natural anterior (importe, porcentaje y tendencia)
-en el total y en los desgloses.
+en el total y en los desgloses, incluido el caso de día anterior sin ventas (diferencia en euros
+con «sin base de comparación», sin porcentaje).
 
 **Prueba independiente**: El informe muestra la diferencia frente al día anterior con tendencia
-subida/bajada/sin variación; si no hay día anterior, muestra "sin datos anteriores".
+subida/bajada/sin variación; si no hay día anterior, muestra "sin datos anteriores"; si el día
+anterior no tuvo ventas, muestra la diferencia en euros con «sin base de comparación» y sin
+porcentaje.
 
 ### Pruebas de US3
 
 - [ ] T033 [P] [US3] Prueba de contrato del bloque `comparacion` en `backend/tests/contract/reports_comparison.test.js`
 - [ ] T034 [P] [US3] Prueba unitaria de diferencia y tendencia y del caso sin día anterior en `backend/tests/unit/reporting_comparison.test.js`
 - [ ] T035 [P] [US3] Prueba de componente del indicador de tendencia en `frontend/tests/components/dashboard_comparison.test.jsx`
+- [ ] T036 [P] [US3] Prueba de integración del cálculo con base cero (sin división por cero, sin porcentaje, tendencia `subida`) en `backend/tests/integration/reporting_zero_base.test.js`
+- [ ] T037 [P] [US3] Prueba de componente de la presentación «sin base de comparación» en `frontend/tests/components/dashboard_comparison_zero_base.test.jsx`
 
 ### Implementación de US3
 
-- [ ] T036 [US3] Implementar el cálculo de la comparación (importe, porcentaje, tendencia) en `backend/src/services/reportingService.js`
-- [ ] T037 [US3] Manejar el caso sin día anterior (`diaAnterior = null`) en `backend/src/services/reportingService.js`
-- [ ] T038 [US3] Añadir la comparación por camarero y por plato en `backend/src/services/reportingService.js`
-- [ ] T039 [US3] Incluir `comparacion` en la respuesta del endpoint en `backend/src/api/reportsRouter.js`
-- [ ] T040 [P] [US3] Crear el componente de indicador de tendencia (icono + color + texto) en `frontend/src/components/IndicadorTendencia.jsx`
-- [ ] T041 [US3] Renderizar el bloque de comparación en la página del dashboard en `frontend/src/pages/PaginaDashboard.jsx` (depende de T040)
+- [ ] T038 [US3] Implementar el cálculo de la comparación (importe, porcentaje, tendencia) en `backend/src/services/reportingService.js`
+- [ ] T039 [US3] Manejar el caso sin día anterior (`diaAnterior = null`) en `backend/src/services/reportingService.js`
+- [ ] T040 [US3] Añadir la comparación por camarero y por plato en `backend/src/services/reportingService.js`
+- [ ] T041 [US3] Incluir `comparacion` en la respuesta del endpoint en `backend/src/api/reportsRouter.js`
+- [ ] T042 [US3] Implementar la comparación con base cero (`diferenciaImporte` absoluta, `diferenciaPorcentaje = null`, tendencia `subida`) y exponer `sinBaseComparacion` en la respuesta en `backend/src/services/reportingService.js` y `backend/src/api/reportsRouter.js` (depende de T041)
+- [ ] T043 [P] [US3] Crear el componente de indicador de tendencia (icono + color + texto) en `frontend/src/components/IndicadorTendencia.jsx`
+- [ ] T044 [US3] Renderizar el bloque de comparación en la página del dashboard en `frontend/src/pages/PaginaDashboard.jsx` (depende de T043)
+- [ ] T045 [US3] Mostrar «sin base de comparación» con la diferencia absoluta en euros y sin porcentaje cuando `sinBaseComparacion = true` en `frontend/src/pages/PaginaDashboard.jsx` (depende de T044)
 
 **Checkpoint**: las tres historias son funcionales e independientemente verificables
 
@@ -138,12 +145,14 @@ subida/bajada/sin variación; si no hay día anterior, muestra "sin datos anteri
 
 **Propósito**: Mejoras que afectan a varias historias
 
-- [ ] T042 [P] Añadir índice sobre `cuentas(fechaCierre, estado)` para el rendimiento (<3 s) en `backend/db/schema.sql`
-- [ ] T043 [P] Implementar el estado "sin conexión" reutilizable en `frontend/src/components/EstadoConexion.jsx`
-- [ ] T044 [P] Actualizar la documentación de puesta en marcha en `README.md`
-- [ ] T045 Auditar accesibilidad de tablas e indicadores (texto + icono, no solo color) en `frontend/src/components/TablaDesglose.jsx` y `frontend/src/components/IndicadorTendencia.jsx`
-- [ ] T046 Ejecutar los escenarios E1–E9 de `quickstart.md` y registrar resultados
-- [ ] T047 [P] Endurecer la seguridad (comprobación de rol en backend, sin datos de más) en `backend/src/api/reportsRouter.js`
+- [ ] T046 [P] Añadir índice sobre `cuentas(fechaCierre, estado)` para el rendimiento (<3 s) en `backend/db/schema.sql`
+- [ ] T047 [P] Implementar el estado "sin conexión" reutilizable en `frontend/src/components/EstadoConexion.jsx`
+- [ ] T048 [P] Actualizar la documentación de puesta en marcha en `README.md`
+- [ ] T049 Auditar accesibilidad de tablas e indicadores (texto + icono, no solo color) en `frontend/src/components/TablaDesglose.jsx` y `frontend/src/components/IndicadorTendencia.jsx`
+- [ ] T050 Ejecutar los escenarios E1–E9 de `quickstart.md` y registrar resultados
+- [ ] T051 Ejecutar el escenario E10 de `quickstart.md` (día anterior sin ventas: diferencia en euros, «sin base de comparación», sin porcentaje) y registrar resultados (depende de T042, T045)
+- [ ] T052 [P] Endurecer la seguridad (comprobación de rol en backend, sin datos de más) en `backend/src/api/reportsRouter.js`
+- [ ] T053 [P] Añadir prueba de formato es-ES de importes y fechas (punto de miles, coma decimal, € y fecha) en `frontend/tests/utils/format.test.js`
 
 ---
 

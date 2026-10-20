@@ -1,6 +1,6 @@
 # Feature Specification: Señales de platos listos por mesa
 
-**Feature Branch**: `005-senales-platos-listos`
+**Feature Branch**: `feature/005-senales-platos-listos`
 
 **Created**: 2026-10-13
 
@@ -17,6 +17,10 @@
 - Q: ¿Qué debe mostrar la pantalla del camarero cuando no tiene mesas abiertas o mientras la lista de mesas se está cargando? → A: Un estado vacío claro (por ejemplo, "No tienes mesas abiertas") y, mientras los datos están llegando, un indicador de carga.
 - Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
 - Q: ¿Cada mesa queda vinculada a un camarero concreto o cualquier camarero puede ver y atender cualquier mesa? → A: Todas las mesas son compartidas: cualquier camarero ve, atiende y recibe los avisos de cualquier mesa.
+
+### Session 2026-10-20
+
+- Q: Cuando un camarero descarta el aviso de una mesa completa, ¿deja de mostrarse solo en su dispositivo o para todos los camareros? (FR-009, FR-010) → A: Para todos los camareros: el descarte es global y el aviso deja de mostrarse en todas las pantallas.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -71,18 +75,19 @@ comprobando que aparece una señal asociada a esa mesa, perceptible desde lejos.
 ### User Story 3 - Descartar el aviso de una mesa atendida (Priority: P3)
 
 Una vez el camarero ha atendido una mesa, descarta su aviso para que deje de
-repetirse y no entorpezca el resto del servicio.
+mostrarse y no entorpezca el resto del servicio.
 
 **Why this priority**: Mejora el confort y evita avisos redundantes; el aviso ya aporta
 valor sin descartarlo, por lo que es la rebanada de menor prioridad.
 
 **Independent Test**: Puede probarse generando un aviso, descartándolo y comprobando
-que deja de mostrarse y de repetirse.
+que deja de mostrarse.
 
 **Acceptance Scenarios**:
 
-1. **Given** un aviso de mesa completa activo, **When** el camarero lo descarta, **Then** el aviso deja de mostrarse y de repetirse.
+1. **Given** un aviso de mesa completa activo, **When** el camarero lo descarta, **Then** el aviso deja de mostrarse.
 2. **Given** un aviso ya descartado, **When** transcurre el servicio sin nuevos platos listos en esa mesa, **Then** el aviso no vuelve a aparecer.
+3. **Given** dos camareros con el mismo aviso visible en sus dispositivos, **When** uno de ellos lo descarta, **Then** el aviso desaparece en las pantallas de ambos.
 
 ---
 
@@ -92,6 +97,7 @@ que deja de mostrarse y de repetirse.
 - ¿Cómo se comporta el aviso si, tras descartarlo, vuelve a haber un plato pendiente que luego se marca como listo? Debe poder generarse de nuevo.
 - ¿Qué ocurre si el dispositivo tiene el sonido silenciado o desactivado? La señal visual debe seguir siendo suficiente.
 - ¿Qué ocurre si el dispositivo pierde la conexión momentáneamente? La vista debe mostrar un indicador de "sin conexión" y marcar la información como no actualizada; al recuperarla, el estado de los platos y los avisos deben volver a estar al día.
+- ¿Qué ocurre si varios camareros tienen el mismo aviso visible y uno lo descarta? El aviso se descarta para todos y desaparece de todas las pantallas.
 - ¿Qué ocurre con una mesa cuyo pedido se compone de un único plato? Se trata igual que cualquier otra: al estar listo, la mesa se considera completa.
 - ¿Qué ocurre si un aviso permanece sin atender mucho tiempo? No vuelve a sonar ni se repite, pero su señal visual sigue mostrándose y perceptible sin desaparecer por sí solo.
 - ¿Qué ocurre si un plato vuelve a "pendiente" cuando la mesa ya estaba marcada como completa? El aviso de mesa completa debe retirarse y la mesa deja de considerarse completa hasta que ese plato vuelva a estar listo.
@@ -108,9 +114,11 @@ que deja de mostrarse y de repetirse.
 - **FR-005**: Cuando todos los platos de una mesa estén listos, el sistema MUST emitir un aviso asociado a esa mesa.
 - **FR-006**: El aviso MUST incluir una señal visual y MUST poder incluir además una señal sonora. La señal MUST emitirse una vez al completarse la mesa y el aviso MUST mantener después una señal visual destacada y persistente hasta que el camarero lo descarte, sin repetirse por sí solo.
 - **FR-007**: El aviso MUST identificar inequívocamente la mesa a la que corresponde.
-- **FR-008**: El aviso MUST ser perceptible a distancia y distinguirse del resto de información de la pantalla.
-- **FR-009**: El camarero MUST poder descartar el aviso de una mesa una vez atendida.
-- **FR-010**: Un aviso descartado MUST dejar de repetirse mientras no se produzca un nuevo plato listo en esa mesa.
+- **FR-008**: El aviso MUST ser perceptible desde 5 metros de distancia y distinguirse del resto de información de la pantalla.
+- **FR-009**: El camarero MUST poder descartar el aviso de una mesa una vez atendida; el
+  descarte MUST aplicarse a todos los camareros y pantallas del restaurante.
+- **FR-010**: Un aviso descartado MUST dejar de mostrarse en todas las pantallas
+  mientras no se produzca un nuevo plato listo en esa mesa.
 - **FR-011**: El sistema MUST mostrar a cada camarero todas las mesas abiertas del restaurante, sin restringirlas a las que tenga asignadas.
 - **FR-012**: Los cambios de estado realizados en cocina MUST reflejarse en la vista del camarero sin intervención manual de éste.
 - **FR-013**: Un plato MUST poder volver del estado "listo" al estado "pendiente" si se corrige (por ejemplo, un error o un plato devuelto); al hacerlo, el sistema MUST recalcular automáticamente la completitud de la mesa y su aviso.
@@ -132,11 +140,14 @@ que deja de mostrarse y de repetirse.
 - **SC-001**: El camarero identifica qué platos de una mesa están listos en menos de 2 segundos desde que mira la pantalla.
 - **SC-002**: Un plato marcado como listo en cocina se refleja en la pantalla del camarero en 5 segundos o menos, sin que éste haga nada.
 - **SC-003**: El 100 % de las mesas cuyos platos se completan generan un aviso asociado a esa mesa.
-- **SC-004**: El aviso de mesa completa se percibe desde cualquier punto de la sala donde se encuentre el camarero.
+- **SC-004**: El 100 % de los avisos permite identificar la mesa desde 5 metros de distancia en menos de 3 segundos, con la señal visual visible sin sonido.
 - **SC-005**: El camarero descarta el aviso de una mesa atendida con una sola acción y en menos de 2 segundos.
 - **SC-006**: Tras descartar un aviso, éste no vuelve a repetirse mientras no se marque un nuevo plato como listo en esa mesa.
-- **SC-007**: Se reduce el tiempo que la comida permanece esperando en la ventanilla una vez lista, al servirla el camarero en cuanto recibe el aviso.
 - **SC-008**: Tras recuperar la conexión, la vista del camarero vuelve a estar al día (estados de platos y avisos) en 10 segundos o menos.
+- **SC-009**: El 100 % de los descartes de aviso se refleja en las pantallas de todos los camareros en 5 segundos o menos.
+
+> Nota: la numeración conserva el hueco de SC-007 para mantener estables los identificadores
+> usados en planes, contratos y quickstarts.
 
 ## Assumptions
 
@@ -148,3 +159,6 @@ que deja de mostrarse y de repetirse.
 - Los avisos no desaparecen solos: permanecen visibles hasta que el camarero los descarta.
 - El idioma de toda la información mostrada es español de España.
 - La funcionalidad se ofrece en la versión 1 dentro del alcance ya definido, sin funciones adicionales no especificadas.
+- Métrica de negocio posterior al lanzamiento (no forma parte de los criterios de éxito verificables
+  en la aplicación): se reducirá el tiempo que la comida permanece esperando en la ventanilla al
+  servirla el camarero en cuanto recibe el aviso.

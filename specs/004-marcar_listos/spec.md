@@ -1,6 +1,6 @@
 # Feature Specification: Marcar platos como listos
 
-**Feature Branch**: `004-marcar_listos`
+**Feature Branch**: `feature/004-marcar_listos`
 
 **Created**: 2026-10-13
 
@@ -16,6 +16,11 @@
 - Q: ¿Debe el cocinero poder marcar como listos todos los platos de un pedido de una sola vez, además de plato a plato? (FR-001) → A: No; solo se marca plato a plato, como describe la historia.
 - Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
 - Q: ¿Cada mesa queda vinculada a un camarero concreto o cualquier camarero puede ver y atender cualquier mesa? → A: Todas las mesas son compartidas: cualquier camarero ve, atiende y recibe los avisos de cualquier mesa.
+
+### Session 2026-10-20
+
+- Q: Cuando el cocinero marca el último plato pendiente de un pedido y el pedido desaparece de la lista de cocina, ¿cómo puede deshacer esa última marca si ya no lo ve en pantalla? (FR-006, FR-014) → A: Mediante un aviso temporal ("Pedido completado") con acción "Deshacer" mostrado durante al menos 10 segundos tras completarse el pedido.
+- Q: ¿Cuánto tiempo debe permanecer visible la acción "Deshacer" del aviso temporal tras completar un pedido? (SC-009) → A: Al menos 10 segundos.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -34,6 +39,7 @@ Mientras avanza el servicio, el cocinero prepara los platos de los pedidos pendi
 3. **Given** un pedido al que ya se han marcado como listos todos sus platos, **When** el cocinero termina el último, **Then** el pedido deja de aparecer como pendiente en la pantalla de cocina.
 4. **Given** un plato que no pertenece a la partida del cocinero o que ya no está pendiente, **When** el cocinero intenta marcarlo como listo, **Then** la acción no se permite y el estado no cambia.
 5. **Given** un plato marcado como listo, **When** el cocinero deshace la marca, **Then** el plato vuelve a estar pendiente en la pantalla de cocina.
+6. **Given** el último plato pendiente de un pedido recién marcado como listo, **When** el cocinero usa la acción "Deshacer" del aviso temporal, **Then** el plato vuelve a estar pendiente y el pedido reaparece en la lista de cocina.
 
 ---
 
@@ -75,7 +81,7 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - **Plato de otra partida**: no puede marcarse; la marca solo aplica a la partida del cocinero.
 - **Plato de un pedido que ya no está pendiente** (por ejemplo, retirado o cancelado desde sala): no puede marcarse.
 - **Plato retirado del pedido antes de marcarlo** (historia 02): deja de existir como pendiente y no puede marcarse.
-- **Último plato de un pedido**: al marcarlo, el pedido deja de estar pendiente y desaparece de la lista de pendientes de cocina.
+- **Último plato de un pedido**: al marcarlo, el pedido deja de estar pendiente y desaparece de la lista de pendientes de cocina; se muestra un aviso temporal con la acción "Deshacer" durante al menos 10 segundos que permite revertir esa última marca.
 - **Un pedido con todos sus platos listos**: la pantalla del camarero refleja que todos los platos del pedido están listos.
 - **Interrupción momentánea de la conexión al marcar**: la vista muestra un indicador de "sin conexión" y no permite marcar el plato hasta recuperarla; al restablecerse, el estado de cocina y de sala debe ser coherente.
 - **Marcado simultáneo del mismo plato** desde dos pantallas de la misma partida: el resultado debe ser uno solo, sin duplicar el momento registrado.
@@ -89,7 +95,7 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - **FR-001**: La pantalla de cocina MUST permitir al cocinero marcar un plato como listo seleccionándolo dentro de su pedido.
 - **FR-002**: Un plato MUST poder marcarse como listo solo si pertenece a un pedido pendiente de la partida del cocinero.
 - **FR-003**: La pantalla de cocina MUST NOT permitir marcar como listo un plato de otra partida ni un plato que ya no esté pendiente.
-- **FR-004**: Al marcarse como listo, el plato MUST dejar de contarse como pendiente y MUST distinguirse visualmente de los que siguen pendientes.
+- **FR-004**: Al marcarse como listo, el plato MUST dejar de contarse como pendiente y MUST distinguirse de los que siguen pendientes mediante color junto con un símbolo o etiqueta de texto, nunca solo por color.
 - **FR-005**: Los demás platos del mismo pedido MUST permanecer como pendientes hasta que se marquen como listos.
 - **FR-006**: Cuando todos los platos de un pedido estén marcados como listos, el pedido MUST dejar de aparecer como pendiente en la pantalla de cocina.
 - **FR-007**: El sistema MUST registrar el momento en que cada plato se marca como listo.
@@ -99,7 +105,7 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - **FR-011**: Los estados reflejados en cocina y en sala MUST ser coherentes para un mismo plato en todo momento.
 - **FR-012**: Todos los textos visibles de la acción y de los estados (pendiente, listo) MUST estar en español de España.
 - **FR-013**: La marca de "listo" MUST aplicarse a la línea completa del plato, de modo que todas sus unidades queden listas a la vez.
-- **FR-014**: El cocinero MUST poder deshacer la marca de un plato marcado como listo, devolviéndolo a pendiente.
+- **FR-014**: El cocinero MUST poder deshacer la marca de un plato marcado como listo, devolviéndolo a pendiente. Cuando la marca deshecha sea la del último plato pendiente del pedido, la acción MUST ofrecerse desde el aviso temporal mostrado al completarse el pedido y MUST permanecer disponible durante al menos 10 segundos.
 - **FR-015**: Al deshacer la marca, el plato MUST dejar de conservar su condición de listo y MUST volver a contarse como pendiente en la pantalla de cocina y en la pantalla del camarero.
 - **FR-016**: El marcado de platos como listos MUST realizarse plato a plato; la pantalla de cocina MUST NOT ofrecer una acción para marcar todos los platos de un pedido a la vez.
 
@@ -122,8 +128,9 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - **SC-004**: El 100% de los platos marcados como listos guarda el momento en que se marcó, con una precisión de al menos un minuto.
 - **SC-005**: Al marcar el último plato pendiente de un pedido, el pedido desaparece de la lista de pendientes de cocina en 5 segundos o menos.
 - **SC-006**: Ninguna marca de "listo" queda registrada por duplicado ni se pierde (0 duplicados y 0 pérdidas).
-- **SC-007**: Un cocinero distingue de un vistazo, en el 100% de los pedidos, qué platos ya están listos y cuáles siguen pendientes.
+- **SC-007**: El 100% de los platos listos se distingue de los pendientes sin depender únicamente del color (color más símbolo o etiqueta de texto).
 - **SC-008**: Al deshacer la marca de un plato, este vuelve a aparecer como pendiente en la pantalla de cocina en 5 segundos o menos.
+- **SC-009**: Tras completar un pedido, el 100% de las veces se ofrece la acción "Deshacer" en el aviso temporal durante al menos 10 segundos; al usarla, el pedido vuelve a aparecer como pendiente en 5 segundos o menos.
 
 ## Assumptions
 

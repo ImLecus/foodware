@@ -67,16 +67,27 @@ escenario 3 de la US2), en lugar de omitirlos.
 
 ### ComparacionDia
 - `diaActual`: `YYYY-MM-DD`.
-- `diaAnterior`: `YYYY-MM-DD` o `null` si no existe día anterior con datos.
+- `diaAnterior`: `YYYY-MM-DD` del día natural inmediatamente anterior; `null` solo si no existe
+  ningún día natural anterior registrado en el sistema.
 - `importeActual`, `importeAnterior`.
 - `diferenciaImporte`: `importeActual − importeAnterior`.
-- `diferenciaPorcentaje`: variación relativa (puede ser `null` si el importe anterior es 0).
+- `diferenciaPorcentaje`: variación relativa; `null` si no hay día anterior o si
+  `importeAnterior = 0` (nunca se divide entre cero).
+- `sinBaseComparacion`: booleano; `true` cuando existe día anterior, `importeAnterior = 0` e
+  `importeActual > 0` (FR-011).
 - `tendencia`: `subida` | `bajada` | `sin_variacion`.
 - `porCamarero` y `porPlato`: diferencia del día actual frente al anterior en cada desglose
   (FR-010), con la misma forma que los desgloses del informe.
 
 **Regla de tendencia**: `sin_variacion` cuando `diferenciaImporte = 0`; `subida` si > 0; `bajada`
 si < 0. Si no hay día anterior, se indica "sin datos anteriores" (FR-007).
+
+**Regla de base cero**: si `importeAnterior = 0` e `importeActual > 0`, se mantiene
+`diferenciaImporte = importeActual` (diferencia absoluta en euros), `diferenciaPorcentaje = null` y
+`sinBaseComparacion = true`. La presentación muestra la diferencia en euros con la indicación
+«sin base de comparación» y no muestra porcentaje (FR-011, SC-006). Si `importeAnterior = 0` e
+`importeActual = 0`, `diferenciaImporte = 0`, `sinBaseComparacion = false` y la tendencia es
+`sin_variacion`. En ningún caso se calcula un porcentaje con denominador cero.
 
 ## Relaciones
 

@@ -42,12 +42,12 @@ código. No incluye código de implementación: los detalles están en
    esa mesa (FR-005 a FR-008, SC-003).
 3. Con el sonido activado, comprobar que suena **una sola vez** y que la señal visual
    **permanece** sin repetirse.
-4. Repetir con varias mesas completas a la vez: cada aviso **identifica su mesa** (FR-007, SC-004).
+4. Repetir con varias mesas completas a la vez: cada aviso **identifica su mesa** (FR-007, SC-004) y se percibe a 5 m en menos de 3 s sin sonido.
 
 ### C. Descartar el aviso (US3, P3)
 
 1. Con un aviso activo, pulsarlo para **descartarlo** (una sola acción, SC-005).
-2. **Esperado**: el aviso deja de mostrarse y de repetirse; no reaparece mientras no haya un
+2. **Esperado**: el aviso deja de mostrarse; no reaparece mientras no haya un
    nuevo plato listo en esa mesa (FR-010, SC-006).
 
 ### D. Reversibilidad y regeneración (FR-013)
@@ -78,15 +78,28 @@ código. No incluye código de implementación: los detalles están en
 2. **Esperado**: mensaje claro de **"No hay mesas abiertas"** (no una pantalla en blanco).
 3. Al recargar, **Esperado**: mientras llegan los datos, se muestra un **indicador de carga**.
 
+### H. Descarte global desde dos pantallas de camarero (FR-009, FR-010, SC-009)
+
+1. Abrir la vista de sala en **dos pantallas o dispositivos distintos** (dos camareros).
+2. En cocina, marcar como listo el último plato pendiente de una mesa.
+3. **Esperado**: el aviso de esa mesa aparece en **ambas** pantallas.
+4. En una de las pantallas, **descartar** el aviso.
+5. **Esperado**: el aviso desaparece en **las dos** pantallas en **≤ 5 s**, sin recargar ni
+   volver a abrir la mesa (SC-009); en ninguna de ellas reaparece mientras no haya un nuevo
+   plato listo en esa mesa (FR-010).
+6. En cocina, deshacer la marca de un plato y volver a marcarlo como listo.
+7. **Esperado**: se genera un aviso nuevo y vuelve a mostrarse en **ambas** pantallas.
+
 ## Criterios de éxito a comprobar
 
 - [ ] SC-001: un camarero identifica los platos listos de una mesa en ≤ 2 s.
 - [ ] SC-002: un plato marcado en cocina se refleja en sala en ≤ 5 s sin recargar.
 - [ ] SC-003: el 100 % de las mesas completadas genera un aviso asociado a esa mesa.
-- [ ] SC-004: el aviso se percibe desde cualquier punto de la sala.
+- [ ] SC-004: el aviso permite identificar la mesa a 5 m en menos de 3 s con la señal visual, sin sonido.
 - [ ] SC-005: descartar el aviso se hace con una sola acción en ≤ 2 s.
 - [ ] SC-006: tras descartar, el aviso no se repite hasta un nuevo plato listo.
 - [ ] SC-008: tras reconectar, la vista está al día en ≤ 10 s.
+- [ ] SC-009: el descarte se refleja en todas las pantallas de camarero en ≤ 5 s.
 
 ## Referencias
 

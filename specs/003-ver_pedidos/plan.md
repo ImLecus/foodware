@@ -1,11 +1,12 @@
 # Plan de Implementación: Ver pedidos pendientes en cocina
 
-**Rama**: `003-ver_pedidos` | **Fecha**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
+**Rama**: `feature/003-ver_pedidos` | **Fecha**: 2026-10-20 | **Spec**: [spec.md](./spec.md)
 
 **Entrada**: Especificación de la funcionalidad en `/specs/003-ver_pedidos/spec.md`
 
 **Nota**: el stack y la estructura del repositorio se comparten con el plan de `004-marcar_listos`
-(primer plan del proyecto); este documento no los redefine, solo los aplica a esta historia.
+(plan que fija la base técnica compartida del proyecto); este documento no los redefine, solo los
+aplica a esta historia.
 
 ## Resumen
 
@@ -15,6 +16,21 @@ tiempo transcurrido desde el envío, la mesa de origen y todos los platos con su
 listos, marcados). La vista se refresca en vivo sin recargar, muestra estados vacío y «sin partida»,
 y señala cuándo se pierde la conexión. El enfoque técnico reutiliza React + Chakra UI (frontend),
 ExpressJS sobre Node.js con SQLite (backend) y Server-Sent Events para el refresco en vivo.
+
+Decisiones de UI y estado derivadas de las aclaraciones de 2026-10-20:
+
+- **Carga inicial**: se muestra «Cargando pedidos…» hasta recibir los datos; el estado vacío solo
+  aparece después de una carga correcta (FR-017).
+- **Error de carga**: si falla la primera carga, se muestra «No se pudieron cargar los pedidos» con
+  la acción «Reintentar»; nunca el estado vacío ni un cargador indefinido (FR-017, SC-011).
+- **Platos listos**: se distinguen de los pendientes con color **más** un símbolo o etiqueta de
+  texto (por ejemplo, «listo»), nunca solo por color (FR-007, SC-010).
+- **Pedido modificado**: si se editó tras el envío, se muestra el aviso «Modificado» junto al
+  pedido, sin detallar qué platos cambiaron; el tiempo y la posición originales se mantienen
+  (FR-015, FR-018, SC-012).
+- **Sin conexión**: la lista se marca como «sin conexión / no actualizada», pero el tiempo de
+  espera de los pedidos ya mostrados sigue avanzando con el reloj local a partir de `enviadoEn`
+  (FR-006, SC-003).
 
 ## Contexto Técnico
 
@@ -51,7 +67,7 @@ un puñado de pantallas de cocina concurrentes
 |-------------------|--------------|--------|
 | I. Simplicidad | Un backend, un frontend, SQLite y SSE; lista ordenada en servidor y temporizador en cliente | Pasa |
 | II. Español de España y euro | Vista y formato de tiempo en español; no maneja importes | Pasa |
-| III. Cero alcance fantasma | Solo FR-001…FR-016; «sin conexión» procede de una clarificación aprobada | Pasa |
+| III. Cero alcance fantasma | Solo FR-001…FR-018; carga/error, aviso «Modificado» y «sin conexión» proceden de clarificaciones aprobadas | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` demuestra cada escenario desde la aplicación | Pasa |
 | V. Datos con respeto | Solo datos operativos; sin login nuevo; sin secretos versionados | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |
@@ -65,7 +81,8 @@ un puñado de pantallas de cocina concurrentes
 
 **Re-check tras el diseño (Phase 1)**: sigue en PASS. Los contratos REST/SSE, el modelo de datos y
 la guía de validación no añaden dependencias fuera del stack obligatorio y cubren todos los FR,
-incluidos el estado sin partida, el estado vacío y el comportamiento sin conexión.
+incluidos el estado sin partida, el estado vacío, la carga inicial, el error con reintento, el aviso
+«Modificado» y el comportamiento sin conexión.
 
 ## Estructura del Proyecto
 

@@ -1,6 +1,6 @@
 # Plan de Implementación: Dashboard de estadísticas del servicio
 
-**Rama**: `007-dashboard-estadisticas` | **Fecha**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
+**Rama**: `feature/007-dashboard-estadisticas` | **Fecha**: 2026-10-20 | **Spec**: [spec.md](./spec.md)
 
 **Entrada**: Especificación de la funcionalidad en `specs/007-dashboard-estadisticas/spec.md`
 
@@ -9,6 +9,8 @@
 El encargado necesita, una vez terminado el día, una vista de conjunto de las ventas: total del
 día, desglose por camarero y por plato, y comparación contra el día natural anterior (importe y
 porcentaje, indicando subida, bajada o sin variación), siempre con formato español y en euros.
+Cuando el día anterior no registró ventas y el día actual sí, la comparación muestra la diferencia
+en euros con la indicación «sin base de comparación» y sin porcentaje (FR-011, SC-006).
 La funcionalidad es de solo lectura: agrega las cuentas cerradas del día a partir de los datos que
 generan las historias de pedidos (01) y cierre de cuenta (06), sin modificarlos.
 
@@ -17,6 +19,13 @@ expuesta por un único endpoint HTTP de solo lectura protegido por rol de encarg
 por una página de dashboard en React (Chakra UI) con tablas y badges de tendencia. Se descarta
 precalcular o cachear agregados en v1 por simplicidad (volumen bajo de un restaurante medio y
 consistencia garantizada con las cuentas cerradas, SC-004).
+
+**Comparación con base cero**: `reportingService` calcula siempre la diferencia absoluta
+(`importeActual − importeAnterior`) y solo deriva el porcentaje cuando `importeAnterior > 0`. Si el
+día anterior existe pero su importe es 0 y el actual es mayor que 0, devuelve
+`diferenciaImporte = importeActual`, `diferenciaPorcentaje = null` y
+`sinBaseComparacion = true`; nunca divide entre cero. La UI presenta ese caso con la diferencia en
+euros y la etiqueta «sin base de comparación», sin porcentaje (FR-011, SC-006).
 
 ## Contexto Técnico
 
@@ -59,7 +68,7 @@ día anterior; pocos usuarios encargados y varias cuentas por día.
 |-------------------|--------------|--------|
 | I. Simplicidad | Agregación bajo demanda con SQL; sin capa de caché ni agregados precalculados; sin librería de gráficas | Pasa |
 | II. Español de España y euro | Formato `Intl` es-ES y €; día natural Europe/Madrid | Pasa |
-| III. Cero alcance fantasma | Solo lectura + visualización del dashboard; no se implementan pedidos, cierre ni gestión de carta | Pasa |
+| III. Cero alcance fantasma | Solo los FR-001…FR-011 de la spec: lectura + visualización del dashboard, incluida la comparación sin base cuando el día anterior no tuvo ventas; no se implementan pedidos, cierre ni gestión de carta | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` con escenarios de comprobación desde la interfaz | Pasa |
 | V. Datos con respeto | Solo se leen ventas, camarero y plato; sin datos personales innecesarios ni secretos | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |

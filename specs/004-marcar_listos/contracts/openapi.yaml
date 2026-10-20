@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Foodware API — Marcar platos como listos
-  version: 1.0.0
+  version: 1.1.0
   description: >
     Contratos REST necesarios para la historia 04. Las acciones del cocinero se modelan como
     asignación idempotente de estado sobre la línea de pedido. El refresco en vivo se documenta en
@@ -36,7 +36,11 @@ paths:
       summary: Marca o deshace la marca de listo de una línea de pedido
       description: >
         Asignación idempotente de estado. `listo` fija `listoEn` la primera vez; repetir no cambia
-        el momento. `pendiente` (deshacer) limpia `listoEn`.
+        el momento. `pendiente` (deshacer) limpia `listoEn` y devuelve la línea a pendiente. Si al
+        marcar `listo` se completa el pedido (era la última línea pendiente), la respuesta contiene
+        `pedidoId` e `id` de la línea, que el cliente usa para ofrecer el aviso temporal «Pedido
+        completado» con la acción «Deshacer» durante al menos 10 s (FR-014, SC-009). Esa acción es
+        otra llamada a esta misma operación con `estado: pendiente`.
       parameters:
         - name: pedidoId
           in: path
@@ -59,10 +63,31 @@ paths:
                   enum: [listo, pendiente]
       responses:
         "200":
-          description: Estado aplicado
+          description: >
+            Estado aplicado. La respuesta identifica la línea y su pedido, de modo que el cliente
+            puede revertir la última marca desde el aviso «Pedido completado».
           content:
             application/json:
               schema: { $ref: "#/components/schemas/LineaPedido" }
+              examples:
+                ultimaLinea:
+                  summary: Marca de la última línea pendiente (el pedido se completa)
+                  value:
+                    id: "l-9"
+                    pedidoId: "p-123"
+                    nombrePlato: "Entrecot"
+                    cantidad: 2
+                    estado: "listo"
+                    listoEn: "2026-10-20T20:15:00Z"
+                deshacer:
+                  summary: Reversión de la última marca desde el aviso
+                  value:
+                    id: "l-9"
+                    pedidoId: "p-123"
+                    nombrePlato: "Entrecot"
+                    cantidad: 2
+                    estado: "pendiente"
+                    listoEn: null
         "403":
           description: La línea no pertenece a la partida del cocinero (FR-003)
           content:
@@ -74,7 +99,10 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
         "409":
-          description: El pedido ya no está pendiente y no admite la marca (FR-003)
+          description: >
+            Se intenta marcar `listo` una línea de un pedido que ya no está pendiente (FR-003).
+            Deshacer una línea `listo` se admite aunque el pedido esté `completado`, para permitir la
+            reversión desde el aviso (FR-014).
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -125,7 +153,11 @@ components:
         nombrePlato: { type: string }
         cantidad: { type: integer, minimum: 1 }
         estado: { type: string, enum: [pendiente, listo] }
-        listoEn: { type: string, format: date-time, nullable: true }
+        listoEn:
+          type: string
+          format: date-time
+          nullable: true
+          description: momento del marcado; se limpia al deshacer (estado pendiente)
     Error:
       type: object
       required: [codigo, mensaje]

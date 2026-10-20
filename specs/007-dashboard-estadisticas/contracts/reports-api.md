@@ -17,9 +17,9 @@ comparación con el día natural anterior).
 
 | Nombre | Tipo | Obligatorio | Descripción |
 |--------|------|-------------|-------------|
-| `date` | `YYYY-MM-DD` | No | Día natural (Europe/Madrid) a consultar. Si se omite, se usa la fecha actual del servidor. |
+| `date` | `YYYY-MM-DD` | No | Día natural **completado** (Europe/Madrid) a consultar. Si se omite, se usa el último día natural completado. No se admite el día en curso ni fechas futuras. |
 
-Validación: si `date` no tiene formato `YYYY-MM-DD` o no es una fecha válida → `400`.
+Validación: si `date` no tiene formato `YYYY-MM-DD`, no es una fecha válida, es el día en curso o una fecha futura → `400`.
 
 ### Respuesta `200 OK`
 
@@ -43,6 +43,7 @@ Validación: si `date` no tiene formato `YYYY-MM-DD` o no es una fecha válida �
     "importeAnterior": 1180.00,
     "diferenciaImporte": 107.50,
     "diferenciaPorcentaje": 9.11,
+    "sinBaseComparacion": false,
     "tendencia": "subida",
     "porCamarero": [
       { "camareroId": "c1", "diferenciaImporte": 40.00, "tendencia": "subida" },
@@ -61,10 +62,49 @@ Reglas del cuerpo:
 - `porCamarero` incluye a los camareros que cerraron cuentas ese día; `importe` puede ser `0.00`.
 - `porPlato` incluye los platos vendidos ese día con su `cantidad` e `importe`.
 - `comparacion.tendencia` ∈ {`subida`, `bajada`, `sin_variacion`}.
+- `comparacion.sinBaseComparacion` es `true` cuando `diaAnterior` existe, `importeAnterior = 0` e
+  `importeActual > 0`; en ese caso `diferenciaImporte = importeActual`,
+  `diferenciaPorcentaje = null` y la UI muestra la diferencia en euros con «sin base de
+  comparación», sin porcentaje (FR-011, SC-006).
 - Si no hay día anterior con datos: `diaAnterior = null`, `diferenciaPorcentaje = null`,
-  `tendencia = "sin_variacion"` y `porCamarero`/`porPlato` vacíos (la UI muestra "sin datos
-  anteriores").
+  `sinBaseComparacion = false`, `tendencia = "sin_variacion"` y `porCamarero`/`porPlato` vacíos
+  (la UI muestra "sin datos anteriores").
 - Importes numéricos en euros (el formateo `es-ES`/€ se realiza en la presentación).
+
+### Respuesta `200 OK` con día anterior sin ventas
+
+```json
+{
+  "fecha": "2026-10-13",
+  "totalVendido": 350.00,
+  "numeroCuentas": 8,
+  "porCamarero": [
+    { "camareroId": "c1", "nombre": "Marta", "importe": 350.00, "numeroCuentas": 8 }
+  ],
+  "porPlato": [
+    { "platoId": "p1", "nombre": "Croquetas", "partida": "entrantes", "cantidad": 20, "importe": 140.00 }
+  ],
+  "comparacion": {
+    "diaActual": "2026-10-13",
+    "diaAnterior": "2026-10-12",
+    "importeActual": 350.00,
+    "importeAnterior": 0.00,
+    "diferenciaImporte": 350.00,
+    "diferenciaPorcentaje": null,
+    "sinBaseComparacion": true,
+    "tendencia": "subida",
+    "porCamarero": [
+      { "camareroId": "c1", "diferenciaImporte": 350.00, "tendencia": "subida" }
+    ],
+    "porPlato": [
+      { "platoId": "p1", "diferenciaImporte": 140.00, "tendencia": "subida" }
+    ]
+  }
+}
+```
+
+En este caso el porcentaje no se calcula (división por cero evitada); la presentación prioriza
+«sin base de comparación» sobre cualquier porcentaje.
 
 ### Respuesta `200 OK` sin ventas
 
@@ -75,7 +115,7 @@ Reglas del cuerpo:
   "numeroCuentas": 0,
   "porCamarero": [],
   "porPlato": [],
-  "comparacion": { "diaActual": "2026-10-13", "diaAnterior": null, "importeActual": 0.00, "importeAnterior": null, "diferenciaImporte": null, "diferenciaPorcentaje": null, "tendencia": "sin_variacion", "porCamarero": [], "porPlato": [] }
+  "comparacion": { "diaActual": "2026-10-13", "diaAnterior": null, "importeActual": 0.00, "importeAnterior": null, "diferenciaImporte": null, "diferenciaPorcentaje": null, "sinBaseComparacion": false, "tendencia": "sin_variacion", "porCamarero": [], "porPlato": [] }
 }
 ```
 
@@ -83,7 +123,7 @@ Reglas del cuerpo:
 
 | Código | Cuándo |
 |--------|--------|
-| `400 Bad Request` | `date` con formato o valor inválido |
+| `400 Bad Request` | `date` con formato o valor inválido, día en curso o fecha futura |
 | `401 Unauthorized` | Sin autenticación |
 | `403 Forbidden` | Autenticado sin rol `encargado` |
 | `500 Internal Server Error` | Error inesperado al agregar (respuesta de error estándar) |

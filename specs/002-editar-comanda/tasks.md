@@ -43,9 +43,12 @@ commit (constitución: parada por tarea; Conventional Commits). Tareas `[P]` son
 **⚠️ CRITICAL**: Ninguna tarea de US1 puede empezar hasta completar esta fase.
 
 - [ ] T002 Crear la migración SQL de la edición (columnas `modificada`, `cambios_pendientes`, `cambios_enviados_en`, `editando_por`, `editando_desde` en `pedido`; valor `cerrada` en el estado de `pedido`; `indicaciones` en `linea_pedido`; tabla `modificacion`) en `backend/migrations/`
-- [ ] T003 Ampliar el repositorio de pedidos con estado `cerrada`, `modificada`, `cambios_pendientes` y bloqueo (`editando_por`/`editando_desde`) en `backend/src/db/pedidos.js`
-- [ ] T004 Implementar el repositorio de modificaciones (registro append-only) en `backend/src/db/modificaciones.js`
-- [ ] T005 Implementar el middleware de comprobación del bloqueo de edición en `backend/src/api/middleware/bloqueo.js`
+- [ ] T003 Añadir `BLOQUEO_INACTIVIDAD_MINUTOS` (15 minutos por defecto) a `.env.example` y su lectura/validación en `backend/src/config.js`
+- [ ] T004 Ampliar la migración con las columnas del bloqueo `editando_ultima_actividad` y `bloqueo_expira_en` (pedido, camarero, inicio, última actividad y expiración) en `backend/migrations/`
+- [ ] T005 Ampliar el repositorio de pedidos con estado `cerrada`, `modificada`, `cambios_pendientes` y bloqueo (`editando_por`/`editando_desde`/`editando_ultima_actividad`/`bloqueo_expira_en`) en `backend/src/db/pedidos.js`
+- [ ] T006 Implementar el repositorio de modificaciones (registro append-only) en `backend/src/db/modificaciones.js`
+- [ ] T007 Implementar el servicio de bloqueo (adquisición, renovación, liberación y caducidad perezosa según `BLOQUEO_INACTIVIDAD_MINUTOS`) en `backend/src/domain/edicion.js`
+- [ ] T008 Implementar el middleware de comprobación del bloqueo de edición (423/409 y limpieza perezosa) en `backend/src/api/middleware/bloqueo.js`
 
 **Checkpoint**: Base lista — puede comenzar la historia US1.
 
@@ -59,30 +62,40 @@ misma mesa, con bloqueo de edición y una acción explícita "enviar cambios" ha
 
 **Independent Test**: enviar un pedido, editarla, comprobar que los cambios quedan sobre la misma
 pedido marcado como modificado y vinculada a la misma mesa, que no se comunican solos y que el
-bloqueo impide la edición simultánea (ver `quickstart.md`, escenarios 1–12).
+bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir o por inactividad
+(ver `quickstart.md`, escenarios 1–15).
 
 ### Tests for User Story 1 (write first, ensure they FAIL) ⚠️
 
-- [ ] T006 [P] [US1] Prueba de API del bloqueo de edición (423 si está ocupada) y su liberación en `backend/tests/edicion.bloqueo.test.js`
-- [ ] T007 [P] [US1] Prueba de API de añadir/retirar/ajustar líneas sobre pedido enviado y del 409 al dejar el pedido vacío en `backend/tests/edicion.lineas.test.js`
-- [ ] T008 [P] [US1] Prueba de API de marcado como modificada, de no marcar sin cambios y del 409 al editar pedido no editable (cerrada) en `backend/tests/edicion.estado.test.js`
-- [ ] T009 [P] [US1] Prueba de API de `enviar-cambios` explícito (0 envíos automáticos al guardar) en `backend/tests/edicion.enviar-cambios.test.js`
-- [ ] T010 [P] [US1] Pruebas de UI del editor de pedido (editar, marcar como modificado, enviar cambios y aviso de bloqueo) en `frontend/tests/edicion.test.jsx`
+- [ ] T009 [P] [US1] Prueba de API del bloqueo de edición (423 si está ocupada) y su liberación en `backend/tests/edicion.bloqueo.test.js`
+- [ ] T010 [P] [US1] Prueba de contrato de `GET`/`POST`/`DELETE /pedidos/{id}/editar` (200/204, 423 y 409 con `codigo`) en `backend/tests/edicion.bloqueo.contrato.test.js`
+- [ ] T011 [P] [US1] Prueba de integración de la liberación del bloqueo al enviar cambios, al cancelar/salir y por expiración de inactividad en `backend/tests/edicion.bloqueo.liberacion.test.js`
+- [ ] T012 [P] [US1] Prueba de API de añadir/retirar/ajustar líneas sobre pedido enviado y del 409 al dejar el pedido vacío en `backend/tests/edicion.lineas.test.js`
+- [ ] T013 [P] [US1] Prueba de API de marcado como modificada, de no marcar sin cambios y del 409 al editar pedido no editable (cerrada) en `backend/tests/edicion.estado.test.js`
+- [ ] T014 [P] [US1] Prueba de API de `enviar-cambios` explícito (0 envíos automáticos al guardar) en `backend/tests/edicion.enviar-cambios.test.js`
+- [ ] T015 [P] [US1] Prueba de UI de liberación al cancelar/salir y del manejo de 423/`bloqueo_expirado` en `frontend/tests/edicion.bloqueo.test.jsx`
+- [ ] T016 [P] [US1] Pruebas de UI del editor de pedido (editar, marcar como modificado, enviar cambios y aviso de bloqueo) en `frontend/tests/edicion.test.jsx`
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Dominio de edición: reglas (solo pedido `enviada`, no vacío, marcar como modificado, cambios pendientes) en `backend/src/domain/edicion.js`
-- [ ] T012 [US1] Esquemas de validación zod de la edición en `backend/src/schemas/edicion.js`
-- [ ] T013 [US1] Endpoints de bloqueo `POST /pedidos/{id}/editar` y `DELETE /pedidos/{id}/editar` en `backend/src/api/pedidos.js`
-- [ ] T014 [US1] Ampliar los endpoints de líneas para admitir pedidos enviados (añadir/modificar/retirar) en `backend/src/api/pedidos.js`
-- [ ] T015 [US1] Endpoint `POST /pedidos/{id}/enviar-cambios`, que publica el cambio por SSE, en `backend/src/api/pedidos.js`
-- [ ] T016 [US1] Registrar cada cambio en la tabla de modificaciones (FR-013) en `backend/src/domain/edicion.js`
-- [ ] T017 [US1] Ampliar `GET /pedidos/{id}` con `modificada`, `cambios_pendientes` y estado de bloqueo en `backend/src/api/pedidos.js`
-- [ ] T018 [P] [US1] Componente editor de pedido enviado en `frontend/src/components/EditorPedido.jsx`
-- [ ] T019 [P] [US1] Componente de la acción "Enviar cambios" en `frontend/src/components/EnviarCambios.jsx`
-- [ ] T020 [US1] Aviso de bloqueo (pedido en edición por otro camarero) en `frontend/src/components/EditorPedido.jsx`
-- [ ] T021 [US1] Cliente de API de edición, bloqueo, enviar-cambios y suscripción SSE en `frontend/src/services/api.js` y `frontend/src/services/realtime.js`
-- [ ] T022 [US1] Marca visual de "modificada" y "cambios pendientes" en `frontend/src/components/EditorPedido.jsx`
+- [ ] T017 [US1] Dominio de edición: reglas (solo pedido `enviada`, no vacío, marcar como modificado, cambios pendientes) en `backend/src/domain/edicion.js`
+- [ ] T018 [US1] Esquemas de validación zod de la edición en `backend/src/schemas/edicion.js`
+- [ ] T019 [US1] Endpoints de bloqueo `POST /pedidos/{id}/editar` y `DELETE /pedidos/{id}/editar` en `backend/src/api/pedidos.js`
+- [ ] T020 [US1] Endpoint `GET /pedidos/{id}/editar` que consulta el estado del bloqueo (`libre`, `bloqueado`, `expirado`) en `backend/src/api/pedidos.js`
+- [ ] T021 [US1] Invocar la renovación del bloqueo (`editando_ultima_actividad` y `bloqueo_expira_en`) al guardar cada cambio de línea en `backend/src/api/pedidos.js`
+- [ ] T022 [US1] Ampliar los endpoints de líneas para admitir pedidos enviados (añadir/modificar/retirar) en `backend/src/api/pedidos.js`
+- [ ] T023 [US1] Endpoint `POST /pedidos/{id}/enviar-cambios`, que publica el cambio por SSE, en `backend/src/api/pedidos.js`
+- [ ] T024 [US1] Liberar el bloqueo de edición al ejecutar `enviar-cambios` (`editando_por`, `editando_desde`, `editando_ultima_actividad` y `bloqueo_expira_en` a nulo) en `backend/src/api/pedidos.js`
+- [ ] T025 [US1] Registrar cada cambio en la tabla de modificaciones (FR-013) en `backend/src/domain/edicion.js`
+- [ ] T026 [US1] Ampliar `GET /pedidos/{id}` con `modificada`, `cambios_pendientes` y estado de bloqueo en `backend/src/api/pedidos.js`
+- [ ] T027 [P] [US1] Componente editor de pedido enviado en `frontend/src/components/EditorPedido.jsx`
+- [ ] T028 [P] [US1] Componente de la acción "Enviar cambios" en `frontend/src/components/EnviarCambios.jsx`
+- [ ] T029 [US1] Aviso de bloqueo (pedido en edición por otro camarero) en `frontend/src/components/EditorPedido.jsx`
+- [ ] T030 [US1] Cliente de API de edición, bloqueo, enviar-cambios y suscripción SSE en `frontend/src/services/api.js` y `frontend/src/services/realtime.js`
+- [ ] T031 [US1] Marca visual de "modificada" y "cambios pendientes" en `frontend/src/components/EditorPedido.jsx`
+- [ ] T032 [US1] Llamar a la liberación del bloqueo (`DELETE /pedidos/{id}/editar`) al cancelar o salir de la edición en `frontend/src/components/EditorPedido.jsx`
+- [ ] T033 [US1] Indicar pedido bloqueado y manejar 423 (`pedido_bloqueado`) y 409 (`bloqueo_expirado`) con aviso y opción de reabrir en `frontend/src/components/EditorPedido.jsx` y `frontend/src/services/api.js`
+- [ ] T034 [US1] Liberar el bloqueo en el desmontaje/cierre del editor para no dejar bloqueos huérfanos en `frontend/src/components/EditorPedido.jsx`
 
 **Checkpoint**: US1 funcional y verificable de forma independiente (MVP).
 
@@ -92,10 +105,11 @@ bloqueo impide la edición simultánea (ver `quickstart.md`, escenarios 1–12).
 
 **Purpose**: Mejoras y validación final.
 
-- [ ] T023 [P] Documentar en `README.md` la edición de pedidos y enlazar `specs/002-editar-comanda/quickstart.md`
-- [ ] T024 Ejecutar la validación manual de `specs/002-editar-comanda/quickstart.md` (escenarios 1–12) y corregir lo necesario
-- [ ] T025 [P] Revisar los textos en español de España y el formato de moneda en la UI de edición
-- [ ] T026 Ejecutar la suite completa (`docker compose run --rm backend npm test` y `frontend npm test`) y dejar todo en verde
+- [ ] T035 [P] Documentar en `README.md` la edición de pedidos y enlazar `specs/002-editar-comanda/quickstart.md`
+- [ ] T036 Ejecutar la validación manual de `specs/002-editar-comanda/quickstart.md` (escenarios 1–15) y corregir lo necesario
+- [ ] T037 Validar en `specs/002-editar-comanda/quickstart.md` la liberación al cancelar/salir (escenario 12) y la expiración por inactividad (escenario 13)
+- [ ] T038 [P] Revisar los textos en español de España y el formato de moneda en `frontend/src/components/EditorPedido.jsx`, `frontend/src/components/EnviarCambios.jsx` y `frontend/src/utils/formato.js`
+- [ ] T039 Ejecutar la suite completa (`docker compose run --rm backend npm test` y `frontend npm test`) sobre `backend/tests/` y `frontend/tests/` y dejar todo en verde
 
 ---
 
@@ -108,20 +122,27 @@ bloqueo impide la edición simultánea (ver `quickstart.md`, escenarios 1–12).
 - **User Story 1 (Phase 3)**: depende de Foundational.
 - **Polish (Phase 4)**: depende de US1 completa.
 
+### Within Foundational
+
+- T007 depende de T003, T004 y T005.
+- T008 depende de T007.
+
 ### Within User Story 1
 
-- Las pruebas (T006–T010) se escriben primero y deben fallar antes de implementar.
-- El dominio (T011) y los esquemas (T012) antes de los endpoints (T013–T017).
-- T016 depende de T004 y T011.
-- T020 y T022 dependen de T018 (mismo fichero, no paralelizables).
-- El frontend (T018–T022) puede avanzar en paralelo al backend una vez definido el contrato
+- Las pruebas (T009–T016) se escriben primero y deben fallar antes de implementar.
+- El dominio (T017) y los esquemas (T018) antes de los endpoints (T019–T026).
+- T024 depende de T007 y T023.
+- T025 depende de T006 y T017.
+- T029 y T031 dependen de T027 (mismo fichero, no paralelizables).
+- T032, T033 y T034 dependen de T027 y T030 (mismo fichero, no paralelizables).
+- El frontend (T027–T034) puede avanzar en paralelo al backend una vez definido el contrato
   (`contracts/openapi.yaml`).
 
 ### Parallel Opportunities
 
-- T006–T010 en paralelo (ficheros de prueba distintos).
-- T018 y T019 en paralelo (ficheros distintos).
-- T023 y T025 en paralelo.
+- T009–T016 en paralelo (ficheros de prueba distintos).
+- T027 y T028 en paralelo (ficheros distintos).
+- T035 y T038 en paralelo.
 
 ---
 
@@ -129,11 +150,14 @@ bloqueo impide la edición simultánea (ver `quickstart.md`, escenarios 1–12).
 
 ```bash
 # Pruebas de US1 (escribir primero, deben fallar):
-Task: "T006 [US1] Prueba de bloqueo en backend/tests/edicion.bloqueo.test.js"
-Task: "T007 [US1] Prueba de líneas y pedido vacío en backend/tests/edicion.lineas.test.js"
-Task: "T008 [US1] Prueba de estado/modificada en backend/tests/edicion.estado.test.js"
-Task: "T009 [US1] Prueba de enviar-cambios en backend/tests/edicion.enviar-cambios.test.js"
-Task: "T010 [US1] Pruebas de UI del editor en frontend/tests/edicion.test.jsx"
+Task: "T009 [US1] Prueba de bloqueo en backend/tests/edicion.bloqueo.test.js"
+Task: "T010 [US1] Prueba de contrato del bloqueo en backend/tests/edicion.bloqueo.contrato.test.js"
+Task: "T011 [US1] Prueba de liberación del bloqueo en backend/tests/edicion.bloqueo.liberacion.test.js"
+Task: "T012 [US1] Prueba de líneas y pedido vacío en backend/tests/edicion.lineas.test.js"
+Task: "T013 [US1] Prueba de estado/modificada en backend/tests/edicion.estado.test.js"
+Task: "T014 [US1] Prueba de enviar-cambios en backend/tests/edicion.enviar-cambios.test.js"
+Task: "T015 [US1] Prueba de liberación y 423 en frontend/tests/edicion.bloqueo.test.jsx"
+Task: "T016 [US1] Pruebas de UI del editor en frontend/tests/edicion.test.jsx"
 ```
 
 ---

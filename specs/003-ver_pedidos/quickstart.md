@@ -44,8 +44,11 @@ pedidos enviados con distintas antigüedades y estados de plato.
 | 11 | Reordenación en vivo (US3.2, FR-011) | Marca/completa un pedido (historia 04) | Desaparece y el resto se reordena sin tocar la pantalla |
 | 12 | Desempate de envío (edge case, FR-004) | Provoca dos pedidos con el mismo instante | Se ordenan por orden de llegada, de forma estable |
 | 13 | Espera muy larga (edge case) | Revisa un pedido con >1 h | El tiempo se muestra legible (minutos/horas) |
-| 14 | Pedido editado (edge case, FR-015) | Edita un pedido ya enviado (historia 02) | Conserva su tiempo y posición, marcándose como modificado |
+| 14 | Pedido editado (FR-015, FR-018, SC-012) | Edita un pedido ya enviado (historia 02) | Conserva su tiempo y posición y muestra el aviso «Modificado», sin detallar qué platos cambiaron |
 | 15 | Sin conexión (edge case) | Corta el backend con la vista abierta | Aparece «sin conexión» y la info se marca como no actualizada; al volver, se recupera sin duplicar |
+| 16 | Carga inicial (FR-017) | Abre la vista con el backend lento o pausado | Se muestra «Cargando pedidos…» hasta recibir datos; no aparece el estado vacío antes |
+| 17 | Fallo de carga y reintento (FR-017, SC-011) | Detén el backend, abre o recarga la vista y vuelve a arrancarlo; pulsa «Reintentar» | Se muestra «No se pudieron cargar los pedidos» con la acción «Reintentar», nunca el estado vacío; al reintentar aparece la lista |
+| 18 | Reloj sin conexión (FR-006, SC-003) | Con la vista abierta, corta la conexión y espera unos minutos | La lista queda marcada como «sin conexión / no actualizada», pero el tiempo de espera sigue avanzando con el reloj local |
 
 ## Cómo ver las pruebas automatizadas
 
@@ -58,7 +61,8 @@ cd frontend && npm test
 ```
 
 Las pruebas cubren el orden y filtrado de pendientes, el desempate, el tiempo desde el envío
-original, los estados vacío/sin partida y el refresco por SSE.
+original (también sin conexión), la carga inicial y el error con reintento, el aviso «Modificado»,
+los estados vacío/sin partida y el refresco por SSE.
 
 ## Fuera de alcance de esta guía
 

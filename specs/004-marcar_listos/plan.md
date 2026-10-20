@@ -1,6 +1,6 @@
 # Plan de Implementación: Marcar platos como listos
 
-**Rama**: `004-marcar_listos` | **Fecha**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
+**Rama**: `feature/004-marcar_listos` | **Fecha**: 2026-10-20 | **Spec**: [spec.md](./spec.md)
 
 **Entrada**: Especificación de la funcionalidad en `/specs/004-marcar_listos/spec.md`
 
@@ -8,10 +8,13 @@
 
 Permitir al cocinero marcar (y deshacer) un plato de un pedido pendiente de su partida como
 «listo» desde la pantalla de cocina, dejando constancia del momento de la marca y propagando el
-cambio de estado a las pantallas de los camareros que atienden la mesa, sin recargar. El enfoque
-técnico reutiliza el stack obligatorio de la constitución (React + Chakra UI en frontend, ExpressJS
-sobre Node.js en backend, todo en Docker) y añade una capa mínima de persistencia SQLite y un canal
-de eventos servidor→cliente (SSE) para el refresco en vivo.
+cambio de estado a las pantallas de los camareros que atienden la mesa, sin recargar. Cuando se
+marca el último plato pendiente y el pedido desaparece de la lista de cocina, la pantalla muestra un
+aviso temporal «Pedido completado» con la acción «Deshacer» disponible durante al menos 10 segundos;
+esa acción revierte la última marca y hace reaparecer el pedido como pendiente. El enfoque técnico
+reutiliza el stack obligatorio de la constitución (React + Chakra UI en frontend, ExpressJS sobre
+Node.js en backend, todo en Docker) y añade una capa mínima de persistencia SQLite y un canal de
+eventos servidor→cliente (SSE) para el refresco en vivo.
 
 ## Contexto Técnico
 
@@ -40,6 +43,21 @@ arranque reproducible con `docker-compose`; sin frameworks adicionales fuera del
 **Escala/Alcance**: un restaurante, 3 partidas (entrantes, principales, postres), ~20 mesas, decenas
 de pedidos por hora y un puñado de cocineros y camareros conectados a la vez
 
+### Aviso temporal «Pedido completado» y reversión
+
+Cuando la respuesta del marcado (o el evento SSE correspondiente) indica que el pedido se ha
+completado, el frontend muestra un aviso temporal con Chakra UI (`AvisoPedidoCompletado`, apoyado en
+el sistema de toasts) con el texto «Pedido completado» y la acción «Deshacer». El estado de la vista
+guarda, solo en cliente, la referencia `pedidoId`/`lineaId` de la última marca y el instante en que se
+mostró el aviso; la acción permanece disponible durante al menos 10 segundos (temporizador del
+navegador). Al pulsarla se llama a la operación de reversión ya existente
+`PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` con `estado: pendiente`
+(ver `contracts/openapi.yaml`), se retira el aviso y la línea vuelve a `pendiente`. La operación de
+deshacer se admite aunque el pedido ya figure como completado, ya que su estado se deriva de las
+líneas; por eso el pedido reaparece como pendiente en la lista de cocina y el cambio se propaga a
+sala por SSE. No se añaden dependencias ni endpoints: se reutiliza el marcado idempotente y el
+sistema de toasts del stack obligatorio.
+
 ## Verificación de la Constitución
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -48,7 +66,7 @@ de pedidos por hora y un puñado de cocineros y camareros conectados a la vez
 |-------------------|--------------|--------|
 | I. Simplicidad | Un backend, un frontend y SQLite como único almacén; refresco en vivo con SSE | Pasa |
 | II. Español de España y euro | UI y estados («pendiente», «listo») en español; no maneja importes | Pasa |
-| III. Cero alcance fantasma | Solo los FR de la spec (marcar, deshacer, registrar, propagar) | Pasa |
+| III. Cero alcance fantasma | Solo los FR-001…FR-016 de la spec (marcar, deshacer —incluido el aviso temporal con «Deshacer»—, registrar, propagar) | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` demuestra cada escenario desde la aplicación | Pasa |
 | V. Datos con respeto | Solo datos operativos del servicio; secretos por variables de entorno | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |
@@ -105,9 +123,10 @@ frontend/
 │   ├── main.jsx             # punto de entrada
 │   ├── App.jsx              # enrutado y proveedor de Chakra UI
 │   ├── pages/               # pantalla de cocina y pantalla de sala
-│   ├── components/          # tarjeta de pedido, línea de plato, botón marcar/deshacer
+│   ├── components/          # tarjeta de pedido, línea de plato, botón marcar/deshacer,
+│   │                        # aviso temporal «Pedido completado» con acción «Deshacer»
 │   ├── services/            # cliente REST y suscripción SSE
-│   └── state/               # estado de la vista (pedidos y estados de plato)
+│   └── state/               # estado de la vista (pedidos, estados de plato y última marca reversible)
 ├── tests/
 ├── Dockerfile
 └── package.json

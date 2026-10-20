@@ -1,6 +1,6 @@
 # Feature Specification: Dashboard de estadísticas del servicio
 
-**Feature Branch**: `007-dashboard-estadisticas`
+**Feature Branch**: `feature/007-dashboard-estadisticas`
 
 **Created**: 2026-10-13
 
@@ -17,6 +17,10 @@
 - Q: ¿El dashboard debe mostrar datos parciales mientras el servicio está en curso o solo al terminar el servicio? → A: Solo los datos del servicio una vez terminado, sin vista parcial durante el día.
 - Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
 - Q: ¿Qué determina que un turno/servicio haya terminado? → A: El turno/servicio corresponde al día natural; el turno anterior es el día anterior.
+
+### Session 2026-10-20
+
+- Q: Cuando el día anterior no registró ninguna venta y el día actual sí, ¿cómo debe expresarse la comparación para no dividir entre cero? (FR-005, FR-006) → A: Mostrar la diferencia en euros y la indicación "sin base de comparación", sin porcentaje.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -96,19 +100,25 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
 5. **Given** que existen ventas del día anterior tanto por camarero como por plato, **When** el
    encargado consulta la comparación, **Then** ve la diferencia del día actual frente al anterior
    también desglosada por camarero y por plato.
+6. **Given** que el día anterior no registró ventas y el día actual sí, **When** se muestra la
+   comparación, **Then** se indica la diferencia en euros y «sin base de comparación», sin
+   porcentaje.
 
 ---
 
 ### Edge Cases
 
-- Servicio sin ninguna venta: el total se muestra como 0,00 € y las comparaciones reflejan una
-  bajada o un estado sin variación respecto a días anteriores.
+- Servicio sin ninguna venta: el total se muestra como 0,00 €; si el día anterior tuvo ventas, la
+  comparación refleja una bajada; si el día anterior también fue 0,00 €, se indica «sin variación»
+  con diferencia 0,00 € y sin porcentaje.
 - No existen días anteriores registrados: la sección de comparación muestra un aviso en lugar
   de un error o de datos vacíos sin explicación.
 - Un camarero o un plato sin ventas en el servicio: aparece con 0,00 € en los desgloses.
 - El día anterior comparado no tiene ventas o tiene ventas parciales: la comparación se
-  muestra igualmente con la diferencia real frente a ese día.
-- Dos servicios con idénticas ventas: la comparación se indica como "sin variación".
+  muestra igualmente con la diferencia real frente a ese día; si el día anterior no tuvo ventas,
+  se muestra la diferencia en euros con la indicación «sin base de comparación» y sin porcentaje.
+- Dos servicios con idénticas ventas, incluido el caso de 0,00 € en ambos: la comparación se
+  indica como «sin variación», con diferencia 0,00 € y sin porcentaje.
 - El encargado consulta el dashboard antes de terminar el día en curso: se muestra el
   día anterior completado; el día en curso no aparece hasta su cierre.
 
@@ -125,8 +135,6 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
 - **FR-004**: El sistema MUST desglosar las ventas por plato, mostrando la cantidad y el importe
   de cada plato.
 - **FR-005**: El sistema MUST comparar el total del servicio con el del día natural anterior.
-- **FR-010**: El sistema MUST ofrecer la comparación con el día anterior también desglosada
-  por camarero y por plato (aclarado en la sesión de clarificación).
 - **FR-006**: El sistema MUST indicar de forma inequívoca si la comparación refleja una subida,
   una bajada o una situación sin variación.
 - **FR-007**: El sistema MUST mostrar un aviso cuando no exista un día anterior con el que
@@ -135,6 +143,11 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
   cuentas cerradas del servicio, sin desviaciones.
 - **FR-009**: El dashboard y sus datos siguen el formato de moneda en euros y las convenciones
   españolas de número y fecha.
+- **FR-010**: El sistema MUST ofrecer la comparación con el día anterior también desglosada
+  por camarero y por plato (aclarado en la sesión de clarificación).
+- **FR-011**: Cuando el día anterior no tenga ventas registradas y el día actual sí, la
+  comparación MUST mostrar la diferencia en euros con la indicación «sin base de comparación» y
+  MUST NOT mostrar un porcentaje.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -161,6 +174,8 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
   del servicio (verificable por una persona no técnica desde la interfaz, sin leer código).
 - **SC-005**: La consulta del dashboard se realiza en menos de 3 segundos desde que el encargado
   la solicita, con los datos del servicio cargados.
+- **SC-006**: En el 100 % de las comparaciones cuyo día anterior no tuvo ventas, el dashboard
+  muestra la diferencia en euros con «sin base de comparación» y ningún porcentaje.
 
 ## Assumptions
 

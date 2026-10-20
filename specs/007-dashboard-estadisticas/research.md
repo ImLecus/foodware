@@ -106,3 +106,13 @@ su justificación.
   reproducible en cualquier máquina del equipo.
 - **Alternativas consideradas**: dos contenedores con proxy inverso aparte (más piezas de las
   necesarias en v1).
+
+## D12. Comparación cuando el día anterior no tuvo ventas
+
+- **Decisión**: representar el caso con `sinBaseComparacion = true`, `diferenciaImporte` igual a la
+  diferencia absoluta en euros y `diferenciaPorcentaje = null`; la UI muestra la diferencia y la
+  etiqueta «sin base de comparación», sin porcentaje.
+- **Razón**: cumple FR-011 y SC-006 sin dividir entre cero ni inventar una variación relativa; la
+  diferencia absoluta sigue aportando información real frente al día anterior.
+- **Alternativas consideradas**: mostrar un porcentaje del 100 % (engañoso e incorrecto); ocultar
+  la comparación (pierde un dato válido y la diferencia en euros exigida).

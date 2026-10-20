@@ -1,6 +1,6 @@
 # Feature Specification: Cierre y división de cuenta
 
-**Feature Branch**: `006-cierre-cuenta-division`
+**Feature Branch**: `feature/006-cierre-cuenta-division`
 
 **Created**: 2026-10-13
 
@@ -17,6 +17,11 @@
 - Q: Cuando la cuenta no se puede repartir en partes exactamente iguales, ¿qué parte asume los céntimos sobrantes? → A: Los céntimos sobrantes se reparten de uno en uno entre las partes por orden, empezando por la primera, de modo que la suma siga coincidiendo con el total.
 - Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
 - Q: Si el precio de un plato cambia entre el pedido y el cierre de la cuenta, ¿qué precio se usa? → A: El precio del momento de pedir: queda fijado al tomar el pedido y no cambia después.
+
+### Session 2026-10-20
+
+- Q: En una cuenta dividida, ¿cuándo debe generarse el ticket final: al confirmar el cobro, al pagarse la última parte, o uno por cada parte? (FR-010, FR-011) → A: Un único ticket final, generado al pagarse la última parte, con el total y el desglose completo.
+- Q: Si el camarero marca por error una parte de la cuenta como pagada, ¿puede deshacer esa marca antes de que se cierre la mesa? (FR-016) → A: Sí, puede volver a marcarla como pendiente mientras la mesa no esté cerrada.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -82,10 +87,14 @@ nuevas operaciones.
 
 **Acceptance Scenarios**:
 
-1. **Given** una cuenta preparada para cerrar, **When** el camarero confirma el cobro, **Then** el sistema genera el ticket final con el total de la cuenta y el desglose de cada parte con su importe.
+1. **Given** una cuenta sin dividir preparada para cerrar, **When** el camarero confirma el cobro, **Then** el sistema genera el ticket final con el total de la cuenta y el desglose de cada parte con su importe.
 2. **Given** una mesa cerrada tras el cobro, **When** se intenta realizar una nueva operación sobre ella, **Then** el sistema la rechaza por estar cerrada.
 3. **Given** una cuenta ya cerrada, **When** se intenta cerrarla de nuevo, **Then** el sistema lo impide.
 4. **Given** una cuenta dividida con partes aún pendientes de pago, **When** se intenta cerrar la mesa, **Then** el sistema no la cierra hasta que todas las partes estén pagadas.
+5. **Given** una cuenta dividida con partes pendientes, **When** el camarero marca una parte intermedia como pagada, **Then** todavía no se genera el ticket final; **When** se paga la última parte, **Then** se genera un único ticket final con el total y el desglose completo.
+6. **Given** una cuenta dividida con una parte marcada como pagada y la mesa aún abierta, **When** el camarero deshace esa marca, **Then** la parte vuelve a estar pendiente y la mesa no se cierra hasta que se pague de nuevo.
+
+En una cuenta dividida, el ticket se rige por el escenario 5: no se emite hasta pagar la última parte.
 
 ---
 
@@ -96,6 +105,7 @@ nuevas operaciones.
 - ¿Qué ocurre si el camarero cancela el cierre antes de confirmar el cobro? La cuenta y la mesa deben quedar como estaban, sin cambios.
 - ¿Qué ocurre con una mesa sin consumos? La cuenta debe mostrar un total de cero y no debe permitir un cierre sin importe.
 - ¿Qué ocurre si no están pagadas todas las partes de una cuenta dividida? La mesa no se cierra hasta que todas las partes queden marcadas como pagadas.
+- ¿Qué ocurre si el camarero marca una parte como pagada por error? Puede volver a marcarla como pendiente mientras la mesa no esté cerrada; la mesa no se cierra si queda alguna parte pendiente.
 - ¿Qué ocurre si se modifica la cuenta después de iniciar la división? La división se reinicia y el camarero debe rehacerla sobre el nuevo total.
 - ¿Qué ocurre si un precio cambia entre el consumo y el cierre? Se aplica el precio registrado en el momento de pedir cada plato; el cambio de precio no altera las cuentas ya en curso.
 - ¿Qué ocurre si se intenta cerrar una cuenta que ya está cerrada? El sistema debe impedirlo.
@@ -113,13 +123,13 @@ nuevas operaciones.
 - **FR-007**: La división MUST poder hacerse repartiendo el importe según lo consumido por cada comensal.
 - **FR-008**: Cada parte de la división MUST quedar asociada al comensal al que corresponde.
 - **FR-009**: La suma de las partes MUST coincidir siempre con el importe total de la cuenta.
-- **FR-010**: El sistema MUST generar el ticket final con el total de la cuenta y el desglose de cada parte con su importe.
+- **FR-010**: El sistema MUST generar el ticket final con el total de la cuenta y el desglose de cada parte con su importe. En una cuenta dividida, MUST generar un único ticket final al pagarse la última parte, sin generar tickets provisionales por las partes intermedias.
 - **FR-011**: Al confirmar el cobro de la cuenta, o de todas sus partes cuando esté dividida, el sistema MUST cerrar la mesa y dejarla inactiva.
 - **FR-012**: Una mesa cerrada MUST rechazar cualquier nueva operación.
 - **FR-013**: El sistema MUST mostrar los importes en euros (€) con el formato español de números y fechas.
 - **FR-014**: El sistema MUST impedir cerrar una cuenta que ya esté cerrada.
 - **FR-015**: Al cerrar la cuenta, el camarero MUST poder asignar cada plato consumido (o una porción de su importe) a una de las partes de la división, ya que el pedido no registra el consumo por comensal.
-- **FR-016**: Cuando la cuenta esté dividida, el camarero MUST poder marcar cada parte como pagada por separado; la mesa MUST cerrarse solo cuando todas las partes estén pagadas.
+- **FR-016**: Cuando la cuenta esté dividida, el camarero MUST poder marcar cada parte como pagada por separado; la mesa MUST cerrarse solo cuando todas las partes estén pagadas. El camarero MUST poder deshacer la marca de una parte pagada mientras la mesa no esté cerrada, devolviéndola a pendiente.
 - **FR-017**: Si la cuenta se modifica después de iniciar una división, el sistema MUST reiniciar la división para que el camarero la rehaga sobre el total actualizado.
 - **FR-018**: En una división en partes iguales que no sea exacta, el sistema MUST repartir los céntimos sobrantes de uno en uno entre las partes por orden, empezando por la primera, de modo que la suma siga coincidiendo con el total.
 
@@ -144,6 +154,8 @@ nuevas operaciones.
 - **SC-005**: Una mesa cerrada rechaza el 100 % de las nuevas operaciones intentadas sobre ella.
 - **SC-006**: El camarero completa la división de una cuenta entre varios comensales en menos de 3 minutos.
 - **SC-007**: Una mesa cuya cuenta está dividida permanece abierta hasta que el 100 % de sus partes están marcadas como pagadas.
+- **SC-008**: En el 100 % de las cuentas divididas se genera un único ticket final al pagarse la última parte, y ninguno antes.
+- **SC-009**: El 100 % de las partes marcadas como pagadas puede volver a pendiente mientras la mesa esté abierta; ninguna mesa se cierra con partes pendientes.
 
 ## Assumptions
 

@@ -46,11 +46,18 @@ historias 01–04 y escribe únicamente el **aviso de mesa**.
 
 **Reglas**:
 - Existe como máximo **un aviso vigente por mesa**.
+- El `estado` del aviso es **global por mesa**: no se guarda por camarero ni por
+  dispositivo. Cualquier camarero que descarte el aviso cambia el mismo estado para toda
+  la sala (FR-009).
 - Un aviso se crea cuando una mesa abierta pasa de no completa a completa (FR-005).
 - Descartar un aviso requiere aviso `activo`; descartar dos veces no cambia el estado
   (idempotente) y descartar un aviso inexistente no está permitido (FR-009).
+- Al descartarlo, el aviso pasa a `descartado` para todos los camareros y deja de
+  mostrarse en todas las pantallas (FR-009, FR-010); el backend difunde el cambio por el
+  hub SSE compartido (SC-009).
 - Un aviso `descartado` no vuelve a estar `activo` mientras no se marque un **nuevo** plato
-  como listo en esa mesa (FR-010).
+  como listo en esa mesa (FR-010); en ese momento se crea un aviso nuevo (`activo`) que
+  vuelve a mostrarse en todas las pantallas.
 
 ### Vista de sala (modelo derivado, no persistido)
 
@@ -58,7 +65,9 @@ Agregado de solo lectura que alimenta la pantalla del camarero:
 
 - `mesas`: lista de mesas abiertas, cada una con sus platos y el estado de cada plato.
 - `completa`: `true` si la mesa está abierta y **todos** sus platos están en `listo`.
-- `aviso`: el aviso vigente de la mesa (`activo` / `descartado`) si existe.
+- `aviso`: el aviso vigente de la mesa (`activo` / `descartado`) si existe. Solo se
+  muestra la señal de los avisos `activo`; un aviso `descartado` se oculta en todas las
+  pantallas (FR-010).
 
 ## Relaciones
 
@@ -86,9 +95,13 @@ Plato de pedido
   pendiente ──(cocina marca listo)──▶ listo
   listo     ──(cocina deshace)──────▶ pendiente
 
-Aviso de mesa
+Aviso de mesa (estado global por mesa, compartido por todos los camareros)
   (no existe) ──(mesa se completa)──▶ activo
-  activo      ──(camarero descarta)─▶ descartado
+  activo      ──(cualquier camarero descarta)──▶ descartado   [difundido por SSE a todas las pantallas]
   activo      ──(plato vuelve a pendiente)──▶ retirado
   descartado  ──(nuevo plato listo completa de nuevo la mesa)──▶ (nuevo aviso) activo
 ```
+
+El descarte no se guarda por dispositivo: la transición `activo → descartado` se aplica al
+aviso de la mesa y se difunde por el hub SSE compartido, de modo que todas las pantallas
+conectadas convergen al mismo estado (FR-009, FR-010, SC-009).

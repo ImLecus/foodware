@@ -157,13 +157,35 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+  /pedidos/{pedidoId}/anular:
+    post:
+      summary: Anula un pedido en curso y libera su mesa
+      description: >
+        Descarta el pedido y sus líneas, deja la mesa en `libre` y no envía nada a cocina (FR-019).
+      operationId: anularPedido
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+      responses:
+        '204':
+          description: Pedido anulado; la mesa vuelve a estar libre
+        '404':
+          description: Pedido no encontrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: El pedido ya fue enviado y no se puede anular
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
   /eventos:
     get:
       summary: Suscripción SSE a eventos de estado (tiempo real, hub compartido)
       operationId: eventos
       responses:
         '200':
-          description: Stream `text/event-stream` con eventos de pedido (confirmado, modificado, actualizado)
+          description: Stream `text/event-stream` con eventos de pedido (confirmado, anulado, modificado, actualizado)
           content:
             text/event-stream:
               schema: { type: string }

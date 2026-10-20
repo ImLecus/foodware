@@ -32,8 +32,9 @@ docker compose exec backend npm test
 docker compose exec frontend npm test
 ```
 
-Resultado esperado: todas las pruebas en verde (validación de precio y partida; disponibilidad
-combinada; contrato de los endpoints; estados de la página).
+Resultado esperado: todas las pruebas en verde (validación de precio, partida, nombre y estado de
+ingrediente; asociación plato–ingrediente; disponibilidad combinada; contrato de los endpoints;
+estados de la página).
 
 ## Escenarios de verificación (desde la interfaz)
 
@@ -93,6 +94,16 @@ combinada; contrato de los endpoints; estados de la página).
    plato.
 2. **Esperado**: la carta de sala refleja el cambio en menos de 3 s, sin acciones adicionales.
 
+### E12. Alta de ingrediente, asociación y agotamiento (US3 escenario 5, FR-015, SC-006)
+1. En `/admin/carta`, crear un ingrediente con nombre (por ejemplo, "Queso") y estado
+   `disponible`.
+2. Asociarlo a un plato que esté manualmente activo y comprobar que el plato sigue ofreciéndose.
+3. Marcar el ingrediente como `agotado`.
+4. **Esperado**: el plato deja de ofrecerse en la carta de sala en 3 s o menos, sin que el
+   administrador lo desactive.
+5. Volver a marcar el ingrediente como `disponible`; **esperado**: el plato se ofrece de nuevo por
+   seguir activo.
+
 ## Comprobación del contrato de la API
 
 ```bash
@@ -104,6 +115,15 @@ curl -s -X POST "http://localhost:3000/api/admin/platos" \
   -H "Content-Type: application/json" \
   -d '{"nombre":"Croquetas","partida":"entrantes","precio":7.00}'
 
+# Crear un ingrediente
+curl -s -X POST "http://localhost:3000/api/admin/ingredientes" \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Queso","estado":"disponible"}'
+
+# Asociarlo a un plato (sustituye el conjunto de ingredientes)
+curl -s -X PATCH "http://localhost:3000/api/admin/platos/p1" \
+  -H "Content-Type: application/json" -d '{"ingredienteIds":["i1","i3"]}'
+
 # Poner un ingrediente a agotado
 curl -s -X PATCH "http://localhost:3000/api/admin/ingredientes/i2" \
   -H "Content-Type: application/json" -d '{"estado":"agotado"}'
@@ -114,7 +134,8 @@ curl -s "http://localhost:3000/api/carta"
 # Esperado: JSON conforme a contracts/carta-api.md
 # - 401 sin autenticación
 # - 403 con rol camarero en endpoints /api/admin/*
-# - 400 con precio <= 0 o partida no válida
+# - 400 con precio <= 0, partida no válida, nombre de ingrediente vacío, estado no válido o
+#   ingrediente inexistente en la asociación
 ```
 
 ## Referencias

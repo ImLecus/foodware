@@ -1,6 +1,6 @@
 # Feature Specification: Ver pedidos pendientes en cocina
 
-**Feature Branch**: `003-ver_pedidos`
+**Feature Branch**: `feature/003-ver_pedidos`
 
 **Created**: 2026-10-13
 
@@ -16,6 +16,14 @@
 - Q: Cuando dos pedidos pendientes tienen exactamente el mismo instante de envío, ¿con qué criterio secundario debe ordenarse la lista? (FR-004) → A: Por orden de llegada (identificador creciente del pedido).
 - Q: ¿Cómo obtiene la vista de cocina la partida del cocinero que la está usando? (FR-001, FR-013) → A: Reutiliza la identidad/asignación ya existente; esta historia no introduce inicio de sesión.
 - Q: ¿La aplicación debe funcionar sin conexión o exige estar conectada a la red del restaurante? → A: Exige conexión: al perderse muestra un indicador de "sin conexión", no permite confirmar ni modificar y conserva lo escrito en pantalla hasta recuperarla.
+
+### Session 2026-10-20
+
+- Q: Cuando se pierde la conexión con la vista de cocina abierta, ¿el tiempo de espera que se muestra debe seguir avanzando o quedarse congelado hasta que vuelva la conexión? (FR-006, SC-003) → A: Sigue avanzando con el reloj local; solo la lista se marca como "sin conexión / no actualizada" hasta reconectar.
+- Q: ¿Qué debe ver el cocinero en la pantalla mientras se cargan los pedidos la primera vez que abre la vista: un indicador de carga, el estado vacío de inmediato, o nada hasta tener los datos? (FR-012) → A: Un indicador de carga ("Cargando pedidos…") hasta recibir los datos; solo entonces aparece la lista o el estado vacío.
+- Q: ¿Cómo deben distinguirse en pantalla los platos ya listos de los que siguen pendientes dentro de un mismo pedido? (FR-007) → A: Con color más un símbolo o etiqueta de texto (por ejemplo, "listo"); nunca solo por color.
+- Q: Si la primera carga de pedidos falla porque el servidor no responde, ¿qué debe mostrar la vista de cocina? (FR-017) → A: Un mensaje de error ("No se pudieron cargar los pedidos") con botón "Reintentar"; no se muestra el estado vacío.
+- Q: Cuando un pedido se edita después de enviarse, ¿basta con indicar en la vista de cocina que ese pedido fue modificado, o hay que resaltar además los platos que cambiaron? (FR-015) → A: Basta con un aviso "Modificado" junto al pedido, sin detallar qué platos cambiaron.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -48,8 +56,9 @@ Junto a cada pedido pendiente, el cocinero ve cuánto tiempo ha transcurrido des
 1. **Given** un pedido pendiente mostrado en la vista de cocina, **When** el cocinero lo observa, **Then** ve el tiempo transcurrido desde que el pedido se envió.
 2. **Given** un pedido pendiente compuesto por varios platos, **When** se muestra, **Then** aparecen todos sus platos junto con la cantidad de cada uno.
 3. **Given** un pedido pendiente que permanece en pantalla, **When** pasa el tiempo, **Then** el tiempo de espera mostrado refleja el tiempo real transcurrido.
-4. **Given** un pedido pendiente con parte de sus platos ya marcados como listos, **When** el cocinero lo observa, **Then** ve todos sus platos y distingue visualmente cuáles ya están listos y cuáles quedan pendientes.
+4. **Given** un pedido pendiente con parte de sus platos ya marcados como listos, **When** el cocinero lo observa, **Then** ve todos sus platos y distingue cuáles ya están listos y cuáles quedan pendientes mediante color y un símbolo o etiqueta de texto.
 5. **Given** un pedido pendiente procedente de una mesa, **When** se muestra, **Then** el cocinero ve el identificador de la mesa de origen.
+6. **Given** un pedido editado después de su envío, **When** el cocinero lo observa, **Then** ve un aviso "Modificado" y el tiempo de espera y la posición originales se mantienen.
 
 ---
 
@@ -73,15 +82,17 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 ### Edge Cases
 
 - **Partida sin pedidos pendientes**: la vista muestra un estado vacío claro que indica que no hay pedidos pendientes, sin listar pedidos de otras partidas.
+- **Carga inicial de la vista**: mientras se obtienen los pedidos se muestra un indicador de carga; no se presenta el estado vacío ni una pantalla en blanco antes de recibir datos.
+- **Fallo al cargar los pedidos**: se muestra un mensaje de error con una acción de reintento; no se presenta el estado vacío ni se deja un cargador indefinido.
 - **Cocinero sin partida asignada o partida desconocida**: la vista no puede mostrar una lista fiable; debe indicar que no hay partida asignada en lugar de mostrar pedidos de cualquier partida.
 - **Empate en el tiempo de envío** de dos pedidos: se ordenan por orden de llegada (identificador creciente), de modo que la lista no cambia de orden sin motivo.
 - **Esperas muy largas** (por ejemplo, más de una hora): el tiempo transcurrido se sigue mostrando de forma legible, sin cortarse ni desbordarse.
 - **Pedido con un único plato**: se muestra igual que cualquier otro pedido, con su plato y cantidad.
 - **Todos los platos de un pedido dejan de estar pendientes**: el pedido desaparece de la lista y no queda como pendiente.
 - **Muchos pedidos pendientes a la vez**: la lista permite desplazarse y localizar el pedido más urgente con facilidad.
-- **Interrupción momentánea de la conexión**: la vista muestra un indicador de "sin conexión" y marca la información como no actualizada; al restablecerse, recupera la información vigente sin duplicar ni perder pedidos.
+- **Interrupción momentánea de la conexión**: la vista muestra un indicador de "sin conexión" y marca la información como no actualizada; el tiempo de espera de los pedidos ya mostrados sigue avanzando con el reloj local; al restablecerse, recupera la información vigente sin duplicar ni perder pedidos.
 - **Pedido cancelado o retirado desde sala**: deja de aparecer como pendiente en la vista de cocina.
-- **Pedido editado tras el envío**: el pedido conserva su tiempo de espera original y mantiene su posición por antigüedad, aunque se indique que ha sido modificado.
+- **Pedido editado tras el envío**: el pedido conserva su tiempo de espera original y mantiene su posición por antigüedad, y muestra un aviso "Modificado"; no se detalla qué platos cambiaron.
 
 ## Requirements *(mandatory)*
 
@@ -92,8 +103,8 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 - **FR-003**: La vista de cocina MUST NOT mostrar pedidos pendientes de partidas distintas a la del cocinero.
 - **FR-004**: Los pedidos MUST ordenarse por tiempo de espera, del más antiguo al más reciente; en caso de empate en el instante de envío, MUST ordenarse por orden de llegada (identificador creciente).
 - **FR-005**: Cada pedido pendiente MUST mostrar el tiempo transcurrido desde que se envió originalmente, sin reiniciarse cuando el pedido se edita después (historia 02).
-- **FR-006**: El tiempo transcurrido mostrado MUST mantenerse al día mientras el pedido sigue pendiente en pantalla.
-- **FR-007**: Cada pedido pendiente MUST mostrar todos los platos que lo componen junto con la cantidad de cada uno, incluyendo los ya marcados como listos y distinguiéndolos visualmente de los que siguen pendientes.
+- **FR-006**: El tiempo transcurrido mostrado MUST mantenerse al día mientras el pedido sigue pendiente en pantalla, incluso sin conexión, ya que se calcula localmente a partir del instante de envío original.
+- **FR-007**: Cada pedido pendiente MUST mostrar todos los platos que lo componen junto con la cantidad de cada uno, incluyendo los ya marcados como listos; los platos listos MUST distinguirse de los pendientes mediante color junto con un símbolo o etiqueta de texto, nunca solo por color.
 - **FR-008**: Un pedido MUST considerarse pendiente mientras conserve al menos un plato sin completar dentro de la partida del cocinero.
 - **FR-009**: La lista MUST actualizarse automáticamente cuando llega un pedido nuevo desde sala, sin que el cocinero realice ninguna acción manual.
 - **FR-010**: Al llegar un pedido nuevo, este MUST insertarse en la posición que le corresponde según su antigüedad.
@@ -103,6 +114,8 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 - **FR-014**: Todos los textos visibles de la vista (partidas, estado vacío, unidades de tiempo) MUST estar en español de España.
 - **FR-015**: Una edición posterior del pedido (historia 02) MUST NOT reiniciar el tiempo de espera del pedido ni alterar su posición por antigüedad.
 - **FR-016**: Cada pedido pendiente MUST indicar la mesa de la que procede.
+- **FR-017**: Mientras la vista carga los pedidos por primera vez, MUST mostrar un indicador de carga distinto del estado vacío; MUST NOT mostrar el estado vacío antes de recibir los datos. Si la carga inicial falla, MUST mostrar un mensaje de error con una acción de reintento y MUST NOT mostrar el estado vacío.
+- **FR-018**: Un pedido editado después de su envío MUST mostrar un aviso "Modificado" junto al pedido; MUST NOT ser necesario detallar qué platos cambiaron.
 
 ### Key Entities *(include if data involved)*
 
@@ -118,13 +131,16 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 
 - **SC-001**: Al abrir la vista de cocina, el 100% de los pedidos mostrados pertenece a la partida del cocinero (cero pedidos de otras partidas visibles).
 - **SC-002**: En el 100% de los casos, el pedido pendiente más antiguo aparece en la primera posición de la lista y el más reciente en la última.
-- **SC-003**: El 100% de los pedidos pendientes muestra el tiempo transcurrido desde su envío con una precisión de al menos un minuto.
+- **SC-003**: El 100% de los pedidos pendientes muestra el tiempo transcurrido desde su envío con una precisión de al menos un minuto, incluso mientras la vista está sin conexión.
 - **SC-004**: El 100% de los pedidos pendientes muestra todos sus platos y la cantidad de cada uno.
 - **SC-005**: Un pedido nuevo enviado desde sala aparece en la vista de cocina en 5 segundos o menos, sin que el cocinero tenga que recargar la pantalla.
 - **SC-006**: Cuando un pedido deja de estar pendiente, desaparece de la lista y el resto se reordena en 5 segundos o menos, sin intervención del cocinero.
 - **SC-007**: Un cocinero identifica correctamente qué debe preparar (pedido, platos y cantidades) en el 100% de los pedidos pendientes, sin ayuda externa.
 - **SC-008**: Con 20 pedidos pendientes en la partida, el cocinero localiza el más urgente en 10 segundos o menos.
 - **SC-009**: El 100% de los pedidos pendientes muestra la mesa de la que procede.
+- **SC-010**: El 100% de los platos listos se distingue de los pendientes sin depender únicamente del color (color más símbolo o etiqueta de texto).
+- **SC-011**: Ante un fallo de la carga inicial, el 100% de los intentos muestra un mensaje de error con acción de reintento y en ningún caso el estado vacío.
+- **SC-012**: El 100% de los pedidos editados tras su envío muestra el aviso "Modificado" y conserva su tiempo de espera y posición originales.
 
 ## Assumptions
 

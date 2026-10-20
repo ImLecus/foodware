@@ -33,20 +33,24 @@ coincida exactamente con el total (FR-009, SC-003).
 prohíbe la clarificación de la spec); usar números en coma flotante (descartado: introduce
 descuadres de céntimos).
 
-## 2. Modelo de la cuenta: abierta (derivada) y cerrada (persistida)
+## 2. Modelo de la cuenta: derivada y persistida durante el cobro
 
-**Decisión**: mientras la mesa está abierta, la **cuenta abierta es un modelo derivado** que
-se calcula desde los consumos (no se persiste). Al confirmar el cobro se persiste una fila de
-`cuentas` con su estado `cerrada`, su total y el momento del cierre, junto con sus partes y
-asignaciones, en una única transacción.
+**Decisión**: mientras la mesa está abierta y no hay división, la **cuenta abierta es un
+modelo derivado** que se calcula desde los consumos (no se persiste). Al confirmar una
+**división**, se persiste una fila de `cuentas` en estado `abierta` con su total base, sus
+partes en estado `pendiente` y sus asignaciones; así el pago y la reversión de cada parte
+sobreviven entre peticiones. En la misma transacción que completa el pago (última parte
+pendiente o pago único) la cuenta pasa a `cerrada`, se guarda `cerrada_en` y se cierra la mesa.
 
-**Rationale**: evita "borradores" y estados intermedios que habría que limpiar si el camarero
-cancela (FR-004); el total siempre refleja el estado real de la mesa hasta que se cierra. El
-Principio I pide no persistir lo que todavía no hace falta.
+**Rationale**: el pago por partes y su reversión son operaciones separadas en el tiempo y
+necesitan un estado persistido; sin él no se podría deshacer una marca ni saber cuántas partes
+quedan. Persistir solo al confirmar la división evita "borradores" antes de que el camarero
+empiece a cobrar (FR-004) y mantiene el Principio I: no se persiste lo que aún no hace falta.
 
-**Alternativas consideradas**: crear la cuenta al abrir la mesa (propiedad de otra historia y
-complejidad innecesaria); persistir un borrador de cuenta al iniciar el cierre y borrarlo al
-cancelar (más estados y limpieza).
+**Alternativas consideradas**: persistir la cuenta al abrir la mesa (propiedad de otra
+historia y complejidad innecesaria); mantener los pagos solo en pantalla (se perderían al
+recargar y no permitirían la reversión entre peticiones); persistir la cuenta únicamente al
+cerrarla (incompatible con el pago y la reversión parte a parte).
 
 ## 3. División en partes iguales y reparto de céntimos (FR-006, FR-018, SC-003)
 
@@ -70,8 +74,8 @@ asignaciones; la suma de todas las asignaciones debe ser igual al total. Las asi
 persisten en `cuentas_parte_consumos` con el importe asignado.
 
 **Rationale**: el pedido no registra el consumo por comensal (clarificación), así que la
-asignación se hace al cerrar; permitir porciones cubre el caso de un plato compartido sin
-perder la coincidencia con el total (FR-009).
+asignación se hace al confirmar la división; permitir porciones cubre el caso de un plato
+compartido sin perder la coincidencia con el total (FR-009).
 
 **Alternativas consideradas**: obligar a asignar cada consumo a una única parte (no cubre
 platos compartidos); guardar solo el importe de cada parte sin detalle (impide comprobar que
@@ -80,39 +84,45 @@ todo lo consumido está asignado).
 ## 5. Detección de cambios y reinicio de la división (FR-017)
 
 **Decisión**: la división se apoya en un **total base** (el total sobre el que se construyó).
-Al confirmar el cierre, el backend recalcula el total actual y, si difiere del total base
-enviado, rechaza la operación (`422`) e indica que la cuenta cambió; la pantalla vuelve a
-cargar la cuenta con el total actualizado y el camarero rehace la división.
+Al confirmar la división y en cada marca o reversión de pago, el backend recalcula el total
+actual y, si difiere del total base, rechaza la operación (`422`), descarta la división e
+indica que la cuenta cambió; la pantalla vuelve a cargar la cuenta con el total actualizado y
+el camarero rehace la división.
 
-**Rationale**: cumple FR-017 sin bloquear el pedido (evita introducir estados de "división
-vigente" y su limpieza) y sin un canal de tiempo real propio; el caso de edición concurrente
-es poco frecuente y se resuelve en el momento de confirmar (Principio I).
+**Rationale**: cumple FR-017 sin bloquear el pedido y sin un canal de tiempo real propio; el
+caso de edición concurrente es poco frecuente y se resuelve en cada operación de pago
+(Principio I).
 
 **Alternativas consideradas**: bloquear la cuenta mientras se divide (como la edición de
 pedido de la historia 02: más complejidad y estados); suscribirse a eventos para reiniciar en
 vivo (no exigido por la spec).
 
-## 6. Pago por partes y cierre transaccional (FR-011, FR-014, FR-016, SC-005, SC-007)
+## 6. Pago por partes, reversión y cierre transaccional (FR-011, FR-014, FR-016, SC-005, SC-007, SC-009)
 
-**Decisión**: el camarero marca cada parte como pagada por separado en la pantalla de cierre;
-la operación de cierre se habilita solo cuando **todas** las partes están marcadas como
-pagadas. El backend valida en una única transacción que el total coincide, que las partes
-suman el total y que ninguna parte queda pendiente; entonces persiste la cuenta y sus partes,
-marca la mesa como cerrada y responde con el ticket. Cerrar una cuenta ya cerrada se rechaza
-(`409`).
+**Decisión**: el camarero marca cada parte como pagada por separado. Cada marca se valida y
+persiste en su propia transacción. Al marcar la **última** parte pendiente, la misma
+transacción comprueba que el total actual coincide con el total base, cierra la cuenta y la
+mesa, emite el único ticket y publica `mesa-cerrada`. Una parte marcada por error puede volver
+a `pendiente` mientras la mesa siga abierta; la reversión limpia `pagada_en` y deja la cuenta
+abierta. Cerrar una cuenta ya cerrada se rechaza (`409`), igual que revertir una parte con la
+mesa cerrada.
 
-**Rationale**: cumple FR-016 y SC-007 (la mesa se cierra solo con todas las partes pagadas) y
-FR-014 (no se reabre una cuenta cerrada). La transacción evita cierres parciales o dobles.
+**Rationale**: cumple literalmente las clarificaciones del 2026-10-20 y SC-007/SC-009: la mesa
+solo se cierra con todas las partes pagadas y la reversión es posible únicamente antes del
+cierre. La transacción evita cierres parciales, tickets duplicados o una mesa cerrada con
+partes pendientes.
 
-**Alternativas consideradas**: persistir cada pago de parte al marcarlo (borradores: más
-estados y limpieza); cerrar con partes pendientes y cobrarlas después (contradice la spec).
+**Alternativas consideradas**: una única operación de cierre con todas las partes ya pagadas
+(contradice el pago y la reversión parte a parte); permitir revertir después del cierre
+(contradice la clarificación y obligaría a reabrir la mesa); persistir cada pago como un
+borrador independiente (más estados y limpieza).
 
 ## 7. Notificación a la vista de sala (integración con la historia 005)
 
 **Decisión**: al cerrar la mesa, el backend emite el evento `mesa-cerrada` por el **hub SSE ya
 existente** (historia 005), para que las pantallas de sala dejen de mostrar la mesa. La
 pantalla de cierre de 006 no se suscribe a tiempo real: carga la cuenta por HTTP y valida el
-total al confirmar.
+total base en cada operación de pago.
 
 **Rationale**: mantiene coherentes sala y cierre sin introducir un canal de tiempo real nuevo
 (Principio I) y sin duplicar infraestructura; la historia 006 no necesita refresco en vivo
@@ -123,14 +133,50 @@ no notificar (la vista de sala mostraría mesas cerradas hasta recargar).
 
 ## 8. Pruebas automatizadas y verificación
 
-**Decisión**: backend con Vitest + Supertest (contrato de las rutas de cuenta y cierre; cálculo
-del total; redondeo de céntimos en partes iguales; validación de la división; cierre
-transaccional; rechazo de cuenta ya cerrada y de partes pendientes) y frontend con Vitest +
-React Testing Library (resumen del total, división en ambos modos, ticket y estado de error).
-Los criterios de éxito se comprueban además con los escenarios de `quickstart.md`.
+**Decisión**: backend con Vitest + Supertest (contrato de las rutas de cuenta, división y pago
+por partes; cálculo del total; redondeo de céntimos en partes iguales; validación de la
+división; pago y reversión de partes; emisión única del ticket; cierre transaccional; rechazo
+de cuenta ya cerrada, de partes pendientes al cerrar y de reversión con la mesa cerrada) y
+frontend con Vitest + React Testing Library (resumen del total, división en ambos modos, pago
+y reversión de partes, ticket y estado de error). Los criterios de éxito se comprueban además
+con los escenarios de `quickstart.md`.
 
 **Rationale**: cumple la regla de "pruebas junto a la funcionalidad" de la constitución y hace
 verificables los redondeos y el bloqueo de mesa, que son los puntos más propensos a fallar.
 
 **Alternativas consideradas**: un único *runner* para todo (posible, pero con peor encaje en
 cada entorno).
+
+## 9. Momento de emisión del ticket (FR-010, SC-008)
+
+**Decisión**: el ticket se emite **una sola vez**, en la misma transacción que cierra la
+cuenta: al pagar la última parte pendiente de una cuenta dividida o al confirmar el pago
+único. Antes de ese momento el ticket está `no_emitido`: las partes intermedias no generan
+tickets provisionales y `GET .../cuenta/ticket` responde `409` mientras la cuenta siga abierta.
+El estado `emitido` se deriva de la cuenta cerrada y `generadoEn` es su `cerrada_en`; no se
+persiste una tabla de tickets.
+
+**Rationale**: cumple las clarificaciones del 2026-10-20 y SC-008, y evita documentos
+duplicados o inconsistentes si el camarero marca y desmarca partes antes de terminar el cobro.
+Derivar el estado de la cuenta mantiene el Principio I (sin tabla ni estados adicionales).
+
+**Alternativas consideradas**: un ticket por cada parte (descartado: la spec exige uno único);
+emitir el ticket al confirmar la división (descartado: todavía no se ha cobrado y podría
+revertirse); guardar tickets en una tabla propia (innecesario: el ticket se recompone de la
+cuenta cerrada).
+
+## 10. Reversión de una parte pagada sin integración con terminales
+
+**Decisión**: deshacer la marca de una parte es una operación de estado, no un reembolso: la
+parte vuelve a `pendiente` y se limpia `pagada_en`. Solo se permite mientras la cuenta y la
+mesa estén abiertas; tras cerrarse la última parte, la mesa ya está cerrada y la reversión se
+rechaza. El sistema no se integra con terminales de pago: el cobro lo confirma el camarero y
+la aplicación solo registra el estado de cada parte.
+
+**Rationale**: cumple FR-016 y SC-009 sin introducir devoluciones, pasarelas ni estados de
+cobro que la spec no pide (Principio III). Al no existir ticket antes de la última parte, la
+reversión no requiere anular ni reemitir ningún documento.
+
+**Alternativas consideradas**: integrar la reversión con el terminal de pago (fuera de
+alcance); impedir la reversión una vez marcada (contradice la clarificación); permitirla tras
+el cierre (obligaría a reabrir la mesa, prohibido en v1).
