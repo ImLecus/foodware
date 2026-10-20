@@ -8,7 +8,7 @@
 | Suite | Resultado |
 |-------|-----------|
 | Backend (Vitest + Supertest) | 11 archivos, 28 pruebas en verde |
-| Frontend (Vitest + Testing Library) | 8 archivos, 17 pruebas en verde |
+| Frontend (Vitest + Testing Library) | 9 archivos, 20 pruebas en verde |
 | ESLint | backend y frontend sin errores |
 | Prettier | todos los ficheros formateados |
 | Build de producción | correcto |
