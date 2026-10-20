@@ -78,7 +78,7 @@ reaparición del pedido en la pantalla de cocina.
 
 ### Implementation for User Story 1
 
-- [ ] T018 [P] [US1] Implement `pedido` and `lineaPedido` data-access and queries (kitchen pending list) in `backend/src/models/pedido.js` and `backend/src/models/lineaPedido.js`
+- [X] T018 [P] [US1] Implement `pedido` and `lineaPedido` data-access and queries (kitchen pending list) in `backend/src/models/pedido.js` and `backend/src/models/lineaPedido.js`
 - [ ] T019 [US1] Implement mark/undo service with rules (own partida, pending order, line-level mark, order completion) in `backend/src/services/marcarListo.js`
 - [ ] T020 [US1] Allow undoing the last line when the order is no longer pending: clear `listoEn` and recalculate the derived order state in `backend/src/services/marcarListo.js`
 - [ ] T021 [US1] Implement `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` and register routes in `backend/src/routes/pedidos.js` and `backend/src/app.js`

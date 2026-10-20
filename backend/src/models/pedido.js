@@ -25,3 +25,10 @@ export function listarPedidosConPendientes(db, partidaId) {
     )
     .all(partidaId);
 }
+
+export function buscarPedido(db, pedidoId) {
+  return (
+    db.prepare('SELECT id, mesa_id, estado, enviado_en FROM pedidos WHERE id = ?').get(pedidoId) ??
+    null
+  );
+}
