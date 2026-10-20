@@ -107,7 +107,7 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 - [X] T040 [US1] Añadir `anularPedido(pedidoId)` al cliente HTTP en `frontend/src/services/api.js`
 - [X] T041 [US1] Añadir la acción «Anular pedido» con diálogo de confirmación en la pantalla de pedido en `frontend/src/components/Pedido.jsx`
 - [X] T042 [US1] Actualizar el estado local tras la anulación (cerrar el pedido y marcar la mesa `libre`) en `frontend/src/pages/Mesas.jsx`
-- [ ] T043 [US1] Ejecutar el escenario 10 de `specs/001-comandas/quickstart.md` (anulación) y comprobar SC-006
+- [X] T043 [US1] Ejecutar el escenario 10 de `specs/001-comandas/quickstart.md` (anulación) y comprobar SC-006
 - [ ] T044 [US1] Localización es-ES y formato de moneda en euros en `frontend/src/theme/` y `frontend/src/utils/formato.js`
 
 **Checkpoint**: US1 funcional y verificable de forma independiente (MVP).
