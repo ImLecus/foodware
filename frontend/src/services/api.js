@@ -15,13 +15,18 @@ function cabeceras(conCuerpo = false) {
 async function leerRespuesta(respuesta) {
   if (!respuesta.ok) {
     let detalle = respuesta.statusText;
+    let codigo = null;
     try {
       const cuerpo = await respuesta.json();
       detalle = cuerpo.error ?? detalle;
+      codigo = cuerpo.codigo ?? null;
     } catch {
       // La respuesta no era JSON.
     }
-    throw new Error(detalle);
+    const error = new Error(detalle);
+    error.status = respuesta.status;
+    error.codigo = codigo;
+    throw error;
   }
   return respuesta.status === 204 ? null : respuesta.json();
 }
@@ -65,8 +70,8 @@ export function anadirLinea(pedidoId, platoId, cantidad = 1) {
   });
 }
 
-export function modificarLinea(pedidoId, lineaId, cantidad) {
-  return apiEnviar(`/pedidos/${pedidoId}/lineas/${lineaId}`, 'PATCH', { cantidad });
+export function modificarLinea(pedidoId, lineaId, cambios) {
+  return apiEnviar(`/pedidos/${pedidoId}/lineas/${lineaId}`, 'PATCH', cambios);
 }
 
 export function retirarLinea(pedidoId, lineaId) {
@@ -79,4 +84,22 @@ export function confirmarPedido(pedidoId) {
 
 export function anularPedido(pedidoId) {
   return apiEnviar(`/pedidos/${pedidoId}/anular`, 'POST');
+}
+
+/* Edición de pedidos enviados (historia 002) */
+
+export function abrirEdicion(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/editar`, 'POST');
+}
+
+export function estadoEdicion(pedidoId) {
+  return apiGet(`/pedidos/${pedidoId}/editar`);
+}
+
+export function cerrarEdicion(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/editar`, 'DELETE');
+}
+
+export function enviarCambios(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/enviar-cambios`, 'POST');
 }

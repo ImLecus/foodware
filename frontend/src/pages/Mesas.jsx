@@ -107,12 +107,14 @@ export default function Mesas() {
     conexion.addEventListener('error', alFallar);
     conexion.addEventListener('pedido-confirmado', alCambiar);
     conexion.addEventListener('pedido-anulado', alCambiar);
+    conexion.addEventListener('pedido-modificado', alCambiar);
 
     return () => {
       conexion.removeEventListener('open', alConectar);
       conexion.removeEventListener('error', alFallar);
       conexion.removeEventListener('pedido-confirmado', alCambiar);
       conexion.removeEventListener('pedido-anulado', alCambiar);
+      conexion.removeEventListener('pedido-modificado', alCambiar);
       conexion.close();
     };
   }, [cargarMesas]);
@@ -179,7 +181,7 @@ export default function Mesas() {
     if (!pedido) return;
 
     try {
-      await modificarLinea(pedido.id, lineaId, cantidad);
+      await modificarLinea(pedido.id, lineaId, { cantidad });
       await recargarPedido();
     } catch (error) {
       mostrarError(error);
