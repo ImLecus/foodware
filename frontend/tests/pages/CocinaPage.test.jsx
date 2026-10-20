@@ -151,4 +151,36 @@ describe('CocinaPage (US1)', () => {
     expect(await screen.findByText('Sin conexión')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Marcar listo' })).toBeDisabled();
   });
+
+  it('ofrece Deshacer tras completar el pedido y revierte la última marca', async () => {
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes
+      .mockResolvedValueOnce([pedido])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([pedido]);
+    marcarEstado
+      .mockResolvedValueOnce({ id: 'linea-1', estado: 'listo', pedidoCompletado: true })
+      .mockResolvedValueOnce({ id: 'linea-1', estado: 'pendiente', pedidoReabierto: true });
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Marcar listo' }));
+
+    expect(await screen.findByText('Pedido completado')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+
+    await waitFor(() =>
+      expect(marcarEstado).toHaveBeenLastCalledWith(
+        'pedido-1',
+        'linea-1',
+        'pendiente',
+        'entrantes',
+      ),
+    );
+  });
 });
