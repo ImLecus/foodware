@@ -2,6 +2,7 @@ import { Box, Flex, Heading, Link as ChakraLink, Spacer } from '@chakra-ui/react
 import { Link, Route, Routes } from 'react-router-dom';
 import Conexion from './components/Conexion.jsx';
 import Home from './pages/Home.jsx';
+import Mesas from './pages/Mesas.jsx';
 import ModuloPendiente from './pages/ModuloPendiente.jsx';
 
 const modulos = [
@@ -33,7 +34,7 @@ export default function App() {
       <Box as="main" px={6} py={8} maxW="6xl" mx="auto">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/sala" element={<ModuloPendiente nombre="Sala" />} />
+          <Route path="/sala" element={<Mesas />} />
           <Route path="/cocina" element={<ModuloPendiente nombre="Cocina" />} />
           <Route path="/cuentas" element={<ModuloPendiente nombre="Cuentas" />} />
           <Route path="/dashboard" element={<ModuloPendiente nombre="Dashboard" />} />
