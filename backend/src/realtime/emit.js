@@ -11,3 +11,7 @@ export function emitirPendientesCambiado({ partida }) {
 export function emitirLineaActualizada({ pedidoId, lineaId, estado }) {
   publicar('linea.actualizada', { pedidoId, lineaId, estado });
 }
+
+export function emitirPedidoModificado({ pedidoId, partida, modificadoEn }) {
+  publicar('pedido.modificado', { pedidoId, partida, modificadoEn });
+}
