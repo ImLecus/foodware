@@ -65,6 +65,13 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pedidoId]);
 
+  // Al desmontar el editor se libera el bloqueo para no dejarlo huérfano (FR-015).
+  useEffect(() => {
+    return () => {
+      cerrarEdicion(pedidoId).catch(() => {});
+    };
+  }, [pedidoId]);
+
   function manejarError(error) {
     if (error?.status === 423 || error?.codigo === 'pedido_bloqueado') {
       setAviso({
