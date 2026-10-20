@@ -7,6 +7,7 @@ const LINEA_CAMPOS = `l.id,
                       p.nombre AS plato_nombre,
                       l.cantidad,
                       l.precio_centimos,
+                      l.indicaciones,
                       p.partida_codigo AS partida`;
 
 const LINEA_JOIN = `FROM lineas_pedido l
@@ -63,17 +64,24 @@ export function obtenerLinea(db, lineaId) {
 }
 
 /** Añade una línea fijando el precio del plato en el momento de pedirlo (FR-018). */
-export function anadirLinea(db, { pedidoId, plato, cantidad }) {
+export function anadirLinea(db, { pedidoId, plato, cantidad, indicaciones = null }) {
   const id = randomUUID();
   db.prepare(
-    `INSERT INTO lineas_pedido (id, pedido_id, plato_id, cantidad, precio_centimos)
-     VALUES (?, ?, ?, ?, ?)`,
-  ).run(id, pedidoId, plato.id, cantidad, plato.precio_centimos);
+    `INSERT INTO lineas_pedido
+       (id, pedido_id, plato_id, cantidad, precio_centimos, indicaciones)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run(id, pedidoId, plato.id, cantidad, plato.precio_centimos, indicaciones);
   return obtenerLinea(db, id);
 }
 
-export function modificarCantidadLinea(db, lineaId, cantidad) {
-  db.prepare('UPDATE lineas_pedido SET cantidad = ? WHERE id = ?').run(cantidad, lineaId);
+/** Modifica la cantidad y/o las indicaciones de una línea. */
+export function modificarLinea(db, lineaId, { cantidad, indicaciones }) {
+  if (cantidad !== undefined) {
+    db.prepare('UPDATE lineas_pedido SET cantidad = ? WHERE id = ?').run(cantidad, lineaId);
+  }
+  if (indicaciones !== undefined) {
+    db.prepare('UPDATE lineas_pedido SET indicaciones = ? WHERE id = ?').run(indicaciones, lineaId);
+  }
   return obtenerLinea(db, lineaId);
 }
 

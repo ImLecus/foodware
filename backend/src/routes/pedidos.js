@@ -4,29 +4,31 @@ import {
   anadirLinea,
   anularPedido,
   confirmarPedido,
-  modificarCantidadLinea,
+  marcarModificado,
+  modificarLinea,
   obtenerPedido,
   retirarLinea,
 } from '../db/pedidos.js';
 import { obtenerPlato } from '../db/platos.js';
-import { adquirirBloqueoEdicion, estadoBloqueo, liberarBloqueoEdicion } from '../domain/edicion.js';
+import {
+  adquirirBloqueoEdicion,
+  estadoBloqueo,
+  exigirNoQuedaVacio,
+  liberarBloqueoEdicion,
+} from '../domain/edicion.js';
 import {
   agruparPorPartida,
   exigirAnulable,
   exigirConfirmable,
-  exigirEnCurso,
   exigirPedido,
   serializarPedido,
   serializarPedidoConfirmado,
 } from '../domain/pedidos.js';
 import { identificarCamarero } from '../middleware/camarero.js';
+import { comprobarEdicion } from '../middleware/bloqueo.js';
 import { ErrorHttp } from '../middleware/error.js';
 import { publicar } from '../realtime/hub.js';
-import { validarLineaPatch, validarNuevaLinea } from '../schemas/pedidos.js';
-
-function cargarPedidoEnCurso(db, pedidoId) {
-  return exigirEnCurso(exigirPedido(obtenerPedido(db, pedidoId)));
-}
+import { validarLineaPatchEdicion, validarNuevaLineaEdicion } from '../schemas/edicion.js';
 
 function buscarLinea(pedido, lineaId) {
   const linea = pedido.lineas.find((fila) => fila.id === lineaId);
@@ -93,10 +95,10 @@ export function pedidosRouter(db) {
     }
   });
 
-  router.post('/:pedidoId/lineas', (req, res, next) => {
+  router.post('/:pedidoId/lineas', comprobarEdicion(db), (req, res, next) => {
     try {
-      const datos = validarNuevaLinea(req.body);
-      const pedido = cargarPedidoEnCurso(db, req.params.pedidoId);
+      const datos = validarNuevaLineaEdicion(req.body);
+      const pedido = req.pedido;
       const plato = obtenerPlato(db, datos.plato_id);
 
       if (!plato || !plato.disponible) {
@@ -107,29 +109,47 @@ export function pedidosRouter(db) {
         pedidoId: pedido.id,
         plato,
         cantidad: datos.cantidad,
+        indicaciones: datos.indicaciones ?? null,
       });
+
+      if (pedido.estado === 'enviada') {
+        marcarModificado(db, pedido.id);
+      }
+
       res.status(201).json(linea);
     } catch (error) {
       next(error);
     }
   });
 
-  router.patch('/:pedidoId/lineas/:lineaId', (req, res, next) => {
+  router.patch('/:pedidoId/lineas/:lineaId', comprobarEdicion(db), (req, res, next) => {
     try {
-      const datos = validarLineaPatch(req.body);
-      const pedido = cargarPedidoEnCurso(db, req.params.pedidoId);
+      const datos = validarLineaPatchEdicion(req.body);
+      const pedido = req.pedido;
       const linea = buscarLinea(pedido, req.params.lineaId);
-      res.json(modificarCantidadLinea(db, linea.id, datos.cantidad));
+      const actualizada = modificarLinea(db, linea.id, datos);
+
+      if (pedido.estado === 'enviada') {
+        marcarModificado(db, pedido.id);
+      }
+
+      res.json(actualizada);
     } catch (error) {
       next(error);
     }
   });
 
-  router.delete('/:pedidoId/lineas/:lineaId', (req, res, next) => {
+  router.delete('/:pedidoId/lineas/:lineaId', comprobarEdicion(db), (req, res, next) => {
     try {
-      const pedido = cargarPedidoEnCurso(db, req.params.pedidoId);
+      const pedido = req.pedido;
       const linea = buscarLinea(pedido, req.params.lineaId);
+      exigirNoQuedaVacio(pedido.lineas.length - 1);
       retirarLinea(db, linea.id);
+
+      if (pedido.estado === 'enviada') {
+        marcarModificado(db, pedido.id);
+      }
+
       res.status(204).end();
     } catch (error) {
       next(error);
