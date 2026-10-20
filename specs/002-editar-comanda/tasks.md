@@ -32,7 +32,7 @@ commit (constitución: parada por tarea; Conventional Commits). Tareas `[P]` son
 
 **Purpose**: Preparar la base de la 001 para poder editar pedidos enviados.
 
-- [ ] T001 [P] Ampliar el seed con un pedido ya enviado de ejemplo (con al menos una partida) en `backend/src/db/seed.js`
+- [X] T001 [P] Ampliar el seed con un pedido ya enviado de ejemplo (con al menos una partida) en `backend/src/db/seed.js`
 
 ---
 
