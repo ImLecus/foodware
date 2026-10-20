@@ -29,7 +29,7 @@ recuperarla (FR-014).
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: JavaScript (ES2022) sobre Node.js 20 LTS; frontend React 18 (JSX).
+**Lenguaje/Versión**: JavaScript (ES2022) sobre Node.js 22 LTS; frontend React 18 (JSX).
 
 **Dependencias principales**: React 18 + Chakra UI (única librería de componentes de UI),
 ExpressJS 4 (API HTTP), `EventSource` nativo del navegador para tiempo real, SQLite

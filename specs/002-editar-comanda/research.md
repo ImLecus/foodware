@@ -7,7 +7,7 @@ Resuelve las incógnitas del *Technical Context*. No quedan `NEEDS CLARIFICATION
 ## 1. Stack e infraestructura
 
 - **Decision**: reutilizar exactamente el stack e infraestructura de la historia 001 (React 18 +
-  Chakra UI; ExpressJS 4 sobre Node.js 20 + JavaScript; SQLite; Docker Compose; Vitest/RTL/
+  Chakra UI; ExpressJS 4 sobre Node.js 22 + JavaScript; SQLite; Docker Compose; Vitest/RTL/
   Supertest).
 - **Rationale**: es el stack obligatorio y ya existe la base; no se introduce nada nuevo.
 - **Alternatives considered**: ninguna (restricción de la constitución).

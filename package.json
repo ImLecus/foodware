@@ -1,0 +1,16 @@
+{
+  "name": "foodware",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema de comandas para restaurante. Esqueleto base compartido.",
+  "scripts": {
+    "dev": "docker compose up --build",
+    "down": "docker compose down",
+    "test": "npm --prefix backend test && npm --prefix frontend test",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
+}

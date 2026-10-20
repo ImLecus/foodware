@@ -34,7 +34,7 @@ Decisiones de UI y estado derivadas de las aclaraciones de 2026-10-20:
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 (backend) y navegador moderno (frontend)
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 22 (backend) y navegador moderno (frontend)
 
 **Dependencias principales**: React 18 + Chakra UI (frontend); ExpressJS 4 (backend); Vite (build);
 better-sqlite3 (persistencia); Server-Sent Events vía `EventSource` (refresco en vivo);

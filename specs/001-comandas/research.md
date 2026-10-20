@@ -8,7 +8,7 @@ Este documento resuelve las incógnitas del *Technical Context* del plan. No que
 ## 1. Stack de aplicación
 
 - **Decision**: Frontend React 18 + Chakra UI (con Vite y JavaScript); backend ExpressJS 4 sobre
-  Node.js 20 (JavaScript).
+  Node.js 22 (JavaScript).
 - **Rationale**: es el stack obligatorio fijado por la constitución del proyecto; no admite
   alternativas sin enmienda previa.
 - **Alternatives considered**: ninguna (restricción de la constitución).

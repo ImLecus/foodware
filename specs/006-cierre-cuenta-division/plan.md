@@ -28,7 +28,7 @@ inicio de sesión (las mesas son compartidas) ni integración con terminales de 
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: JavaScript (ES2022) sobre Node.js 20 LTS; frontend React 18 (JSX).
+**Lenguaje/Versión**: JavaScript (ES2022) sobre Node.js 22 LTS; frontend React 18 (JSX).
 
 **Dependencias principales**: React 18 + Chakra UI (única librería de componentes de UI),
 ExpressJS 4 (API HTTP), SQLite con el cliente `better-sqlite3`. No requiere canal en tiempo real

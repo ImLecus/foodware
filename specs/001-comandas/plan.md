@@ -21,7 +21,7 @@ se reutiliza de la sesión existente (la autenticación queda fuera del alcance 
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 (frontend y backend)
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 22 (frontend y backend)
 
 **Dependencias principales**: Frontend: React 18, Chakra UI, Vite. Backend: ExpressJS 4,
 `better-sqlite3`, `zod` (validación), `cors`. Tiempo real: Server-Sent Events (`text/event-stream`

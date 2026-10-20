@@ -27,7 +27,7 @@ historial (supuesto de la spec: conservar el historial de ventas).
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 LTS (backend) y React 18 con JavaScript y
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 22 LTS (backend) y React 18 con JavaScript y
 Vite (frontend).
 
 **Dependencias principales**:

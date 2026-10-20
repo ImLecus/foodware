@@ -29,7 +29,7 @@ euros y la etiqueta «sin base de comparación», sin porcentaje (FR-011, SC-006
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 LTS (backend) y React 18 con JavaScript y
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 22 LTS (backend) y React 18 con JavaScript y
 Vite (frontend).
 
 **Dependencias principales**:

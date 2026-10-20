@@ -1,1 +1,25 @@
 *.pdf
+
+# Dependencias
+node_modules/
+
+# Artefactos de build y pruebas
+dist/
+build/
+coverage/
+*.log
+
+# Entorno
+.env
+.env.*
+!.env.example
+
+# Base de datos local
+backend/data/*.db
+backend/data/*.db-*
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

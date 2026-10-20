@@ -18,7 +18,7 @@ eventos servidor→cliente (SSE) para el refresco en vivo.
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 (backend) y navegador moderno (frontend)
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 22 (backend) y navegador moderno (frontend)
 
 **Dependencias principales**: React 18 + Chakra UI (frontend); ExpressJS 4 (backend); Vite (build del
 frontend); better-sqlite3 (persistencia); Server-Sent Events vía `EventSource` (refresco en vivo);

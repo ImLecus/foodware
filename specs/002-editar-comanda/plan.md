@@ -22,7 +22,7 @@ SSE (hub compartido del proyecto).
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 20 (frontend y backend)
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 22 (frontend y backend)
 
 **Dependencias principales**: Frontend: React 18, Chakra UI, Vite. Backend: ExpressJS 4,
 `better-sqlite3`, `zod`, `cors`. Tiempo real: Server-Sent Events (`EventSource` / hub compartido).

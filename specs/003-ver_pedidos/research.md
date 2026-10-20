@@ -7,7 +7,7 @@ aquí con su justificación y alternativas.
 ## R1. Stack, lenguaje y estructura
 
 - **Decision**: se reutilizan las decisiones del plan compartido del proyecto (primer plan,
-  `004-marcar_listos`): JavaScript ES2022, Node.js 20, React 18 + Chakra UI, ExpressJS 4, Vite,
+  `004-marcar_listos`): JavaScript ES2022, Node.js 22, React 18 + Chakra UI, ExpressJS 4, Vite,
   SQLite (`better-sqlite3`), monorepositorio `backend/` + `frontend/` con `docker-compose.yml`.
 - **Rationale**: la constitución fija el stack (React + Chakra UI, ExpressJS, Docker) y el
   principio de simplicidad; mantener las mismas decisiones evita divergencias entre historias.

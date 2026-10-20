@@ -7,7 +7,7 @@ diseño para la historia 006. Formato: Decisión / Rationale / Alternativas cons
 
 **Decisión**: la historia 006 reutiliza las decisiones técnicas ya fijadas a nivel de proyecto
 por el plan de la historia 005 (y aplicables a las historias 01–08): JavaScript (ES2022) sobre
-Node.js 20 LTS, React 18 + Chakra UI en el frontend, ExpressJS 4 en el backend, SQLite
+Node.js 22 LTS, React 18 + Chakra UI en el frontend, ExpressJS 4 en el backend, SQLite
 con `better-sqlite3` y migraciones SQL versionadas, Vitest + Supertest (backend) y Vitest + React Testing
 Library (frontend), y arranque con Docker Compose. No se introducen decisiones nuevas de stack.
 
