@@ -70,7 +70,7 @@ comprobar el filtrado y el orden (y los estados vacío, sin partida, carga y err
 
 ### Tests for User Story 1 ⚠️ (escribir primero, deben fallar)
 
-- [ ] T012 [P] [US1] Contract test for `GET /partidas/{partidaId}/pedidos-pendientes` (filter by partida, exclude non-pending, order and tie-break) in `backend/tests/contract/pedidos-pendientes.test.js`
+- [X] T012 [P] [US1] Contract test for `GET /partidas/{partidaId}/pedidos-pendientes` (filter by partida, exclude non-pending, order and tie-break) in `backend/tests/contract/pedidos-pendientes.test.js`
 - [ ] T013 [P] [US1] Unit test for the pending-orders query (order by `enviadoEn` asc then `id` asc; exclude unassigned partida) in `backend/tests/unit/listar-pendientes.test.js`
 - [ ] T014 [P] [US1] Component test for the kitchen list: filtered list, empty state and no-partida state in `frontend/tests/pages/CocinaPage.test.jsx`
 - [ ] T015 [P] [US1] Component test for the initial loading indicator and the load error with «Reintentar» (never the empty state) in `frontend/tests/pages/CocinaPage.carga.test.jsx`
