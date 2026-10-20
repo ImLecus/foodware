@@ -1,5 +1,5 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import LineaPlato from '../../src/components/LineaPlato.jsx';
 import TiempoEspera from '../../src/components/TiempoEspera.jsx';
@@ -27,7 +27,9 @@ describe('TiempoEspera', () => {
   it('avanza con el reloj local', () => {
     renderizar(<TiempoEspera enviadoEn="2026-10-20T10:00:00.000Z" />);
 
-    vi.advanceTimersByTime(5 * 60 * 1000);
+    act(() => {
+      vi.advanceTimersByTime(5 * 60 * 1000);
+    });
 
     expect(screen.getByText('40 min')).toBeInTheDocument();
   });
