@@ -104,7 +104,7 @@ comprobar que sala lo muestra como listo sin recargar.
 
 - [X] T027 [P] [US2] Contract test for `GET /mesas/{mesaId}/estado-platos` and the SSE event shape in `backend/tests/contract/estado-sala.test.js`
 - [X] T028 [P] [US2] Integration test for the mark→sala reflection in `backend/tests/integration/reflejo-sala.test.js`
-- [ ] T029 [P] [US2] Integration test for `linea.actualizada` and `pedido.reabierto` events emitted when undoing the last line of a completed order in `backend/tests/integration/eventos-reapertura.test.js`
+- [X] T029 [P] [US2] Integration test for `linea.actualizada` and `pedido.reabierto` events emitted when undoing the last line of a completed order in `backend/tests/integration/eventos-reapertura.test.js`
 - [ ] T030 [P] [US2] Component test for the waiter view in `frontend/tests/pages/SalaPage.test.jsx`
 
 ### Implementation for User Story 2
