@@ -86,7 +86,7 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 
 ### Implementation for User Story 1
 
-- [ ] T022 [P] [US1] Repositorio de mesas (listar, marcar ocupada) en `backend/src/db/mesas.js`
+- [X] T022 [P] [US1] Repositorio de mesas (listar, marcar ocupada) en `backend/src/db/mesas.js`
 - [ ] T023 [P] [US1] Repositorio de platos (carta vigente, disponibles) en `backend/src/db/platos.js`
 - [ ] T024 [P] [US1] Repositorio de pedidos y líneas (crear, añadir, modificar, retirar, confirmar) en `backend/src/db/pedidos.js`
 - [ ] T025 [US1] Borrado transaccional del pedido y sus líneas y liberación de la mesa al anular en `backend/src/db/pedidos.js` y `backend/src/db/mesas.js`
