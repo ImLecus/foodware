@@ -67,14 +67,9 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
     return respuestaLinea(linea);
   }
 
-  if (pendientesAntes === 0) {
-    throw new ErrorHttp(
-      409,
-      'No se puede deshacer una marca de un pedido completado',
-      'pedido_completado',
-    );
-  }
-
   actualizarEstadoLinea(db, lineaId, 'pendiente', null);
-  return respuestaLinea({ ...linea, estado: 'pendiente', listoEn: null });
+  return respuestaLinea(
+    { ...linea, estado: 'pendiente', listoEn: null },
+    { pedidoReabierto: pendientesAntes === 0 },
+  );
 }

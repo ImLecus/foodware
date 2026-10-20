@@ -80,7 +80,7 @@ reaparición del pedido en la pantalla de cocina.
 
 - [X] T018 [P] [US1] Implement `pedido` and `lineaPedido` data-access and queries (kitchen pending list) in `backend/src/models/pedido.js` and `backend/src/models/lineaPedido.js`
 - [X] T019 [US1] Implement mark/undo service with rules (own partida, pending order, line-level mark, order completion) in `backend/src/services/marcarListo.js`
-- [ ] T020 [US1] Allow undoing the last line when the order is no longer pending: clear `listoEn` and recalculate the derived order state in `backend/src/services/marcarListo.js`
+- [X] T020 [US1] Allow undoing the last line when the order is no longer pending: clear `listoEn` and recalculate the derived order state in `backend/src/services/marcarListo.js`
 - [ ] T021 [US1] Implement `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` and register routes in `backend/src/routes/pedidos.js` and `backend/src/app.js`
 - [ ] T022 [US1] Implement `GET /partidas/{partidaId}/pedidos-pendientes` in `backend/src/routes/partidas.js` and register it in `backend/src/app.js`
 - [ ] T023 [P] [US1] Build kitchen page and components (`PedidoCard`, `LineaPlato`) with accessible ready marking (colour + «listo» text/symbol and `aria-label`) in `frontend/src/pages/CocinaPage.jsx`, `frontend/src/components/PedidoCard.jsx`, `frontend/src/components/LineaPlato.jsx`
