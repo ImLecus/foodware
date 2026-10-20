@@ -25,7 +25,15 @@ function listarLineas(db, pedidoId) {
 
 /** Devuelve el pedido con sus líneas o `null` si no existe. */
 export function obtenerPedido(db, pedidoId) {
-  const pedido = db.prepare('SELECT * FROM pedidos WHERE id = ?').get(pedidoId);
+  const pedido = db
+    .prepare(
+      `SELECT *,
+              (bloqueo_expira_en IS NOT NULL
+                AND bloqueo_expira_en > datetime('now')) AS bloqueo_vigente
+         FROM pedidos
+        WHERE id = ?`,
+    )
+    .get(pedidoId);
   if (!pedido) return null;
   return { ...pedido, lineas: listarLineas(db, pedidoId) };
 }
@@ -93,4 +101,61 @@ export function anularPedido(db, pedidoId) {
   });
   anular();
   return pedido.mesa_id;
+}
+
+/* Edición de pedidos enviados (historia 002) */
+
+/** Marca el pedido como modificado y con cambios pendientes de enviar. */
+export function marcarModificado(db, pedidoId) {
+  db.prepare(
+    `UPDATE pedidos
+        SET modificada = 1,
+            cambios_pendientes = 1,
+            modificado_en = datetime('now')
+      WHERE id = ?`,
+  ).run(pedidoId);
+}
+
+/** Marca los cambios como comunicados a cocina. */
+export function marcarCambiosEnviados(db, pedidoId) {
+  db.prepare(
+    `UPDATE pedidos
+        SET cambios_pendientes = 0,
+            cambios_enviados_en = datetime('now')
+      WHERE id = ?`,
+  ).run(pedidoId);
+}
+
+/** Toma (o renueva) el bloqueo de edición del camarero durante `minutos`. */
+export function actualizarBloqueo(db, pedidoId, camareroId, minutos) {
+  db.prepare(
+    `UPDATE pedidos
+        SET editando_por = ?,
+            editando_desde = datetime('now'),
+            editando_ultima_actividad = datetime('now'),
+            bloqueo_expira_en = datetime('now', ?)
+      WHERE id = ?`,
+  ).run(camareroId, `+${minutos} minutes`, pedidoId);
+}
+
+/** Refresca la última actividad y la expiración del bloqueo. */
+export function renovarBloqueo(db, pedidoId, minutos) {
+  db.prepare(
+    `UPDATE pedidos
+        SET editando_ultima_actividad = datetime('now'),
+            bloqueo_expira_en = datetime('now', ?)
+      WHERE id = ?`,
+  ).run(`+${minutos} minutes`, pedidoId);
+}
+
+/** Libera el bloqueo de edición. */
+export function limpiarBloqueo(db, pedidoId) {
+  db.prepare(
+    `UPDATE pedidos
+        SET editando_por = NULL,
+            editando_desde = NULL,
+            editando_ultima_actividad = NULL,
+            bloqueo_expira_en = NULL
+      WHERE id = ?`,
+  ).run(pedidoId);
 }
