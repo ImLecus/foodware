@@ -5,6 +5,11 @@ import {
 } from '../models/lineaPedido.js';
 import { buscarPedido } from '../models/pedido.js';
 import { ErrorHttp } from '../middleware/error.js';
+import {
+  emitirLineaActualizada,
+  emitirPedidoReabierto,
+  emitirPendientesCambiado,
+} from '../realtime/emit.js';
 import { aISO } from '../utils/fechas.js';
 
 function respuestaLinea(linea, { pedidoCompletado = false, pedidoReabierto = false } = {}) {
@@ -57,10 +62,22 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
     const listoEn = new Date().toISOString();
     actualizarEstadoLinea(db, lineaId, 'listo', listoEn);
     const pendientesDespues = contarLineasPendientes(db, pedidoId);
-    return respuestaLinea(
+    const respuesta = respuestaLinea(
       { ...linea, estado: 'listo', listoEn },
       { pedidoCompletado: pendientesDespues === 0 },
     );
+
+    emitirLineaActualizada({
+      pedidoId,
+      lineaId,
+      estado: 'listo',
+      listoEn: respuesta.listoEn,
+    });
+    if (respuesta.pedidoCompletado) {
+      emitirPendientesCambiado({ partida: linea.partida });
+    }
+
+    return respuesta;
   }
 
   if (linea.estado === 'pendiente') {
@@ -68,8 +85,16 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
   }
 
   actualizarEstadoLinea(db, lineaId, 'pendiente', null);
-  return respuestaLinea(
+  const respuesta = respuestaLinea(
     { ...linea, estado: 'pendiente', listoEn: null },
     { pedidoReabierto: pendientesAntes === 0 },
   );
+
+  emitirLineaActualizada({ pedidoId, lineaId, estado: 'pendiente', listoEn: null });
+  if (respuesta.pedidoReabierto) {
+    emitirPendientesCambiado({ partida: linea.partida });
+    emitirPedidoReabierto({ pedidoId, partida: linea.partida });
+  }
+
+  return respuesta;
 }
