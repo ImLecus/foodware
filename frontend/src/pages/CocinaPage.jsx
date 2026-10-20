@@ -1,15 +1,7 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-  Box,
-  Button,
-  Heading,
-  Stack,
-  Text,
-} from '@chakra-ui/react';
+import { Box, Heading, Stack, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import EstadoCarga from '../components/EstadoCarga.jsx';
+import EstadoError from '../components/EstadoError.jsx';
 import EstadoSinPartida from '../components/EstadoSinPartida.jsx';
 import EstadoVacio from '../components/EstadoVacio.jsx';
 import PedidoCard from '../components/PedidoCard.jsx';
@@ -82,23 +74,10 @@ export default function CocinaPage({ cocineroId }) {
         {partida ? `Partida: ${NOMBRES_PARTIDA[partida] ?? partida}` : 'Vista de cocina'}
       </Text>
 
-      {cargando && <Text color="gray.600">Cargando pedidos…</Text>}
+      {cargando && <EstadoCarga />}
 
       {!cargando && error && (
-        <Alert
-          status="error"
-          borderRadius="md"
-          flexDirection="column"
-          alignItems="flex-start"
-          gap={3}
-        >
-          <AlertIcon />
-          <AlertTitle>No se pudieron cargar los pedidos</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-          <Button size="sm" colorScheme="red" onClick={() => setIntento((valor) => valor + 1)}>
-            Reintentar
-          </Button>
-        </Alert>
+        <EstadoError mensaje={error} onReintentar={() => setIntento((valor) => valor + 1)} />
       )}
 
       {!cargando && !error && partida === null && <EstadoSinPartida />}
