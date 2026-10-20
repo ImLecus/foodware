@@ -8,6 +8,7 @@ import {
   Text,
   UnorderedList,
 } from '@chakra-ui/react';
+import AvisoModificado from './AvisoModificado.jsx';
 import LineaPlato from './LineaPlato.jsx';
 import TiempoEspera from './TiempoEspera.jsx';
 
@@ -16,7 +17,10 @@ export default function PedidoCard({ pedido }) {
     <Card data-testid={`pedido-${pedido.id}`}>
       <CardBody>
         <Flex justify="space-between" align="center" mb={2}>
-          <Heading size="sm">Mesa {pedido.mesa}</Heading>
+          <Flex align="center" gap={2}>
+            <Heading size="sm">Mesa {pedido.mesa}</Heading>
+            {pedido.modificado && <AvisoModificado />}
+          </Flex>
           <TiempoEspera enviadoEn={pedido.enviadoEn} />
         </Flex>
         <UnorderedList spacing={1} fontSize="sm">
