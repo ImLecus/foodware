@@ -44,7 +44,7 @@ commit (constitución: parada por tarea; Conventional Commits). Tareas `[P]` son
 
 - [X] T002 Crear la migración SQL de la edición (columnas `modificada`, `cambios_pendientes`, `cambios_enviados_en`, `editando_por`, `editando_desde` en `pedido`; valor `cerrada` en el estado de `pedido`; `indicaciones` en `linea_pedido`; tabla `modificacion`) en `backend/migrations/`
 - [X] T003 Añadir `BLOQUEO_INACTIVIDAD_MINUTOS` (15 minutos por defecto) a `.env.example` y su lectura/validación en `backend/src/config.js`
-- [ ] T004 Ampliar la migración con las columnas del bloqueo `editando_ultima_actividad` y `bloqueo_expira_en` (pedido, camarero, inicio, última actividad y expiración) en `backend/migrations/`
+- [X] T004 Ampliar la migración con las columnas del bloqueo `editando_ultima_actividad` y `bloqueo_expira_en` (pedido, camarero, inicio, última actividad y expiración) en `backend/migrations/`
 - [ ] T005 Ampliar el repositorio de pedidos con estado `cerrada`, `modificada`, `cambios_pendientes` y bloqueo (`editando_por`/`editando_desde`/`editando_ultima_actividad`/`bloqueo_expira_en`) en `backend/src/db/pedidos.js`
 - [ ] T006 Implementar el repositorio de modificaciones (registro append-only) en `backend/src/db/modificaciones.js`
 - [ ] T007 Implementar el servicio de bloqueo (adquisición, renovación, liberación y caducidad perezosa según `BLOQUEO_INACTIVIDAD_MINUTOS`) en `backend/src/domain/edicion.js`
