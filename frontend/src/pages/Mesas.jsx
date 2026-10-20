@@ -59,9 +59,14 @@ export default function Mesas() {
         if (!activo) return;
         setMesas(datosMesas);
         setPlatos(datosPlatos);
-      } catch {
+      } catch (error) {
         if (activo) {
-          setAviso({ tipo: 'error', texto: 'No se pudo cargar la sala. Revisa la conexión.' });
+          setAviso({
+            tipo: 'error',
+            texto: error?.message
+              ? `No se pudo cargar la sala: ${error.message}`
+              : 'No se pudo cargar la sala. Revisa la conexión.',
+          });
         }
       } finally {
         if (activo) setCargando(false);
@@ -259,6 +264,15 @@ export default function Mesas() {
             <Heading size="md" mb={3}>
               Mesas
             </Heading>
+            {mesas.length === 0 && (
+              <Alert status="info" borderRadius="md" mb={3}>
+                <AlertIcon />
+                <AlertDescription>
+                  No hay mesas cargadas. Ejecuta los datos de ejemplo con <code>npm run seed</code>{' '}
+                  en el backend.
+                </AlertDescription>
+              </Alert>
+            )}
             <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3}>
               {mesas.map((mesa) => (
                 <Button
