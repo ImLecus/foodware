@@ -101,7 +101,7 @@ mesa, la lista de platos con cantidades, el marcado accesible de listos y el avi
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T024 [P] [US2] Contract test asserting `enviadoEn`, `mesa` and `lineas` (with `estado`/`listoEn`) in the response in `backend/tests/contract/detalle-pedido.test.js`
+- [X] T024 [P] [US2] Contract test asserting `enviadoEn`, `mesa` and `lineas` (with `estado`/`listoEn`) in the response in `backend/tests/contract/detalle-pedido.test.js`
 - [ ] T025 [P] [US2] Unit test that the elapsed time derives from the original `enviadoEn` and is not reset by an edit in `backend/tests/unit/tiempo-espera.test.js`
 - [ ] T026 [P] [US2] Component test for the elapsed-time ticker and the plate list with ready marking in `frontend/tests/components/TiempoEspera.test.jsx`
 - [ ] T027 [P] [US2] Component test that ready plates are distinguished by colour plus a text/symbol label (never colour alone) in `frontend/tests/components/LineaPlato.test.jsx`
