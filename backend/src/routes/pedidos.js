@@ -2,6 +2,7 @@ import express from 'express';
 import { obtenerMesa } from '../db/mesas.js';
 import {
   anadirLinea,
+  anularPedido,
   confirmarPedido,
   modificarCantidadLinea,
   obtenerPedido,
@@ -9,6 +10,7 @@ import {
 } from '../db/pedidos.js';
 import { obtenerPlato } from '../db/platos.js';
 import {
+  exigirAnulable,
   exigirConfirmable,
   exigirEnCurso,
   exigirPedido,
@@ -96,6 +98,17 @@ export function pedidosRouter(db) {
       const mesa = obtenerMesa(db, confirmado.mesa_id);
 
       res.json(serializarPedidoConfirmado(confirmado, mesa));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/:pedidoId/anular', (req, res, next) => {
+    try {
+      const pedido = exigirAnulable(exigirPedido(obtenerPedido(db, req.params.pedidoId)));
+      anularPedido(db, pedido.id);
+
+      res.status(204).end();
     } catch (error) {
       next(error);
     }
