@@ -46,12 +46,12 @@
 
 > Esta base ya existe. La 005 **no necesita migración nueva**: el esquema compartido `backend/migrations/001_init.sql` ya define `mesas`, `pedidos`, `lineas_pedido` (`estado`, `listo_en`) y la tabla `avisos`.
 
-- [ ] T006 [P] Verificar la conexión a SQLite y el runner de migraciones en `backend/src/db/index.js`
-- [ ] T007 Verificar que el esquema base (`mesas`, `lineas_pedido` con `estado`/`listo_en`, `avisos`) existe en `backend/migrations/001_init.sql`
-- [ ] T008 [P] Verificar el arranque de la app Express y del servidor HTTP en `backend/src/app.js` y `backend/src/server.js`
-- [ ] T009 [P] Verificar el hub SSE compartido (registro de clientes, difusión y *heartbeat*) en `backend/src/realtime/hub.js`
-- [ ] T010 [P] Verificar el middleware de manejo de errores en `backend/src/middleware/error.js`
-- [ ] T011 Verificar el arnés de pruebas del backend (factoría de app, base de datos en memoria y cliente SSE falso) en `backend/tests/ayuda.js`
+- [x] T006 [P] Verificar la conexión a SQLite y el runner de migraciones en `backend/src/db/index.js`
+- [x] T007 Verificar que el esquema base (`mesas`, `lineas_pedido` con `estado`/`listo_en`, `avisos`) existe en `backend/migrations/001_init.sql`
+- [x] T008 [P] Verificar el arranque de la app Express y del servidor HTTP en `backend/src/app.js` y `backend/src/server.js`
+- [x] T009 [P] Verificar el hub SSE compartido (registro de clientes, difusión y *heartbeat*) en `backend/src/realtime/hub.js`
+- [x] T010 [P] Verificar el middleware de manejo de errores en `backend/src/middleware/error.js`
+- [x] T011 Verificar el arnés de pruebas del backend (factoría de app, base de datos en memoria y cliente SSE falso) en `backend/tests/ayuda.js`
 
 **Checkpoint**: Infraestructura lista; las historias pueden empezar
 
