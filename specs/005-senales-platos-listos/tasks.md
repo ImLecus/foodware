@@ -67,12 +67,12 @@
 
 > **NOTE: Escribir estas pruebas PRIMERO y comprobar que fallan antes de implementar**
 
-- [ ] T012 [P] [US1] Test de contrato de `GET /api/sala/mesas` (solo mesas abiertas —en curso o enviadas— y solo líneas enviadas; mesa con comanda en curso aparece con `platos` vacío, `completa` falso y `aviso` nulo; agrupación por partida; lista vacía) en `backend/tests/contract/sala-mesas.test.js`
-- [ ] T013 [P] [US1] Test unitario de la instantánea de sala (completitud, mesa sin líneas enviadas, mesa con comanda en curso, lista vacía) en `backend/tests/unit/salaMesas.test.js`
-- [ ] T014 [P] [US1] Test de contrato de `PUT /api/pedidos/{pedidoId}/lineas/{lineaId}/estado` (200 marcar/deshacer, idempotencia, 400 valor inválido, 409 pedido no enviado, 404) en `backend/tests/contract/estado-linea.test.js`
-- [ ] T015 [P] [US1] Test unitario del marcado de línea (marca/deshace, fija `listo_en`, solo pedidos enviados) en `backend/tests/unit/estadoLinea.test.js`
-- [ ] T016 [P] [US1] Test de componente de la vista de sala (distinción listo/pendiente, estados vacío y carga) en `frontend/tests/components/SalaEstado.test.jsx`
-- [ ] T017 [P] [US1] Test del hook `useSala` (instantánea + SSE + estado sin conexión) en `frontend/tests/hooks/useSala.test.jsx`
+- [x] T012 [P] [US1] Test de contrato de `GET /api/sala/mesas` (solo mesas abiertas —en curso o enviadas— y solo líneas enviadas; mesa con comanda en curso aparece con `platos` vacío, `completa` falso y `aviso` nulo; agrupación por partida; lista vacía) en `backend/tests/contract/sala-mesas.test.js`
+- [x] T013 [P] [US1] Test unitario de la instantánea de sala (completitud, mesa sin líneas enviadas, mesa con comanda en curso, lista vacía) en `backend/tests/unit/salaMesas.test.js`
+- [x] T014 [P] [US1] Test de contrato de `PUT /api/pedidos/{pedidoId}/lineas/{lineaId}/estado` (200 marcar/deshacer, idempotencia, 400 valor inválido, 409 pedido no enviado, 404) en `backend/tests/contract/estado-linea.test.js`
+- [x] T015 [P] [US1] Test unitario del marcado de línea (marca/deshace, fija `listo_en`, solo pedidos enviados) en `backend/tests/unit/estadoLinea.test.js`
+- [x] T016 [P] [US1] Test de componente de la vista de sala (distinción listo/pendiente, estados vacío y carga) en `frontend/tests/components/SalaEstado.test.jsx`
+- [x] T017 [P] [US1] Test del hook `useSala` (instantánea + SSE + estado sin conexión) en `frontend/tests/hooks/useSala.test.jsx`
 
 ### Implementation for User Story 1
 
