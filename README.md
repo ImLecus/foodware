@@ -396,4 +396,4 @@ y la validación manual en
 | ------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `GET`  | `/api/reports/daily` | Informe diario con total, desgloses por camarero/plato y comparación con el día anterior. Requiere sesión con rol `encargado`. |
 
-Ruta frontend: `/dashboard` (protegida para `encargado`).
+Sin `date`, el informe usa el último día natural completado **anterior a hoy**; las cuentas cerradas hoy no se muestran como datos parciales. Ruta frontend: `/dashboard` (protegida para `encargado`).

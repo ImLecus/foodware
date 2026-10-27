@@ -39,7 +39,8 @@ su justificación.
 
 - **Decisión**: un único endpoint de solo lectura `GET /api/reports/daily?date=YYYY-MM-DD` que
   devuelve el informe diario completo (total, desglose por camarero, desglose por plato y
-  comparación con el día anterior). Si no se envía `date`, se usa el día actual.
+  comparación con el día anterior). Si no se envía `date`, se usa el último día natural completado
+  anterior a hoy; el día en curso no se usa aunque tenga cuentas cerradas.
 - **Razón**: una sola llamada cubre la pantalla y reduce latencia (SC-005) y complejidad; el
   contrato es sencillo de probar y de consumir.
 - **Alternativas consideradas**: endpoints separados por total/desgloses/comparación (más
@@ -47,8 +48,9 @@ su justificación.
 
 ## D5. Autorización por rol
 
-- **Decisión**: el endpoint exige rol `encargado` mediante middleware; el frontend solo muestra la
-  ruta `/dashboard` a ese rol. Los accesos sin permiso devuelven `403`.
+- **Decisión**: el endpoint exige sesión válida y rol `encargado` mediante `autenticar` y
+  `requireRole`; el frontend solo muestra la ruta `/dashboard` a ese rol. Sin sesión se devuelve
+  `401` y con otro rol `403`.
 - **Razón**: la spec restringe el acceso al encargado (FR-001 de contexto) y reutiliza los perfiles
   existentes; mantener la comprobación en el backend evita exponer datos por ocultación en la UI.
 - **Alternativas consideradas**: control solo en el frontend (inseguro, descartado); permisos
@@ -91,9 +93,9 @@ su justificación.
 
 ## D10. Comportamiento sin conexión
 
-- **Decisión**: la aplicación exige conexión; si el dashboard no puede cargar datos, muestra un
-  estado de error/"sin conexión" claro y conserva la última vista, sin bloquear el resto de la
-  aplicación.
+- **Decisión**: la aplicación exige conexión; si el dashboard no puede cargar datos por un fallo de
+  red muestra «sin conexión», pero si el servidor devuelve `400/500` muestra el mensaje de error
+  real. En ambos casos conserva la última vista y no bloquea el resto de la aplicación.
 - **Razón**: la aclaración de la spec descarta el funcionamiento sin conexión; el dashboard es de
   solo lectura, por lo que no hay escritura que confirmar.
 - **Alternativas consideradas**: caché offline con datos locales (fuera de alcance en v1).

@@ -1,232 +1,179 @@
+---
+description: "Task list for feature 007-dashboard-estadisticas"
+---
+
 # Tareas: Dashboard de estadísticas del servicio
 
 **Entrada**: Documentos de diseño en `/specs/007-dashboard-estadisticas/`
 
-**Prerrequisitos**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md
+**Prerrequisitos**: `plan.md`, `spec.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`.
 
-**Pruebas**: Obligatorias en este proyecto (constitución: "sin pruebas, la funcionalidad no está
-completa"). Cada tarea de prueba se escribe antes que su implementación.
+**Pruebas**: Obligatorias según la constitución. Las pruebas se escriben antes de la implementación.
 
-**Organización**: Tareas agrupadas por historia de usuario para permitir implementación y prueba
-independientes.
+**Organización**: US1 (P1, total diario), US2 (P1, desgloses) y US3 (P2, comparación).
 
 ## Formato: `[ID] [P?] [Story] Descripción`
 
-- **[P]**: Puede ejecutarse en paralelo (ficheros distintos, sin dependencias pendientes)
-- **[Story]**: Historia de usuario a la que pertenece (US1, US2, US3)
-- Las descripciones incluyen rutas de fichero exactas
+- **[P]**: puede ejecutarse en paralelo (ficheros distintos, sin dependencia pendiente).
+- **[Story]**: US1, US2 o US3; no se usa en Setup, Foundational ni Polish.
+- Todas las tareas incluyen la ruta exacta del fichero.
 
 ## Convenciones de rutas
 
-- Aplicación web: `backend/src/` y `frontend/src/`
-- Pruebas: `backend/tests/` y `frontend/tests/`
+- Aplicación web: `backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/tests/`.
+- Contratos: `specs/007-dashboard-estadisticas/contracts/`.
 
 ---
 
-## Fase 1: Setup (infraestructura compartida)
+## Phase 1: Setup
 
-**Propósito**: Inicialización del proyecto y estructura básica
+**Purpose**: Preparar datos y helpers para reproducir el fallo del día en curso.
 
-- [X] T001 Crear la estructura de backend y frontend según plan.md (`backend/`, `frontend/`, `backend/Dockerfile`, `frontend/Dockerfile`)
-- [X] T002 Inicializar el backend con Express + JavaScript en `backend/package.json`
-- [X] T003 [P] Inicializar el frontend con React + Vite + Chakra UI + JavaScript en `frontend/package.json`
-- [X] T004 [P] Configurar Vitest, ESLint y Prettier en `backend/vitest.config.js` y `frontend/vitest.config.js`
-- [X] T005 Configurar los servicios `backend` y `frontend` en `docker-compose.yml`
+- [ ] T001 [P] Ampliar `backend/tests/helpers/fixtures.js` con un helper para insertar cuentas cerradas con fechas relativas a hoy
+- [ ] T002 [P] Confirmar en `backend/tests/helpers/auth.js` y `frontend/tests/helpers/auth.jsx` que existe una sesión de encargado reutilizable para las pruebas del dashboard
 
----
-
-## Fase 2: Fundacional (prerrequisitos bloqueantes)
-
-**Propósito**: Infraestructura que MUST completarse antes de cualquier historia de usuario
-
-**⚠️ CRÍTICO**: Ninguna historia puede empezar hasta terminar esta fase
-
-- [X] T006 Crear el esquema SQLite de `cuentas`, `platos`, `usuarios` y `pedidos`/`lineas_pedido` en `backend/migrations/001_init.sql` (esquema canónico compartido; ya en el esqueleto)
-- [X] T007 [P] Configurar el cliente de SQLite en `backend/src/db/index.js` (ya en el esqueleto)
-- [X] T008 [P] Tipos de entidad compartidos: no aplica (JavaScript sin TypeScript); las entidades quedan documentadas en `data-model.md`
-- [X] T009 Implementar el middleware de autorización por rol `encargado` en `backend/src/middleware/authorize.js` (identidad por cabecera `x-usuario-id`)
-- [X] T010 Configurar el enrutador de la API y el middleware de errores en `backend/src/app.js` y `backend/src/middleware/error.js` (ya en el esqueleto)
-- [X] T011 Implementar utilidades de límites del día natural Europe/Madrid en `backend/src/services/dayTime.js`
-- [X] T012 [P] Crear el script de datos semilla con cuentas cerradas en dos días distintos en `backend/src/db/seed.js`
-- [X] T013 [P] Configurar el enrutado del frontend y el acceso por rol en `frontend/src/App.jsx` (guarda `frontend/src/components/RutaEncargado.jsx`, identidad/rol en `frontend/src/services/sesion.js`)
-- [X] T014 [P] Implementar el cliente HTTP de informes (fetch) en `frontend/src/services/reports.js`
-
-**Checkpoint**: Base lista — las historias de usuario pueden comenzar
+**Checkpoint**: los tests pueden crear escenarios de ayer/hoy sin depender de la fecha real.
 
 ---
 
-## Fase 3: US1 - Visión global de las ventas del servicio (P1) 🎯 MVP
+## Phase 2: Foundational (Blocking Prerequisites)
 
-**Objetivo**: Mostrar al encargado el total vendido del día natural consultado.
+**Purpose**: Resolver la fecha por defecto del dashboard antes de tocar las tres historias.
 
-**Prueba independiente**: Con cuentas cerradas sembradas, `GET /api/reports/daily` devuelve el
-total del día y la página `/dashboard` lo muestra en euros; un día sin ventas muestra `0,00 €`.
+**⚠️ CRITICAL**: US1, US2 y US3 dependen de esta fase.
 
-### Pruebas de US1
+- [ ] T003 [P] Añadir pruebas unitarias de la fecha por defecto y del día natural completado en `backend/tests/unit/reporting_fecha.test.js`
+- [ ] T004 Actualizar `backend/src/services/reportingService.js` para que `obtenerUltimoDiaCompletado`/la fecha por defecto excluyan hoy y devuelvan el último día completado anterior
+- [ ] T005 [P] Añadir al contrato de `backend/tests/contract/reports_daily.test.js` el caso «hoy tiene cuentas cerradas, sin `date` → día anterior»
+- [ ] T006 Actualizar `backend/src/api/reportsRouter.js` para usar la fecha por defecto corregida y mantener el `400` solo para `date` explícito de hoy/futuro
+- [ ] T007 [P] Añadir pruebas de error del dashboard en `frontend/tests/components/dashboard_total.test.jsx` para distinguir red, `400/500` y `401/403`
+- [ ] T008 Actualizar `frontend/src/pages/PaginaDashboard.jsx` para mostrar un error del servidor real y reservar «sin conexión» para fallos de red
 
-- [X] T015 [P] [US1] Prueba de contrato del total en `GET /api/reports/daily` en `backend/tests/contract/reports_daily.test.js`
-- [X] T016 [P] [US1] Prueba unitaria del cálculo del total diario en `backend/tests/unit/reporting_total.test.js`
-- [X] T017 [P] [US1] Prueba de componente del total y estados de la página en `frontend/tests/components/dashboard_total.test.jsx`
-
-### Implementación de US1
-
-- [X] T018 [US1] Implementar la agregación del total diario por fecha (por defecto, el último día natural completado) en `backend/src/services/reportingService.js` (depende de T007, T008, T011)
-- [X] T019 [US1] Implementar el endpoint `GET /api/reports/daily` devolviendo el total en `backend/src/api/reportsRouter.js` (depende de T018)
-- [X] T020 [US1] Añadir validación del parámetro `date` (formato, fecha válida, rechazo del día en curso y de fechas futuras con `400`) en `backend/src/api/reportsRouter.js`
-- [X] T021 [US1] Aplicar la autorización de rol `encargado` al endpoint en `backend/src/api/reportsRouter.js` (depende de T009)
-- [X] T022 [US1] Implementar utilidades de formato es-ES de importes y fechas en `frontend/src/utils/format.js`
-- [X] T023 [US1] Construir la página del dashboard con total y estados cargando/vacío/sin conexión en `frontend/src/pages/PaginaDashboard.jsx`
-- [X] T024 [US1] Conectar la página con el cliente de informes en `frontend/src/pages/PaginaDashboard.jsx` (depende de T014, T023)
-
-**Checkpoint**: US1 funcional y verificable de forma independiente (MVP del dashboard)
+**Checkpoint**: la fecha por defecto y el tratamiento de errores son correctos y están cubiertos por pruebas.
 
 ---
 
-## Fase 4: US2 - Desglose de las ventas por camarero y por plato (P1)
+## Phase 3: User Story 1 - Visión global de las ventas del servicio (Priority: P1) 🎯 MVP
 
-**Objetivo**: Añadir al dashboard las tablas de ventas por camarero y por plato del día.
+**Goal**: mostrar el total del último día natural completado anterior a hoy, sin fallar tras cerrar una cuenta hoy.
 
-**Prueba independiente**: Tras cerrar cuentas de varios camareros, el informe devuelve el importe
-por camarero y la cantidad/importe por plato, mostrando `0,00 €` en los que no vendieron.
+**Independent Test**: cerrar una cuenta hoy, abrir `/dashboard` sin fecha y comprobar que muestra el día anterior; consultar explícitamente `?date=hoy` y comprobar `400`.
 
-### Pruebas de US2
+### Tests for User Story 1
 
-- [X] T025 [P] [US2] Prueba de contrato de los campos `porCamarero`/`porPlato` en `backend/tests/contract/reports_breakdowns.test.js`
-- [X] T026 [P] [US2] Prueba unitaria de agrupación por camarero y por plato en `backend/tests/unit/reporting_breakdowns.test.js`
-- [X] T027 [P] [US2] Prueba de componente de las tablas de desglose en `frontend/tests/components/dashboard_breakdowns.test.jsx`
+- [ ] T009 [P] [US1] Añadir integración de cierre de cuenta hoy y consulta sin fecha en `backend/tests/integration/reporting_fecha.test.js`
+- [ ] T010 [P] [US1] Añadir prueba de página de total y estado de error en `frontend/tests/components/dashboard_total.test.jsx`
 
-### Implementación de US2
+### Implementation for User Story 1
 
-- [X] T028 [US2] Ampliar el servicio con la agrupación por camarero en `backend/src/services/reportingService.js`
-- [X] T029 [US2] Ampliar el servicio con la agrupación por plato en `backend/src/services/reportingService.js`
-- [X] T030 [US2] Incluir `porCamarero` y `porPlato` en la respuesta del endpoint en `backend/src/api/reportsRouter.js`
-- [X] T031 [P] [US2] Crear el componente de tabla de desglose reutilizable en `frontend/src/components/TablaDesglose.jsx`
-- [X] T032 [US2] Renderizar las tablas de desglose en la página del dashboard en `frontend/src/pages/PaginaDashboard.jsx` (depende de T031)
+- [ ] T011 [US1] Ajustar `frontend/src/pages/PaginaDashboard.jsx` y `frontend/src/services/reports.js` para consumir la fecha por defecto y mostrar el error correcto
+- [ ] T012 [US1] Añadir el escenario E11 y la comprobación del total por defecto a `specs/007-dashboard-estadisticas/quickstart.md`
 
-**Checkpoint**: US1 y US2 funcionan de forma independiente
+**Checkpoint**: el total y la fecha por defecto funcionan de forma independiente.
 
 ---
 
-## Fase 5: US3 - Comparación con días anteriores (P2)
+## Phase 4: User Story 2 - Desglose por camarero y por plato (Priority: P1)
 
-**Objetivo**: Comparar el día actual con el día natural anterior (importe, porcentaje y tendencia)
-en el total y en los desgloses, incluido el caso de día anterior sin ventas (diferencia en euros
-con «sin base de comparación», sin porcentaje).
+**Goal**: mantener los desgloses alineados con la misma fecha por defecto corregida.
 
-**Prueba independiente**: El informe muestra la diferencia frente al día anterior con tendencia
-subida/bajada/sin variación; si no hay día anterior, muestra "sin datos anteriores"; si el día
-anterior no tuvo ventas, muestra la diferencia en euros con «sin base de comparación» y sin
-porcentaje.
+**Independent Test**: con cuentas cerradas ayer y hoy, el dashboard muestra los desgloses de ayer, no los parciales de hoy.
 
-### Pruebas de US3
+### Tests for User Story 2
 
-- [X] T033 [P] [US3] Prueba de contrato del bloque `comparacion` en `backend/tests/contract/reports_comparison.test.js`
-- [X] T034 [P] [US3] Prueba unitaria de diferencia y tendencia y del caso sin día anterior en `backend/tests/unit/reporting_comparison.test.js`
-- [X] T035 [P] [US3] Prueba de componente del indicador de tendencia en `frontend/tests/components/dashboard_comparison.test.jsx`
-- [X] T036 [P] [US3] Prueba de integración del cálculo con base cero (sin división por cero, sin porcentaje, tendencia `subida`) en `backend/tests/integration/reporting_zero_base.test.js`
-- [X] T037 [P] [US3] Prueba de componente de la presentación «sin base de comparación» en `frontend/tests/components/dashboard_comparison_zero_base.test.jsx`
+- [ ] T013 [P] [US2] Ampliar `backend/tests/contract/reports_breakdowns.test.js` con el caso de fecha por defecto anterior a hoy
+- [ ] T014 [P] [US2] Actualizar `frontend/tests/components/dashboard_breakdowns.test.jsx` para comprobar que los desgloses usan la fecha mostrada
 
-### Implementación de US3
+### Implementation for User Story 2
 
-- [X] T038 [US3] Implementar el cálculo de la comparación (importe, porcentaje, tendencia) en `backend/src/services/reportingService.js`
-- [X] T039 [US3] Manejar el caso sin día anterior (`diaAnterior = null`) en `backend/src/services/reportingService.js`
-- [X] T040 [US3] Añadir la comparación por camarero y por plato en `backend/src/services/reportingService.js`
-- [X] T041 [US3] Incluir `comparacion` en la respuesta del endpoint en `backend/src/api/reportsRouter.js`
-- [X] T042 [US3] Implementar la comparación con base cero (`diferenciaImporte` absoluta, `diferenciaPorcentaje = null`, tendencia `subida`) y exponer `sinBaseComparacion` en la respuesta en `backend/src/services/reportingService.js` y `backend/src/api/reportsRouter.js` (depende de T041)
-- [X] T043 [P] [US3] Crear el componente de indicador de tendencia (icono + color + texto) en `frontend/src/components/IndicadorTendencia.jsx`
-- [X] T044 [US3] Renderizar el bloque de comparación en la página del dashboard en `frontend/src/pages/PaginaDashboard.jsx` (depende de T043)
-- [X] T045 [US3] Mostrar «sin base de comparación» con la diferencia absoluta en euros y sin porcentaje cuando `sinBaseComparacion = true` en `frontend/src/pages/PaginaDashboard.jsx` (depende de T044)
+- [ ] T015 [US2] Revisar y ajustar `backend/src/services/reportingService.js` y `backend/src/api/reportsRouter.js` para que `porCamarero` y `porPlato` usen la misma fecha resuelta que el total
 
-**Checkpoint**: las tres historias son funcionales e independientemente verificables
+**Checkpoint**: los desgloses no mezclan días ni incluyen datos parciales.
 
 ---
 
-## Fase 6: Pulido y aspectos transversales
+## Phase 5: User Story 3 - Comparación con días anteriores (Priority: P2)
 
-**Propósito**: Mejoras que afectan a varias historias
+**Goal**: comparar el día mostrado con su día natural anterior, incluido el caso sin base de comparación.
 
-- [X] T046 [P] Añadir índice sobre `cuentas(fechaCierre, estado)` para el rendimiento (<3 s) en `backend/db/schema.sql`
-- [X] T047 [P] Implementar el estado "sin conexión" reutilizable en `frontend/src/components/EstadoConexion.jsx`
-- [X] T048 [P] Actualizar la documentación de puesta en marcha en `README.md`
-- [X] T049 Auditar accesibilidad de tablas e indicadores (texto + icono, no solo color) en `frontend/src/components/TablaDesglose.jsx` y `frontend/src/components/IndicadorTendencia.jsx`
-- [X] T050 Ejecutar los escenarios E1–E9 de `quickstart.md` y registrar resultados
-- [X] T051 Ejecutar el escenario E10 de `quickstart.md` (día anterior sin ventas: diferencia en euros, «sin base de comparación», sin porcentaje) y registrar resultados (depende de T042, T045)
-- [X] T052 [P] Endurecer la seguridad (comprobación de rol en backend, sin datos de más) en `backend/src/api/reportsRouter.js`
-- [X] T053 [P] Añadir prueba de formato es-ES de importes y fechas (punto de miles, coma decimal, € y fecha) en `frontend/tests/utils/format.test.js`
+**Independent Test**: con ventas ayer y cuentas cerradas hoy, el dashboard sigue comparando ayer con anteayer; no usa hoy como día actual.
 
----
+### Tests for User Story 3
 
-## Dependencias y orden de ejecución
+- [ ] T016 [P] [US3] Ampliar `backend/tests/contract/reports_comparison.test.js` con la fecha por defecto corregida
+- [ ] T017 [P] [US3] Actualizar `frontend/tests/components/dashboard_comparison.test.jsx` y `frontend/tests/components/dashboard_comparison_zero_base.test.jsx` para la fecha mostrada
+- [ ] T018 [P] [US3] Mantener la integración de base cero en `backend/tests/integration/reporting_zero_base.test.js`
 
-### Dependencias entre fases
+### Implementation for User Story 3
 
-- **Setup (Fase 1)**: sin dependencias; puede empezar de inmediato
-- **Fundacional (Fase 2)**: depende del Setup; BLOQUEA todas las historias
-- **Historias (Fase 3+)**: dependen de la Fase 2; pueden ir en paralelo o en orden de prioridad
-- **Pulido (Fase 6)**: depende de las historias deseadas
+- [ ] T019 [US3] Revisar y ajustar `backend/src/services/reportingService.js` para que la comparación use la fecha resuelta y no el día en curso
 
-### Dependencias entre historias
-
-- **US1 (P1)**: empieza tras la Fase 2; sin dependencias de otras historias
-- **US2 (P1)**: empieza tras la Fase 2; amplía el mismo servicio/endpoint/página que US1 (integra
-  con US1 pero es verificable por separado)
-- **US3 (P2)**: empieza tras la Fase 2; amplía el servicio/endpoint/página (integra con US1/US2)
-
-### Dentro de cada historia
-
-- Las pruebas se escriben primero y MUST fallar antes de implementar
-- Servicios antes que endpoints; componentes antes de integrarlos en la página
-
-### Oportunidades de paralelismo
-
-- Todas las tareas [P] de Setup y Fase 2 pueden ir en paralelo
-- Las tareas de prueba [P] de cada historia pueden ir en paralelo
-- Distintas historias pueden repartirse entre las 4 personas del equipo
+**Checkpoint**: la comparación es consistente con el total y los desgloses.
 
 ---
 
-## Ejemplo de paralelismo: US1
+## Phase 6: Polish & Cross-Cutting Concerns
+
+**Purpose**: Documentación, regresión y validación final.
+
+- [ ] T020 [P] Actualizar `README.md` y `specs/007-dashboard-estadisticas/quickstart.md` con la regla de fecha y los estados de error
+- [ ] T021 [P] Revisar `specs/007-dashboard-estadisticas/plan.md` y `tasks.md` para eliminar referencias obsoletas a `x-usuario-id`, `RutaEncargado` y `services/sesion.js`
+- [ ] T022 Ejecutar las suites completas de `backend/tests/` y `frontend/tests/`, y corregir regresiones
+- [ ] T023 Ejecutar los escenarios E1–E11 de `specs/007-dashboard-estadisticas/quickstart.md` y registrar el resultado en `specs/007-dashboard-estadisticas/verification.md`
+- [ ] T024 Verificar que el flujo de cierre de la historia 006 puede cerrar una cuenta hoy sin romper el dashboard y que el dashboard ignora ese día hasta mañana
+
+---
+
+## Dependencies & Execution Order
+
+### Phase Dependencies
+
+- **Setup (Phase 1)**: sin dependencias.
+- **Foundational (Phase 2)**: depende de Setup y bloquea las historias.
+- **US1 (Phase 3)**: depende de Foundational; es el MVP.
+- **US2 (Phase 4)**: depende de Foundational y del total de US1.
+- **US3 (Phase 5)**: depende de Foundational y de los datos de US1/US2.
+- **Polish (Phase 6)**: depende de las historias implementadas.
+
+### User Story Dependencies
+
+- **US1**: independiente; entrega el total y el estado de error correcto.
+- **US2**: reutiliza la fecha resuelta por US1.
+- **US3**: reutiliza la fecha y los desgloses de US1/US2.
+
+### Parallel Opportunities
+
+- T001/T002, T003/T005, T007/T009/T010, T013/T014, T016/T017/T018 y T020/T021 pueden ir en paralelo.
+- No paralelizar tareas que modifiquen `backend/src/services/reportingService.js`, `backend/src/api/reportsRouter.js` o `frontend/src/pages/PaginaDashboard.jsx`.
+- Las pruebas de cada historia se escriben antes de su implementación.
+
+## Parallel Example: User Story 1
 
 ```bash
-# Lanzar las pruebas de US1 en paralelo:
-Task: "Prueba de contrato del total en backend/tests/contract/reports_daily.test.js"
-Task: "Prueba unitaria del total diario en backend/tests/unit/reporting_total.test.js"
-Task: "Prueba de componente del total en frontend/tests/components/dashboard_total.test.jsx"
+# Pruebas en paralelo:
+Task: "Integración de cierre de hoy y fecha por defecto en backend/tests/integration/reporting_fecha.test.js"
+Task: "Página de total y error en frontend/tests/components/dashboard_total.test.jsx"
 ```
 
----
+## Implementation Strategy
 
-## Estrategia de implementación
+### MVP First (User Story 1)
 
-### MVP primero (solo US1)
+1. Completar Setup y Foundational.
+2. Corregir la fecha por defecto y el estado de error de la página.
+3. Validar el escenario E11: cerrar una cuenta hoy y comprobar que el dashboard muestra ayer.
+4. Continuar con US2 y US3.
 
-1. Completar Fase 1 (Setup)
-2. Completar Fase 2 (Fundacional — bloquea todo)
-3. Completar Fase 3 (US1)
-4. **PARAR Y VALIDAR**: probar US1 de forma independiente (escenarios E1 y E5 de `quickstart.md`)
-5. Demostrar el total del día ya aporta valor
+### Incremental Delivery
 
-### Entrega incremental
+1. Fecha por defecto y regresión de hoy.
+2. Total y estados de la página.
+3. Desgloses y comparación sobre la misma fecha.
+4. Documentación y validación E1–E11.
 
-1. Setup + Fundacional → base lista
-2. US1 → total del día (MVP)
-3. US2 → desgloses por camarero y plato
-4. US3 → comparación con el día anterior
-5. Cada historia añade valor sin romper las anteriores
+## Notes
 
-### Estrategia de equipo en paralelo
-
-1. El equipo completa Setup + Fundacional
-2. Después: persona A → US1, persona B → US2, persona C → US3 (con integración progresiva en
-   `reportingService.js`, `reportsRouter.js` y `PaginaDashboard.jsx`)
-
----
-
-## Notas
-
-- [P] = ficheros distintos, sin dependencias
-- [Story] asocia cada tarea a su historia para trazabilidad
-- Constitución VI: commits con Conventional Commits; Git Flow (`feature/*` desde `develop`)
-- Constitución (parada por tarea): al implementar con `/speckit.implement`, detenerse al terminar
-  **cada** tarea, resumir lo hecho y esperar a que el usuario la revise y commitee antes de seguir
-- Evitar tareas vagas y conflictos de fichero entre historias
+- El día en curso nunca se muestra como parcial.
+- `?date=hoy` sigue siendo `400`; solo la ausencia de `date` usa el día anterior completado.
+- No se debe mostrar «sin conexión» para un `400` o `500` del servidor.
+- No se modifica la lógica de cierre de cuentas de la historia 006.

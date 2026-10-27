@@ -1,22 +1,24 @@
 # Plan de Implementación: Dashboard de estadísticas del servicio
 
-**Rama**: `feature/007-dashboard-estadisticas` | **Fecha**: 2026-10-20 | **Spec**: [spec.md](./spec.md)
+**Rama**: `feature/007-dashboard-estadisticas` | **Fecha**: 2026-10-27 | **Spec**: [spec.md](./spec.md)
 
-**Entrada**: Especificación de la funcionalidad en `specs/007-dashboard-estadisticas/spec.md`
+**Entrada**: Especificación de la funcionalidad en `specs/007-dashboard-estadisticas/spec.md`, incluidas las clarificaciones del 2026-10-27.
 
 ## Resumen
 
 El encargado necesita, una vez terminado el día, una vista de conjunto de las ventas: total del
 día, desglose por camarero y por plato, y comparación contra el día natural anterior (importe y
 porcentaje, indicando subida, bajada o sin variación), siempre con formato español y en euros.
+Mientras el día en curso no haya terminado, el dashboard muestra el **último día natural completado
+anterior a hoy**, aunque ya existan cuentas cerradas hoy.
 Cuando el día anterior no registró ventas y el día actual sí, la comparación muestra la diferencia
 en euros con la indicación «sin base de comparación» y sin porcentaje (FR-011, SC-006).
 La funcionalidad es de solo lectura: agrega las cuentas cerradas del día a partir de los datos que
 generan las historias de pedidos (01) y cierre de cuenta (06), sin modificarlos.
 
 El enfoque técnico es una **agregación bajo demanda** sobre los datos de cuentas cerradas,
-expuesta por un único endpoint HTTP de solo lectura protegido por rol de encargado, y consumida
-por una página de dashboard en React (Chakra UI) con tablas y badges de tendencia. Se descarta
+expuesta por un único endpoint HTTP de solo lectura protegido por sesión y rol de encargado, y
+consumida por una página de dashboard en React (Chakra UI) con tablas y badges de tendencia. Se descarta
 precalcular o cachear agregados en v1 por simplicidad (volumen bajo de un restaurante medio y
 consistencia garantizada con las cuentas cerradas, SC-004).
 
@@ -26,6 +28,19 @@ día anterior existe pero su importe es 0 y el actual es mayor que 0, devuelve
 `diferenciaImporte = importeActual`, `diferenciaPorcentaje = null` y
 `sinBaseComparacion = true`; nunca divide entre cero. La UI presenta ese caso con la diferencia en
 euros y la etiqueta «sin base de comparación», sin porcentaje (FR-011, SC-006).
+
+## Decisión sobre la fecha por defecto y errores de carga
+
+- La consulta sin `date` debe resolver el **último día natural completado anterior a hoy**. No debe
+  devolver el día en curso aunque existan cuentas cerradas hoy.
+- `obtenerUltimoDiaCompletado`/`obtenerFechaConsulta` deben excluir explícitamente las fechas
+  `>= fechaEnMadrid()`; el endpoint mantiene el `400` para un `date` explícito de hoy o futuro.
+- La página debe distinguir:
+  - `401/403`: acceso restringido;
+  - error de red real: «sin conexión»;
+  - `400/500`: mensaje de error del servidor, nunca «sin conexión».
+- La regresión de cerrar una cuenta hoy y abrir `/dashboard` debe cubrirse con prueba de API y de
+  página.
 
 ## Contexto Técnico
 
@@ -54,8 +69,8 @@ frontend servido como estáticos. Uso en tablets de sala y puesto de encargado. 
 agregación diaria (SUM/GROUP BY sobre un día de cuentas) por debajo de 1 s en el volumen esperado.
 
 **Restricciones**: moneda euro y convenciones españolas de número/fecha; solo el rol *encargado*
-puede acceder; los precios usados son los fijados en el momento de pedir; el día natural es la
-unidad de servicio (Europe/Madrid).
+puede acceder mediante sesión real (historia 000); los precios usados son los fijados en el
+momento de pedir; el día natural es la unidad de servicio (Europe/Madrid).
 
 **Alcance/Escala**: restaurante medio; consulta de un día concreto; histórico mínimo limitado al
 día anterior; pocos usuarios encargados y varias cuentas por día.
@@ -115,7 +130,7 @@ frontend/
 ├── src/
 │   ├── pages/           # PaginaDashboard (ruta /dashboard)
 │   ├── components/      # TablaDesglose, IndicadorTendencia, EstadoConexion
-│   └── services/        # cliente HTTP de informes (fetch)
+│   └── services/        # cliente HTTP de informes (fetch) y sesión (000)
 └── tests/
     └── components/      # estados de la página (cargando, error/sin conexión, datos, vacío)
 ```
