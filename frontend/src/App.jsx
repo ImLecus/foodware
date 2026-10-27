@@ -5,6 +5,7 @@ import CocinaPage from './pages/CocinaPage.jsx';
 import Home from './pages/Home.jsx';
 import Mesas from './pages/Mesas.jsx';
 import ModuloPendiente from './pages/ModuloPendiente.jsx';
+import PaginaDashboard from './pages/PaginaDashboard.jsx';
 import RutaEncargado from './components/RutaEncargado.jsx';
 import SalaPage from './pages/SalaPage.jsx';
 import { ROL } from './services/sesion.js';
@@ -48,7 +49,7 @@ export default function App() {
             path="/dashboard"
             element={
               <RutaEncargado>
-                <ModuloPendiente nombre="Dashboard" />
+                <PaginaDashboard />
               </RutaEncargado>
             }
           />
