@@ -124,6 +124,8 @@ export default function Mesas() {
   }, [cargarMesas]);
 
   const mesaSeleccionada = mesas.find((mesa) => mesa.id === mesaSeleccionadaId) ?? null;
+  // Las mesas cerradas dejan de mostrarse en la vista de sala (FR-011).
+  const mesasVisibles = mesas.filter((mesa) => mesa.estado !== 'cerrada');
   const puedeEditar = Boolean(pedido && pedido.estado === 'en_curso' && enLinea);
 
   function mostrarError(error) {
@@ -271,17 +273,23 @@ export default function Mesas() {
             <Heading size="md" mb={3}>
               Mesas
             </Heading>
-            {mesas.length === 0 && (
+            {mesasVisibles.length === 0 && (
               <Alert status="info" borderRadius="md" mb={3}>
                 <AlertIcon />
                 <AlertDescription>
-                  No hay mesas cargadas. Ejecuta los datos de ejemplo con <code>npm run seed</code>{' '}
-                  en el backend.
+                  {mesas.length === 0 ? (
+                    <>
+                      No hay mesas cargadas. Ejecuta los datos de ejemplo con{' '}
+                      <code>npm run seed</code> en el backend.
+                    </>
+                  ) : (
+                    'No hay mesas abiertas: todas están cerradas.'
+                  )}
                 </AlertDescription>
               </Alert>
             )}
             <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3}>
-              {mesas.map((mesa) => (
+              {mesasVisibles.map((mesa) => (
                 <Button
                   key={mesa.id}
                   variant={mesaSeleccionadaId === mesa.id ? 'solid' : 'outline'}

@@ -30,6 +30,7 @@ export function suscribirASala({ onEvento, onEstadoConexion } = {}) {
     'pedido-anulado',
     'pedido.reabierto',
     'pedido.pendientes-cambiado',
+    'mesa-cerrada',
   ];
 
   const oyentes = [];

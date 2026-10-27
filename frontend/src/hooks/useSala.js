@@ -110,6 +110,15 @@ export function useSala() {
           return;
         }
 
+        if (nombre === 'mesa-cerrada') {
+          const mesaId = datos?.mesa_id;
+          if (mesaId) {
+            setMesas((actual) => actual.filter((mesa) => mesa.id !== mesaId));
+          }
+          recargar();
+          return;
+        }
+
         if (
           nombre === 'pedido-confirmado' ||
           nombre === 'pedido-modificado' ||
