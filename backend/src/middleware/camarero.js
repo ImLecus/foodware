@@ -9,7 +9,17 @@ export const CAMARERO_POR_DEFECTO = 'camarero-1';
  */
 export function identificarCamarero(db) {
   return (req, res, next) => {
-    const camareroId = req.get('X-Camarero-Id') ?? CAMARERO_POR_DEFECTO;
+    const cabecera = req.get('X-Camarero-Id');
+    const ruta = req.originalUrl || req.url || '';
+    const esRutaSala = ruta.startsWith('/api/sala');
+
+    if (esRutaSala && (cabecera === undefined || cabecera === null || cabecera === '')) {
+      next(new ErrorHttp(401, 'Camarero no identificado'));
+      return;
+    }
+
+    const camareroId =
+      cabecera !== undefined && cabecera !== null && cabecera !== '' ? cabecera : CAMARERO_POR_DEFECTO;
     const usuario = db.prepare('SELECT id, nombre, rol FROM usuarios WHERE id = ?').get(camareroId);
 
     if (!usuario || usuario.rol !== 'camarero') {

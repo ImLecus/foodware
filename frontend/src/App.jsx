@@ -5,10 +5,12 @@ import CocinaPage from './pages/CocinaPage.jsx';
 import Home from './pages/Home.jsx';
 import Mesas from './pages/Mesas.jsx';
 import ModuloPendiente from './pages/ModuloPendiente.jsx';
+import SalaEstado from './pages/SalaEstado.jsx';
 import SalaPage from './pages/SalaPage.jsx';
 
 const modulos = [
   { ruta: '/sala', nombre: 'Sala' },
+  { ruta: '/sala/estado', nombre: 'Señales' },
   { ruta: '/cocina', nombre: 'Cocina' },
   { ruta: '/cuentas', nombre: 'Cuentas' },
   { ruta: '/dashboard', nombre: 'Dashboard' },
@@ -37,6 +39,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/sala" element={<Mesas />} />
+          <Route path="/sala/estado" element={<SalaEstado />} />
           <Route path="/sala/platos" element={<SalaPage />} />
           <Route path="/cocina" element={<CocinaPage />} />
           <Route path="/cuentas" element={<ModuloPendiente nombre="Cuentas" />} />

@@ -8,3 +8,50 @@ export function crearConexionEventos(partidaId) {
   const ruta = partidaId ? `/partidas/${encodeURIComponent(partidaId)}/eventos` : '/eventos';
   return new EventSource(`${API_BASE}${ruta}`);
 }
+
+/**
+ * Suscribe la vista de sala 005 al canal SSE compartido.
+ */
+export function suscribirASala({ onEvento, onEstadoConexion } = {}) {
+  const conexion = crearConexionEventos(null);
+
+  conexion.addEventListener('open', () => onEstadoConexion?.('conectado'));
+  conexion.addEventListener('error', () => onEstadoConexion?.('sin-conexion'));
+
+  const eventos = [
+    'linea.actualizada',
+    'aviso.activo',
+    'aviso.retirado',
+    'aviso.descartado',
+    'pedido.nuevo',
+    'pedido.modificado',
+    'pedido-confirmado',
+    'pedido-modificado',
+    'pedido-anulado',
+    'pedido.reabierto',
+    'pedido.pendientes-cambiado',
+  ];
+
+  const oyentes = [];
+
+  for (const nombre of eventos) {
+    const handler = (evento) => {
+      let datos = {};
+      try {
+        datos = JSON.parse(evento.data);
+      } catch {
+        // El evento puede venir sin datos JSON.
+      }
+      onEvento?.(nombre, datos);
+    };
+    conexion.addEventListener(nombre, handler);
+    oyentes.push({ nombre, handler });
+  }
+
+  return () => {
+    for (const { nombre, handler } of oyentes) {
+      conexion.removeEventListener(nombre, handler);
+    }
+    conexion.close();
+  };
+}

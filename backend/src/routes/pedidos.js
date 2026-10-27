@@ -33,6 +33,7 @@ import { identificarCamarero } from '../middleware/camarero.js';
 import { comprobarEdicion } from '../middleware/bloqueo.js';
 import { ErrorHttp } from '../middleware/error.js';
 import { publicar } from '../realtime/hub.js';
+import { sincronizarAvisoMesa } from '../services/avisos.js';
 import { marcarLinea } from '../services/marcarListo.js';
 import { validarLineaPatchEdicion, validarNuevaLineaEdicion } from '../schemas/edicion.js';
 
@@ -202,6 +203,7 @@ export function pedidosRouter(db) {
       const actualizado = obtenerPedido(db, pedido.id);
       const mesa = obtenerMesa(db, actualizado.mesa_id);
       const porPartida = agruparPorPartida(actualizado.lineas);
+      const estadoMesa = sincronizarAvisoMesa(db, actualizado.mesa_id, { nuevoPlatoListo: false });
 
       publicar('pedido-modificado', {
         pedidoId: actualizado.id,
@@ -215,6 +217,8 @@ export function pedidosRouter(db) {
         mesa: { id: mesa.id, identificador: mesa.identificador, estado: mesa.estado },
         modificada: true,
         por_partida: porPartida,
+        completa: estadoMesa.completa,
+        aviso: estadoMesa.aviso,
       });
     } catch (error) {
       next(error);

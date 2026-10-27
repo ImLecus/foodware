@@ -88,7 +88,7 @@ publicar('pedido-confirmado', { pedidoId: 'pedido-1' });
 
 Los nombres de evento acordados en los contratos de las historias son, entre otros:
 `pedido-confirmado`, `pedido-anulado`, `pedido.modificado`, `linea.actualizada`,
-`pedido.reabierto`, `aviso-descartado`, `mesa-cerrada`.
+`pedido.reabierto`, `aviso.activo`, `aviso.retirado`, `aviso.descartado`, `mesa-cerrada`.
 
 ## Base de datos compartida
 
@@ -232,6 +232,40 @@ actualizándose por SSE sin recargar.
 | `PUT`  | `/api/pedidos/{pedidoId}/lineas/{lineaId}/estado` | Marca o deshace (`listo`/`pendiente`); idempotente |
 | `GET`  | `/api/mesas/{mesaId}/estado-platos`               | Platos de la mesa con estado y `listoEn`           |
 
+## Sala: señales de platos listos (historia 005)
+
+La vista `/sala/estado` muestra todas las mesas abiertas con los platos de su comanda **ya
+enviada** a cocina y el estado de cada uno (`Pendiente`/`Listo`). Se actualiza por SSE sin
+recargar.
+
+1. **Estado en vivo**: cada evento `linea.actualizada` refresca el plato correspondiente.
+2. **Aviso de mesa completa**: cuando todos los platos enviados de una mesa están listos se
+   muestra un aviso visual destacado con el nombre de la mesa y suena un pitido **una sola vez**.
+   El aviso permanece visible hasta que se descarta.
+3. **Sonido silenciable**: el control `Silenciar sonido`/`Activar sonido` está en el propio aviso;
+   la preferencia se guarda en el navegador y la señal visual no se pierde al silenciarla.
+4. **Descarte global**: `Descartar aviso` lo oculta en todas las pantallas y no reaparece hasta
+   que se marque un nuevo plato como listo en esa mesa. Sin conexión la acción queda deshabilitada.
+5. **Recálculo al editar**: al confirmar cambios de una comanda ya enviada se recalcula la
+   completitud; un plato nuevo pendiente retira el aviso y, al marcarlo listo, se genera uno nuevo.
+6. **Sin conexión**: se muestra el indicador de «sin conexión» y, al recuperarla, se resincroniza
+   la instantánea de sala (estados de platos y avisos).
+
+### API de la historia 005
+
+| Método | Ruta                                              | Descripción                                                    |
+| ------ | ------------------------------------------------- | -------------------------------------------------------------- |
+| `GET`  | `/api/sala/mesas`                                 | Instantánea de mesas abiertas, platos y aviso activo           |
+| `POST` | `/api/sala/avisos/{avisoId}/descartar`            | Descarta el aviso (idempotente; `404` si no existe)            |
+| `PUT`  | `/api/pedidos/{pedidoId}/lineas/{lineaId}/estado` | Marca o deshace un plato (reutilizado de la historia 004)      |
+| `POST` | `/api/pedidos/{pedidoId}/enviar-cambios`          | Recalcula la completitud al confirmar una edición              |
+
+Eventos SSE propios: `aviso.activo`, `aviso.retirado` y `aviso.descartado`, además del ya
+existente `linea.actualizada`. El contrato completo está en
+[`specs/005-senales-platos-listos/contracts/api.md`](specs/005-senales-platos-listos/contracts/api.md)
+y la validación manual en
+[`specs/005-senales-platos-listos/quickstart.md`](specs/005-senales-platos-listos/quickstart.md).
+
 ## Alcance actual
 
 - Esqueleto compartido: estructura, Docker, SQLite, hub SSE, cliente HTTP/SSE, tema y pruebas de
@@ -242,4 +276,6 @@ actualizándose por SSE sin recargar.
   accesible, aviso «Modificado», actualización en vivo, sin conexión y reintento.
 - Historia **004**: marcar/deshacer platos como listos, aviso «Pedido completado» con «Deshacer»,
   reflejo en sala y canal SSE.
-- Las historias `005`–`008` siguen pendientes.
+- Historia **005**: estado de platos en vivo por mesa, aviso visual y sonoro de mesa completa,
+  descarte global y recálculo al editar comandas ya enviadas.
+- Las historias `006`–`008` siguen pendientes.
