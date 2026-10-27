@@ -156,8 +156,13 @@ describe('CocinaPage (US1)', () => {
     const pedidoMixto = {
       ...pedido,
       lineas: [
-        { ...pedido.lineas[0], id: 'linea-1', nombrePlato: 'Croquetas' },
-        { ...pedido.lineas[0], id: 'linea-2', nombrePlato: 'Paella' },
+        {
+          ...pedido.lineas[0],
+          id: 'linea-1',
+          nombrePlato: 'Croquetas',
+          partida: 'entrantes',
+        },
+        { ...pedido.lineas[0], id: 'linea-2', nombrePlato: 'Paella', partida: 'principales' },
       ],
     };
     obtenerCocinero.mockResolvedValue({
@@ -177,9 +182,39 @@ describe('CocinaPage (US1)', () => {
     renderizar();
     await screen.findByText('Mesa 1');
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Marcar listo' })[0]);
+    const botones = screen.getAllByRole('button', { name: 'Marcar listo' });
+    expect(botones).toHaveLength(1);
+    fireEvent.click(botones[0]);
 
     expect(await screen.findByText('Pedido completado')).toBeInTheDocument();
+  });
+
+  it('no ofrece marcar ni deshacer líneas de otra partida', async () => {
+    const pedidoMixto = {
+      ...pedido,
+      partida: 'entrantes',
+      lineas: [
+        { ...pedido.lineas[0], id: 'linea-1', partida: 'entrantes' },
+        { ...pedido.lineas[0], id: 'linea-2', nombrePlato: 'Paella', partida: 'principales' },
+      ],
+    };
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes.mockResolvedValue([pedidoMixto]);
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+
+    const botones = screen.getAllByRole('button', { name: 'Marcar listo' });
+    expect(botones).toHaveLength(1);
+    fireEvent.click(botones[0]);
+
+    await waitFor(() =>
+      expect(marcarEstado).toHaveBeenCalledWith('pedido-1', 'linea-1', 'listo', 'entrantes'),
+    );
   });
 
   it('ofrece Deshacer tras completar el pedido y revierte la última marca', async () => {

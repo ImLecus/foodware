@@ -3,7 +3,8 @@ export function listarLineasDePedido(db, pedidoId) {
   return db
     .prepare(
       `
-      SELECT l.id, pl.nombre AS nombre_plato, l.cantidad, l.estado, l.listo_en
+      SELECT l.id, pl.nombre AS nombre_plato, pl.partida_codigo AS partida,
+             l.cantidad, l.estado, l.listo_en
       FROM lineas_pedido l
       JOIN platos pl ON pl.id = l.plato_id
       WHERE l.pedido_id = ?
