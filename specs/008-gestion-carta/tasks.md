@@ -67,19 +67,19 @@ independientes.
 
 > **NOTA: escribir primero y comprobar que fallan antes de implementar**
 
-- [ ] T018 [P] [US1] Prueba de contrato de `GET/POST/PATCH /api/admin/platos` en `backend/tests/contract/carta-admin.test.js`
-- [ ] T019 [P] [US1] Prueba unitaria de validación de precio y partida en `backend/tests/unit/validacion-plato.test.js`
-- [ ] T020 [P] [US1] Prueba de componente del formulario de alta/edición en `frontend/tests/components/FormularioPlato.test.jsx`
+- [X] T018 [P] [US1] Prueba de contrato de `GET/POST/PATCH /api/admin/platos` en `backend/tests/contract/carta-admin.test.js`
+- [X] T019 [P] [US1] Prueba unitaria de validación de precio y partida en `backend/tests/unit/validacion-plato.test.js`
+- [X] T020 [P] [US1] Prueba de componente del formulario de alta/edición en `frontend/tests/components/FormularioPlato.test.jsx`
 
 ### Implementación de la US1
 
-- [ ] T021 [US1] Implementar el alta de plato (`crearPlato`) y la validación de precio/partida en `backend/src/services/cartaService.js`
-- [ ] T022 [US1] Implementar la edición de plato (`actualizarPlato` de nombre/partida/precio) en `backend/src/services/cartaService.js`
-- [ ] T023 [US1] Implementar los endpoints `GET/POST/PATCH /api/admin/platos` en `backend/src/api/cartaAdminRouter.js`
-- [ ] T024 [US1] Crear el componente `FormularioPlato` (alta/edición, validación y avisos) en `frontend/src/components/FormularioPlato.jsx`
-- [ ] T025 [US1] Crear el componente `TablaPlatos` (nombre, partida, precio en €) en `frontend/src/components/TablaPlatos.jsx`
-- [ ] T026 [US1] Crear la página `PaginaGestionCarta` (carga, alta y edición) en `frontend/src/pages/PaginaGestionCarta.jsx`
-- [ ] T027 [US1] Registrar la ruta `/admin/carta` protegida por rol en `frontend/src/App.jsx`
+- [X] T021 [US1] Implementar el alta de plato (`crearPlato`) y la validación de precio/partida en `backend/src/services/cartaService.js`
+- [X] T022 [US1] Implementar la edición de plato (`actualizarPlato` de nombre/partida/precio) en `backend/src/services/cartaService.js`
+- [X] T023 [US1] Implementar los endpoints `GET/POST/PATCH /api/admin/platos` en `backend/src/api/cartaAdminRouter.js`
+- [X] T024 [US1] Crear el componente `FormularioPlato` (alta/edición, validación y avisos) en `frontend/src/components/FormularioPlato.jsx`
+- [X] T025 [US1] Crear el componente `TablaPlatos` (nombre, partida, precio en €) en `frontend/src/components/TablaPlatos.jsx`
+- [X] T026 [US1] Crear la página `PaginaGestionCarta` (carga, alta y edición) en `frontend/src/pages/PaginaGestionCarta.jsx`
+- [X] T027 [US1] Registrar la ruta `/admin/carta` protegida por rol en `frontend/src/App.jsx`
 
 **Punto de control**: la US1 es funcional y verificable de forma independiente.
 
