@@ -70,13 +70,13 @@ total del día y la página `/dashboard` lo muestra en euros; un día sin ventas
 
 ### Implementación de US1
 
-- [ ] T018 [US1] Implementar la agregación del total diario por fecha (por defecto, el último día natural completado) en `backend/src/services/reportingService.js` (depende de T007, T008, T011)
-- [ ] T019 [US1] Implementar el endpoint `GET /api/reports/daily` devolviendo el total en `backend/src/api/reportsRouter.js` (depende de T018)
-- [ ] T020 [US1] Añadir validación del parámetro `date` (formato, fecha válida, rechazo del día en curso y de fechas futuras con `400`) en `backend/src/api/reportsRouter.js`
-- [ ] T021 [US1] Aplicar la autorización de rol `encargado` al endpoint en `backend/src/api/reportsRouter.js` (depende de T009)
-- [ ] T022 [US1] Implementar utilidades de formato es-ES de importes y fechas en `frontend/src/utils/format.js`
-- [ ] T023 [US1] Construir la página del dashboard con total y estados cargando/vacío/sin conexión en `frontend/src/pages/PaginaDashboard.jsx`
-- [ ] T024 [US1] Conectar la página con el cliente de informes en `frontend/src/pages/PaginaDashboard.jsx` (depende de T014, T023)
+- [X] T018 [US1] Implementar la agregación del total diario por fecha (por defecto, el último día natural completado) en `backend/src/services/reportingService.js` (depende de T007, T008, T011)
+- [X] T019 [US1] Implementar el endpoint `GET /api/reports/daily` devolviendo el total en `backend/src/api/reportsRouter.js` (depende de T018)
+- [X] T020 [US1] Añadir validación del parámetro `date` (formato, fecha válida, rechazo del día en curso y de fechas futuras con `400`) en `backend/src/api/reportsRouter.js`
+- [X] T021 [US1] Aplicar la autorización de rol `encargado` al endpoint en `backend/src/api/reportsRouter.js` (depende de T009)
+- [X] T022 [US1] Implementar utilidades de formato es-ES de importes y fechas en `frontend/src/utils/format.js`
+- [X] T023 [US1] Construir la página del dashboard con total y estados cargando/vacío/sin conexión en `frontend/src/pages/PaginaDashboard.jsx`
+- [X] T024 [US1] Conectar la página con el cliente de informes en `frontend/src/pages/PaginaDashboard.jsx` (depende de T014, T023)
 
 **Checkpoint**: US1 funcional y verificable de forma independiente (MVP del dashboard)
 
