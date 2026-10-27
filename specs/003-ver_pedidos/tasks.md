@@ -258,3 +258,16 @@ Task: "Build loading and error components in frontend/src/components/EstadoCarga
   lo hecho y esperar a que la persona revise y haga el commit antes de continuar
 - Commits con Conventional Commits en español de España (constitución, principio VI)
 - Evitar tareas vagas o que toquen el mismo fichero en paralelo sin dependencia
+
+---
+
+## Phase 7: Convergence
+
+- [ ] T056 CRITICAL Normalizar los mensajes de error visibles al español y unificar el cuerpo de error de la API a `{ codigo, mensaje }` en `backend/src/middleware/error.js`, `backend/src/routes/partidas.js`, `backend/src/routes/cocineros.js` y `frontend/src/services/api.js`; traducir los fallos de red y cubrirlo en `frontend/tests/i18n/textos.test.jsx` per Constitution II, FR-014, T055 (contradicts)
+- [ ] T057 Emitir los eventos del contrato en los flujos reales: `pedido.nuevo` al confirmar, `pedido.modificado` al enviar cambios y `pedido.pendientes-cambiado` al confirmar, anular, completar o reabrir; usar `realtime/emit.js` desde `routes/pedidos.js` y actualizar `frontend/src/services/events.js`, `backend/tests/contract/eventos-cocina.test.js` y `backend/tests/contract/eventos-pedido-modificado.test.js` per FR-009, FR-011, FR-018, T038, T039, T045, `contracts/events.md` (missing)
+- [ ] T058 Implementar canales SSE por partida y enrutar cada evento a su canal, incluyendo `partida` en `linea.actualizada`, `pedido.pendientes-cambiado` y `pedido.reabierto`; sustituir el `Set` global de `backend/src/realtime/hub.js` y ajustar `sse.js`, `routes/partidas.js` y `suscribirAPartida()` per T043, plan R2, `contracts/events.md`, FR-002/FR-003 (contradicts)
+- [ ] T059 Añadir pruebas de contrato e integración que ejecuten los endpoints reales (`POST /confirmar`, `POST /enviar-cambios`, `POST /anular`) y verifiquen la emisión y los payloads de los eventos en el canal de la partida, además de reforzar `backend/tests/integration/lista-en-vivo.test.js` con el flujo SSE per T038, T039, T040, `contracts/events.md` (partial)
+- [ ] T060 Ampliar `backend/src/db/seed.js` para cubrir los escenarios del quickstart que hoy no se pueden demostrar: ~20 mesas, un cocinero sin partida, un pedido con más de una hora de espera y dos pedidos con el mismo `enviadoEn`; actualizar `README.md` con la verificación per T052, `quickstart.md`, FR-004, FR-013 (partial)
+- [ ] T061 Añadir logging de emisión de eventos en `backend/src/realtime/emit.js` o `backend/src/realtime/hub.js` con tipo, partida e identificadores, y cubrirlo con una prueba per T050 (missing)
+- [ ] T062 Añadir el mapa de FR-001…FR-018 a las pruebas y a la documentación de verificación de la historia, indicando qué test cubre cada requisito per T054 (missing)
+- [ ] T063 Derivar `modificado` únicamente de `modificadoEn` no nulo en `backend/src/services/verPedidos.js` y ajustar fixtures y pruebas para que el flag legado `modificado` no produzca falsos positivos per T031, T028, `data-model.md` (partial)
