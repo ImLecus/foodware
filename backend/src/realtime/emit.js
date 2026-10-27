@@ -1,26 +1,50 @@
 import { publicar } from './hub.js';
 
-export function emitirPedidoNuevo({ pedidoId, mesa, partida }) {
-  publicar('pedido.nuevo', { tipo: 'pedido.nuevo', pedidoId, mesa, partida });
+export function emitirPedidoNuevo({ pedidoId, mesa, mesaId, partida }) {
+  publicar('pedido.nuevo', { tipo: 'pedido.nuevo', pedidoId, mesa, mesaId, partida });
 }
 
-export function emitirPendientesCambiado({ partida }) {
-  publicar('pedido.pendientes-cambiado', { tipo: 'pedido.pendientes-cambiado', partida });
+export function emitirPendientesCambiado({ partida, mesaId }) {
+  publicar('pedido.pendientes-cambiado', {
+    tipo: 'pedido.pendientes-cambiado',
+    partida,
+    ...(mesaId ? { mesaId } : {}),
+  });
 }
 
-export function emitirLineaActualizada({ pedidoId, lineaId, estado, listoEn, mesa, partida }) {
+export function emitirLineaActualizada({
+  pedidoId,
+  lineaId,
+  estado,
+  listoEn,
+  mesa,
+  mesaId,
+  partida,
+  nombrePlato,
+  cantidad,
+}) {
+  const linea = {
+    id: lineaId,
+    nombrePlato,
+    cantidad,
+    estado,
+    listoEn: listoEn ?? null,
+  };
+
   publicar('linea.actualizada', {
     tipo: 'linea.actualizada',
     pedidoId,
     lineaId,
     estado,
-    listoEn: listoEn ?? null,
+    listoEn: linea.listoEn,
     mesa,
+    mesaId,
     partida,
+    linea,
   });
 }
 
-export function emitirPedidoModificado({ pedidoId, partida, modificadoEn, mesa }) {
+export function emitirPedidoModificado({ pedidoId, partida, modificadoEn, mesa, mesaId }) {
   publicar('pedido.modificado', {
     tipo: 'pedido.modificado',
     pedidoId,
@@ -28,15 +52,17 @@ export function emitirPedidoModificado({ pedidoId, partida, modificadoEn, mesa }
     modificado: true,
     modificadoEn,
     mesa,
+    mesaId,
   });
 }
 
-export function emitirPedidoReabierto({ pedidoId, partida, mesa, lineaId }) {
+export function emitirPedidoReabierto({ pedidoId, partida, mesa, mesaId, lineaId }) {
   publicar('pedido.reabierto', {
     tipo: 'pedido.reabierto',
     pedidoId,
     partida,
     mesa,
+    mesaId,
     lineaId,
   });
 }

@@ -9,6 +9,11 @@ export function crearConexionEventos(partidaId) {
   return new EventSource(`${API_BASE}${ruta}`);
 }
 
+/** Abre el canal SSE de una mesa para la pantalla de sala. */
+export function crearConexionEventosMesa(mesaId) {
+  return new EventSource(`${API_BASE}/mesas/${encodeURIComponent(mesaId)}/eventos`);
+}
+
 /**
  * Suscribe la vista de sala 005 al canal SSE compartido.
  */

@@ -3,8 +3,14 @@ import { logger } from '../config/logger.js';
 /** Clientes SSE: respuesta HTTP -> canal y temporizador de latido. */
 const clientes = new Map();
 
-function canalDe(partida) {
-  return partida ? `partida:${partida}` : null;
+function canalDe(opciones) {
+  if (!opciones) return null;
+  if (typeof opciones === 'string') {
+    return opciones.includes(':') ? opciones : `partida:${opciones}`;
+  }
+  if (opciones.partida) return `partida:${opciones.partida}`;
+  if (opciones.mesaId) return `mesa:${opciones.mesaId}`;
+  return null;
 }
 
 function cerrarCliente(res) {
@@ -23,10 +29,10 @@ function escribir(res, mensaje) {
 }
 
 /**
- * Suscribe una respuesta HTTP al canal SSE global o al canal de una partida.
- * El cliente recibe un comentario inicial y un latido periódico.
+ * Suscribe una respuesta HTTP al canal SSE global, al canal de una partida o
+ * al canal de una mesa. El cliente recibe un comentario inicial y un latido.
  */
-export function suscribir(req, res, partida = null) {
+export function suscribir(req, res, opciones = null) {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache, no-transform',
@@ -38,7 +44,7 @@ export function suscribir(req, res, partida = null) {
   const latido = setInterval(() => {
     escribir(res, ': ping\n\n');
   }, 25_000);
-  clientes.set(res, { canal: canalDe(partida), latido });
+  clientes.set(res, { canal: canalDe(opciones), latido });
 
   const cerrar = () => cerrarCliente(res);
   req.on('close', cerrar);
@@ -54,15 +60,18 @@ function identificadoresDe(datos) {
 }
 
 /**
- * Difunde un evento a los clientes globales y, si el evento lleva `partida`,
- * también al canal de esa partida. Los clientes de otras partidas no lo reciben.
+ * Difunde un evento a los clientes globales y a los canales de partida/mesa
+ * que correspondan. Los clientes de otros canales no lo reciben.
  */
 export function publicar(evento, datos = {}) {
   const mensaje = `event: ${evento}\ndata: ${JSON.stringify(datos)}\n\n`;
-  const canal = datos.partida ? canalDe(datos.partida) : null;
+  const canales = new Set();
+  if (datos.partida) canales.add(`partida:${datos.partida}`);
+  if (datos.mesaId) canales.add(`mesa:${datos.mesaId}`);
+  if (datos.mesa_id) canales.add(`mesa:${datos.mesa_id}`);
 
   for (const [cliente, info] of clientes.entries()) {
-    if (info.canal === null || (canal !== null && info.canal === canal)) {
+    if (info.canal === null || canales.has(info.canal)) {
       escribir(cliente, mensaje);
     }
   }

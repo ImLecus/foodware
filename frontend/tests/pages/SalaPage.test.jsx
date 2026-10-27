@@ -43,6 +43,9 @@ describe('SalaPage (US2)', () => {
     expect(await screen.findByText('Mesa 1')).toBeInTheDocument();
     expect(screen.getByText(/Croquetas/)).toBeInTheDocument();
     expect(screen.getByText('pendiente')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(suscribirSala).toHaveBeenCalledWith(expect.objectContaining({ mesaId: 'mesa-1' })),
+    );
   });
 
   it('muestra el error de carga en español', async () => {

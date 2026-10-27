@@ -56,11 +56,14 @@ function buscarLinea(pedido, lineaId) {
 function emitirNuevoPorPartida(pedido, mesa) {
   const grupos = agruparPorPartida(pedido.lineas);
   const numero = numeroDeMesa(mesa.identificador);
+  let primera = true;
 
   for (const partida of PARTIDAS) {
     if (grupos[partida].length === 0) continue;
-    emitirPedidoNuevo({ pedidoId: pedido.id, mesa: numero, partida });
-    emitirPendientesCambiado({ partida });
+    const mesaId = primera ? mesa.id : undefined;
+    emitirPedidoNuevo({ pedidoId: pedido.id, mesa: numero, mesaId, partida });
+    emitirPendientesCambiado({ partida, mesaId });
+    primera = false;
   }
 }
 
@@ -234,17 +237,21 @@ export function pedidosRouter(db) {
       const estadoMesa = sincronizarAvisoMesa(db, actualizado.mesa_id, { nuevoPlatoListo: false });
       const modificadoEn = aISO(actualizado.cambios_enviados_en) ?? aISO(actualizado.modificado_en);
       const numero = numeroDeMesa(mesa.identificador);
+      let primera = true;
 
       for (const partida of PARTIDAS) {
+        const mesaId = primera ? mesa.id : undefined;
         if (porPartida[partida].length > 0) {
           emitirPedidoModificado({
             pedidoId: actualizado.id,
             partida,
             modificadoEn,
             mesa: numero,
+            mesaId,
           });
         }
-        emitirPendientesCambiado({ partida });
+        emitirPendientesCambiado({ partida, mesaId });
+        primera = false;
       }
 
       publicar('pedido-modificado', {
@@ -292,8 +299,10 @@ export function pedidosRouter(db) {
       const pedido = exigirAnulable(exigirPedido(obtenerPedido(db, req.params.pedidoId)));
       anularPedido(db, pedido.id);
 
+      let primera = true;
       for (const partida of PARTIDAS) {
-        emitirPendientesCambiado({ partida });
+        emitirPendientesCambiado({ partida, mesaId: primera ? pedido.mesa_id : undefined });
+        primera = false;
       }
 
       publicar('pedido-anulado', { pedidoId: pedido.id, mesaId: pedido.mesa_id });

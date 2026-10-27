@@ -34,6 +34,7 @@ export function useEstadoPlatos(mesaId) {
   useEffect(
     () =>
       suscribirSala({
+        mesaId,
         onEvento: () => {
           obtenerEstadoPlatos(mesaId)
             .then((datos) => setLineas(datos))

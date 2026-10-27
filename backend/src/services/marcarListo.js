@@ -78,11 +78,14 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
       estado: 'listo',
       listoEn: respuesta.listoEn,
       mesa: mesaNumero,
+      mesaId: pedido.mesa_id,
       partida: linea.partida,
+      nombrePlato: linea.nombrePlato,
+      cantidad: linea.cantidad,
     });
     respuesta.mesa = sincronizarAvisoMesa(db, pedido.mesa_id, { nuevoPlatoListo: true });
     if (respuesta.pedidoCompletado) {
-      emitirPendientesCambiado({ partida: linea.partida });
+      emitirPendientesCambiado({ partida: linea.partida, mesaId: pedido.mesa_id });
     }
     logger.info('Línea marcada como lista', {
       pedidoId,
@@ -109,15 +112,19 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
     estado: 'pendiente',
     listoEn: null,
     mesa: mesaNumero,
+    mesaId: pedido.mesa_id,
     partida: linea.partida,
+    nombrePlato: linea.nombrePlato,
+    cantidad: linea.cantidad,
   });
   respuesta.mesa = sincronizarAvisoMesa(db, pedido.mesa_id);
   if (respuesta.pedidoReabierto) {
-    emitirPendientesCambiado({ partida: linea.partida });
+    emitirPendientesCambiado({ partida: linea.partida, mesaId: pedido.mesa_id });
     emitirPedidoReabierto({
       pedidoId,
       partida: linea.partida,
       mesa: mesaNumero,
+      mesaId: pedido.mesa_id,
       lineaId,
     });
   }
