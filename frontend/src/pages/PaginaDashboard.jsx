@@ -1,4 +1,4 @@
-import { Alert, AlertIcon, Box, Heading, Spinner, Stack, Text } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Heading, Spinner, Stack, Td, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { formatearEuros, formatearFechaLarga } from '../utils/format.js';
 import { obtenerInformeDiario } from '../services/reports.js';
