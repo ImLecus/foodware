@@ -8,7 +8,7 @@ export function crearCartaAdminRouter(db, cartaService) {
 
   router.get('/', (req, res) => {
     try {
-      const platos = cartaService.listarPlatosAdmin ? cartaService.listarPlatosAdmin() : cartaService.obtenerCartaVigente();
+      const platos = cartaService.listarPlatosAdmin ? cartaService.listarPlatosAdmin() : cartaService.obtenerCartaVigente ? cartaService.obtenerCartaVigente() : [];
       res.json(platos);
     } catch (e) {
       res.status(500).json({ error: 'Error interno' });
@@ -22,19 +22,18 @@ export function crearCartaAdminRouter(db, cartaService) {
         return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Datos inválidos' });
       }
       const datos = parsed.data;
-      const precio_centimos = datos.precio_centimos ?? datos.precio;
-      if (!precio_centimos) {
-        return res.status(400).json({ error: 'Precio inválido' });
-      }
       const plato = cartaService.crearPlato({
         nombre: datos.nombre,
         partida_codigo: datos.partida_codigo,
-        precio_centimos,
+        precio_centimos: datos.precio_centimos,
         activo: datos.activo !== undefined ? datos.activo : 1,
         ingredienteIds: datos.ingredienteIds || [],
       });
       res.status(201).json(plato);
     } catch (e) {
+      if (e.message && e.message.includes('precio')) {
+        return res.status(400).json({ error: e.message });
+      }
       res.status(400).json({ error: 'Datos inválidos' });
     }
   });
@@ -46,20 +45,16 @@ export function crearCartaAdminRouter(db, cartaService) {
         return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Datos inválidos' });
       }
       const datos = parsed.data;
-      const precio_centimos = datos.precio_centimos ?? datos.precio;
-      if (precio_centimos !== undefined && precio_centimos <= 0) {
+      if (datos.precio_centimos !== undefined && datos.precio_centimos <= 0) {
         return res.status(400).json({ error: 'El precio debe ser mayor que 0' });
       }
-      const plato = cartaService.actualizarPlato(req.params.id, {
-        nombre: datos.nombre,
-        partida_codigo: datos.partida_codigo,
-        precio_centimos,
-        activo: datos.activo,
-        ingredienteIds: datos.ingredienteIds,
-      });
+      const plato = cartaService.actualizarPlato(req.params.id, datos);
       if (!plato) return res.status(404).json({ error: 'No encontrado' });
       res.json(plato);
     } catch (e) {
+      if (e.message && e.message.includes('precio')) {
+        return res.status(400).json({ error: e.message });
+      }
       res.status(400).json({ error: 'Datos inválidos' });
     }
   });

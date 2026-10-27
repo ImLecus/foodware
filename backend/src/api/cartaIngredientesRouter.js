@@ -45,18 +45,24 @@ export function crearCartaIngredientesRouter(db) {
       const campos = [];
       const valores = [];
       if (datos.nombre !== undefined) {
+        if (typeof datos.nombre === 'string' && datos.nombre.trim() === '') {
+          return res.status(400).json({ error: 'Nombre obligatorio' });
+        }
         campos.push('nombre = ?');
         valores.push(datos.nombre);
       }
       if (datos.estado !== undefined) {
+        if (datos.estado !== 'disponible' && datos.estado !== 'agotado') {
+          return res.status(400).json({ error: 'Datos inválidos' });
+        }
         campos.push('estado = ?');
         valores.push(datos.estado);
       }
       if (campos.length === 0) return res.status(400).json({ error: 'Sin cambios' });
       valores.push(req.params.id);
-      db.prepare(`UPDATE ingredientes SET ${campos.join(', ')} WHERE id = ?`).run(...valores);
+      const r = db.prepare(`UPDATE ingredientes SET ${campos.join(', ')} WHERE id = ?`).run(...valores);
+      if (r.changes === 0) return res.status(404).json({ error: 'No encontrado' });
       const ing = db.prepare('SELECT * FROM ingredientes WHERE id = ?').get(req.params.id);
-      if (!ing) return res.status(404).json({ error: 'No encontrado' });
       res.json(ing);
     } catch (e) {
       res.status(400).json({ error: 'Datos inválidos' });
