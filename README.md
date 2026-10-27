@@ -239,8 +239,10 @@ La guía de validación y el mapa de requisitos están en
 ## Cocina: marcar platos como listos (historia 004)
 
 La pantalla de cocina (`/cocina?cocinero=cocinero-entrantes`) permite marcar cada plato como
-**listo** o **deshacer** la marca. Al completar el último plato de un pedido, el pedido desaparece y
-aparece un aviso «Pedido completado» con la acción «Deshacer» durante 10 segundos.
+**listo** o **deshacer** la marca. La completitud se calcula por **partida**: al marcar la última
+línea pendiente de la partida del cocinero, el pedido desaparece de su lista y aparece un aviso
+«Pedido completado» con la acción «Deshacer» durante 10 segundos. Si el pedido tiene líneas de otras
+partidas, siguen pendientes en sus respectivas pantallas.
 
 La pantalla de sala de una mesa está en `/sala/platos?mesa=mesa-1` y muestra el estado de los platos,
 actualizándose por SSE sin recargar.
@@ -249,8 +251,9 @@ actualizándose por SSE sin recargar.
 
 | Método | Ruta                                              | Descripción                                        |
 | ------ | ------------------------------------------------- | -------------------------------------------------- |
-| `PUT`  | `/api/pedidos/{pedidoId}/lineas/{lineaId}/estado` | Marca o deshace (`listo`/`pendiente`); idempotente |
+| `PUT`  | `/api/pedidos/{pedidoId}/lineas/{lineaId}/estado?partida={partida}` | Marca o deshace (`listo`/`pendiente`); exige la partida del cocinero |
 | `GET`  | `/api/mesas/{mesaId}/estado-platos`               | Platos de la mesa con estado y `listoEn`           |
+| `GET`  | `/api/mesas/{mesaId}/eventos`                      | Canal SSE de la mesa para la pantalla de sala      |
 
 ## Sala: señales de platos listos (historia 005)
 
