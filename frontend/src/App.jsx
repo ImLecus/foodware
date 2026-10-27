@@ -6,6 +6,7 @@ import Home from './pages/Home.jsx';
 import Mesas from './pages/Mesas.jsx';
 import ModuloPendiente from './pages/ModuloPendiente.jsx';
 import PaginaDashboard from './pages/PaginaDashboard.jsx';
+import PaginaGestionCarta from './pages/PaginaGestionCarta.jsx';
 import RutaEncargado from './components/RutaEncargado.jsx';
 import SalaEstado from './pages/SalaEstado.jsx';
 import SalaPage from './pages/SalaPage.jsx';
@@ -56,7 +57,8 @@ export default function App() {
               </RutaEncargado>
             }
           />
-          <Route path="/admin" element={<ModuloPendiente nombre="Carta y administración" />} />
+          <Route path="/admin" element={<PaginaGestionCarta />} />
+          <Route path="/admin/carta" element={<PaginaGestionCarta />} />
           <Route path="*" element={<ModuloPendiente nombre="Página no encontrada" />} />
         </Routes>
       </Box>
