@@ -5,9 +5,15 @@ export function listarMesas(db) {
               m.identificador,
               m.estado,
               (SELECT p.id FROM pedidos p
-                WHERE p.mesa_id = m.id AND p.estado = 'en_curso') AS pedido_en_curso_id
+                WHERE p.mesa_id = m.id AND p.estado = 'en_curso'
+                ORDER BY p.creado_en DESC
+                LIMIT 1) AS pedido_en_curso_id,
+              (SELECT p.id FROM pedidos p
+                WHERE p.mesa_id = m.id AND p.estado = 'enviada'
+                ORDER BY p.enviado_en DESC, p.rowid DESC
+                LIMIT 1) AS pedido_enviado_id
          FROM mesas m
-        ORDER BY m.identificador`,
+        ORDER BY CAST(REPLACE(m.identificador, 'Mesa ', '') AS INTEGER), m.identificador`,
     )
     .all();
 }
@@ -29,7 +35,7 @@ export function listarMesasAbiertasParaSala(db) {
                 SELECT 1 FROM pedidos p
                 WHERE p.mesa_id = m.id AND p.estado IN ('en_curso', 'enviada')
               )
-        ORDER BY m.identificador`,
+        ORDER BY CAST(REPLACE(m.identificador, 'Mesa ', '') AS INTEGER), m.identificador`,
     )
     .all();
 
