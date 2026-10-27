@@ -1,27 +1,21 @@
-/**
- * Autorización por rol. La identidad del usuario llega en cada petición en la
- * cabecera `x-usuario-id` (sesión existente, ver specs/001-comandas/research.md).
- * Responde 401 si no hay usuario identificado y 403 si no tiene el rol exigido.
- */
-export function requireRole(db, rolRequerido) {
-  const buscarUsuario = db.prepare('SELECT id, nombre, rol FROM usuarios WHERE id = ?');
-
-  return function autorizar(req, res, next) {
-    const usuarioId = req.get('x-usuario-id');
+export function requireRole(...rolesPermitidos) {
+  return (req, res, next) => {
+    const usuarioId = req.headers['x-usuario-id'];
     if (!usuarioId) {
-      return res.status(401).json({ error: 'No autenticado' });
+      return res.status(401).json({ error: 'No autorizado' });
     }
-
-    const usuario = buscarUsuario.get(usuarioId);
+    const db = req.app?.locals?.db;
+    if (!db) {
+      return res.status(500).json({ error: 'Error interno' });
+    }
+    const usuario = db.prepare('SELECT id, rol FROM usuarios WHERE id = ?').get(usuarioId);
     if (!usuario) {
-      return res.status(401).json({ error: 'No autenticado' });
+      return res.status(401).json({ error: 'No autorizado' });
     }
-
-    if (usuario.rol !== rolRequerido) {
-      return res.status(403).json({ error: 'Acceso restringido' });
+    if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(usuario.rol)) {
+      return res.status(403).json({ error: 'Prohibido' });
     }
-
     req.usuario = usuario;
-    return next();
+    next();
   };
 }
