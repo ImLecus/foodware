@@ -1,11 +1,12 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSala } from '../../src/hooks/useSala.js';
-import { obtenerMesasSala } from '../../src/services/api.js';
+import { descartarAvisoSala, obtenerMesasSala } from '../../src/services/api.js';
 import { suscribirASala } from '../../src/services/realtime.js';
 
 vi.mock('../../src/services/api.js', () => ({
   obtenerMesasSala: vi.fn(),
+  descartarAvisoSala: vi.fn(),
 }));
 
 vi.mock('../../src/services/realtime.js', () => ({
@@ -111,5 +112,102 @@ describe('useSala', () => {
     });
 
     expect(result.current.sinConexion).toBe(true);
+  });
+
+  it('vuelve a estar al día al recuperar la conexión', async () => {
+    obtenerMesasSala.mockResolvedValue(
+      instantanea([
+        {
+          id: 'mesa-1',
+          identificador: 'Mesa 1',
+          completa: true,
+          aviso: { id: 'aviso-1', mesa_id: 'mesa-1', estado: 'activo' },
+          platos: [],
+        },
+      ]),
+    );
+    const getManejador = capturarSuscripcion();
+
+    const { result } = renderHook(() => useSala());
+    await waitFor(() => expect(result.current.cargando).toBe(false));
+
+    act(() => {
+      getManejador().onEstadoConexion('sin-conexion');
+    });
+    expect(result.current.sinConexion).toBe(true);
+
+    obtenerMesasSala.mockResolvedValue(
+      instantanea([
+        { id: 'mesa-1', identificador: 'Mesa 1', completa: true, aviso: null, platos: [] },
+      ]),
+    );
+
+    await act(async () => {
+      getManejador().onEstadoConexion('conectado');
+    });
+
+    await waitFor(() => expect(result.current.sinConexion).toBe(false));
+    expect(result.current.mesas[0].aviso).toBeNull();
+    expect(obtenerMesasSala).toHaveBeenCalledTimes(2);
+  });
+
+  it('no envía el descarte mientras está sin conexión', async () => {
+    obtenerMesasSala.mockResolvedValue(
+      instantanea([
+        {
+          id: 'mesa-1',
+          identificador: 'Mesa 1',
+          completa: true,
+          aviso: { id: 'aviso-1', mesa_id: 'mesa-1', estado: 'activo' },
+          platos: [],
+        },
+      ]),
+    );
+    const getManejador = capturarSuscripcion();
+
+    const { result } = renderHook(() => useSala());
+    await waitFor(() => expect(result.current.cargando).toBe(false));
+
+    act(() => {
+      getManejador().onEstadoConexion('sin-conexion');
+    });
+
+    await act(async () => {
+      await result.current.descartarAviso('aviso-1');
+    });
+
+    expect(descartarAvisoSala).not.toHaveBeenCalled();
+    expect(result.current.mesas[0].aviso).toMatchObject({ id: 'aviso-1' });
+  });
+
+  it('descarta el aviso con la API y lo retira de la vista', async () => {
+    obtenerMesasSala.mockResolvedValue(
+      instantanea([
+        {
+          id: 'mesa-1',
+          identificador: 'Mesa 1',
+          completa: true,
+          aviso: { id: 'aviso-1', mesa_id: 'mesa-1', estado: 'activo' },
+          platos: [],
+        },
+      ]),
+    );
+    descartarAvisoSala.mockResolvedValue({
+      aviso_id: 'aviso-1',
+      mesa_id: 'mesa-1',
+      estado: 'descartado',
+      descartado_en: '2026-10-27T09:01:00.000Z',
+    });
+    capturarSuscripcion();
+
+    const { result } = renderHook(() => useSala());
+    await waitFor(() => expect(result.current.cargando).toBe(false));
+
+    await act(async () => {
+      await result.current.descartarAviso('aviso-1');
+    });
+
+    expect(descartarAvisoSala).toHaveBeenCalledWith('aviso-1');
+    expect(result.current.mesas[0].aviso).toBeNull();
   });
 });

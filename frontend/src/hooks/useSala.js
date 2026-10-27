@@ -127,7 +127,7 @@ export function useSala() {
 
   const descartarAviso = useCallback(
     async (avisoId) => {
-      if (!avisoId) return;
+      if (!avisoId || sinConexion) return;
 
       try {
         await descartarAvisoSala(avisoId);
@@ -140,7 +140,7 @@ export function useSala() {
         // Sin conexión se conserva el aviso; al resincronizar se reintenta.
       }
     },
-    [quitarAviso],
+    [quitarAviso, sinConexion],
   );
 
   return {

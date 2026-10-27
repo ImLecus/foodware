@@ -38,7 +38,7 @@ export default function SalaEstado() {
         </Stack>
       )}
 
-      {cargando && <EstadoCarga />}
+      {cargando && <EstadoCarga texto="Cargando el estado de sala…" />}
 
       {!cargando && error && (
         <Text color="red.600" role="alert">
