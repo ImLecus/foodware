@@ -36,11 +36,11 @@ describe('obtenerTotalDiario', () => {
     db.prepare(
       `INSERT INTO cuentas (id, mesa_id, estado, total_centimos, abierta_en, cerrada_en)
        VALUES (?, ?, 'cerrada', ?, ?, ?)`,
-    ).run('c1', 'mesa-1', 850, limites.inicio, limites.inicio.replace('00:00:00', '10:00:00'));
+    ).run('c1', 'mesa-1', 850, limites.inicio, `${ayer} 12:00:00`);
     db.prepare(
       `INSERT INTO cuentas (id, mesa_id, estado, total_centimos, abierta_en, cerrada_en)
        VALUES (?, ?, 'cerrada', ?, ?, ?)`,
-    ).run('c2', 'mesa-1', 1700, limites.inicio, limites.fin.replace('00:00:00', '23:00:00'));
+    ).run('c2', 'mesa-1', 1700, limites.inicio, `${ayer} 15:00:00`);
 
     const resultado = obtenerTotalDiario(db, ayer);
     expect(resultado.fecha).toBe(ayer);
