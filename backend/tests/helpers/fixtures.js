@@ -1,4 +1,5 @@
 import { createDb } from '../../src/db/index.js';
+import { insertarSesionesPrueba } from './auth.js';
 
 /** Base en memoria con el catálogo mínimo para las pruebas de la vista de cocina. */
 export function crearBase() {
@@ -12,8 +13,13 @@ export function crearBase() {
 
     INSERT INTO usuarios (id, nombre, rol, partida_codigo) VALUES
       ('cocinero-entrantes', 'Marta', 'cocinero', 'entrantes'),
+      ('cocinero-principales', 'Pablo', 'cocinero', 'principales'),
+      ('cocinero-postres', 'Lucía', 'cocinero', 'postres'),
       ('cocinero-sin-partida', 'Sin partida', 'cocinero', NULL),
-      ('camarero-1', 'Ana', 'camarero', NULL);
+      ('camarero-1', 'Ana', 'camarero', NULL),
+      ('camarero-2', 'Luis', 'camarero', NULL),
+      ('encargado-1', 'Carmen', 'encargado', NULL),
+      ('admin-1', 'Administración', 'administrador', NULL);
 
     INSERT INTO mesas (id, identificador, estado) VALUES
       ('mesa-1', 'Mesa 1', 'ocupada'),
@@ -28,6 +34,7 @@ export function crearBase() {
       ('plato-postre', 'Tarta', 'postres', 600);
   `);
 
+  insertarSesionesPrueba(db);
   return db;
 }
 

@@ -6,12 +6,14 @@ import { API_BASE } from './api.js';
  */
 export function crearConexionEventos(partidaId) {
   const ruta = partidaId ? `/partidas/${encodeURIComponent(partidaId)}/eventos` : '/eventos';
-  return new EventSource(`${API_BASE}${ruta}`);
+  return new EventSource(`${API_BASE}${ruta}`, { withCredentials: true });
 }
 
 /** Abre el canal SSE de una mesa para la pantalla de sala. */
 export function crearConexionEventosMesa(mesaId) {
-  return new EventSource(`${API_BASE}/mesas/${encodeURIComponent(mesaId)}/eventos`);
+  return new EventSource(`${API_BASE}/mesas/${encodeURIComponent(mesaId)}/eventos`, {
+    withCredentials: true,
+  });
 }
 
 /**

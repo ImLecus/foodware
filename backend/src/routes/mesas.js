@@ -1,8 +1,14 @@
 import express from 'express';
 import { listarMesas, obtenerMesa } from '../db/mesas.js';
 import { crearPedido, obtenerPedidoEnCursoPorMesa } from '../db/pedidos.js';
-import { exigirMesa, exigirMesaAbierta, exigirSinPedidoEnCurso, serializarPedido } from '../domain/pedidos.js';
-import { identificarCamarero } from '../middleware/camarero.js';
+import {
+  exigirMesa,
+  exigirMesaAbierta,
+  exigirSinPedidoEnCurso,
+  serializarPedido,
+} from '../domain/pedidos.js';
+import { autenticar } from '../middleware/autenticar.js';
+import { requireRole } from '../middleware/authorize.js';
 import { ErrorHttp } from '../middleware/error.js';
 import { listarLineasDeMesa } from '../models/lineaPedido.js';
 import { suscribirAMesa } from '../realtime/sse.js';
@@ -11,7 +17,7 @@ import { aISO } from '../utils/fechas.js';
 export function mesasRouter(db) {
   const router = express.Router();
 
-  router.use(identificarCamarero(db));
+  router.use(autenticar(db), requireRole('camarero'));
 
   router.get('/', (req, res) => {
     res.json(listarMesas(db));

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { diaAnterior, fechaEnMadrid } from '../../src/services/dayTime.js';
 import { createDb } from '../../src/db/index.js';
+import { CABECERA_ENCARGADO, insertarSesionesPrueba } from '../helpers/auth.js';
 
 function limpiarTablas(db) {
   db.exec(`
@@ -52,6 +53,7 @@ describe('GET /api/reports/daily - comparación US3', () => {
       'Mesa 1',
       'libre',
     );
+    insertarSesionesPrueba(db);
     app = createApp(db);
   });
 
@@ -68,9 +70,7 @@ describe('GET /api/reports/daily - comparación US3', () => {
       `INSERT INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
        VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
     ).run('c-ayer', 'mesa-1', 'camarero-1', 15000, `${ayer} 12:00:00`, `${ayer} 12:00:00`);
-    const respuesta = await request(app)
-      .get('/api/reports/daily')
-      .set('x-usuario-id', 'encargado-1');
+    const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_ENCARGADO);
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.comparacion.diaAnterior).toBe(anteayer);
     expect(respuesta.body.comparacion.tendencia).toBe('subida');
@@ -82,9 +82,7 @@ describe('GET /api/reports/daily - comparación US3', () => {
       `INSERT INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
        VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
     ).run('c-ayer', 'mesa-1', 'camarero-1', 3500, `${ayer} 12:00:00`, `${ayer} 12:00:00`);
-    const respuesta = await request(app)
-      .get('/api/reports/daily')
-      .set('x-usuario-id', 'encargado-1');
+    const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_ENCARGADO);
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.comparacion.importeAnterior).toBe(0);
     expect(respuesta.body.comparacion.diferenciaImporte).toBe(35);

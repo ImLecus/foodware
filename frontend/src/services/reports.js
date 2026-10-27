@@ -1,5 +1,4 @@
 import { apiGet } from './api.js';
-import { USUARIO_ID } from './sesion.js';
 
 /**
  * Obtiene el informe diario del dashboard. Si se omite `fecha`, el backend usa el
@@ -8,5 +7,5 @@ import { USUARIO_ID } from './sesion.js';
  */
 export function obtenerInformeDiario(fecha) {
   const ruta = fecha ? `/reports/daily?date=${encodeURIComponent(fecha)}` : '/reports/daily';
-  return apiGet(ruta, { 'x-usuario-id': USUARIO_ID });
+  return apiGet(ruta);
 }

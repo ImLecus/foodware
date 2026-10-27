@@ -2,6 +2,7 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
+import { CABECERA_COCINERO } from '../ayuda.js';
 
 describe('deshacer la última marca de un pedido completado', () => {
   let db;
@@ -26,9 +27,11 @@ describe('deshacer la última marca de un pedido completado', () => {
   async function completarPedido() {
     await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
     await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-2/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
   }
 
@@ -37,6 +40,7 @@ describe('deshacer la última marca de un pedido completado', () => {
 
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(409);
@@ -47,6 +51,7 @@ describe('deshacer la última marca de un pedido completado', () => {
 
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-2/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'pendiente' });
 
     expect(respuesta.status).toBe(200);
@@ -61,14 +66,19 @@ describe('deshacer la última marca de un pedido completado', () => {
   it('hace reaparecer el pedido en la lista de pendientes tras deshacer', async () => {
     await completarPedido();
 
-    const antes = await request(app).get('/api/partidas/entrantes/pedidos-pendientes');
+    const antes = await request(app)
+      .get('/api/partidas/entrantes/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
     expect(antes.body).toEqual([]);
 
     await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-2/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'pendiente' });
 
-    const despues = await request(app).get('/api/partidas/entrantes/pedidos-pendientes');
+    const despues = await request(app)
+      .get('/api/partidas/entrantes/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
     expect(despues.body.map((pedido) => pedido.id)).toEqual(['pedido-1']);
     expect(despues.body[0].lineas.find((linea) => linea.id === 'linea-2').estado).toBe('pendiente');
   });

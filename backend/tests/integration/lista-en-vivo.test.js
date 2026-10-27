@@ -2,7 +2,12 @@ import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { reiniciarHub, suscribir } from '../../src/realtime/hub.js';
 import { listarPedidosPendientes } from '../../src/services/verPedidos.js';
-import { CABECERA_CAMARERO, clienteSseFalso, crearAppDePrueba } from '../ayuda.js';
+import {
+  CABECERA_CAMARERO,
+  CABECERA_COCINERO,
+  clienteSseFalso,
+  crearAppDePrueba,
+} from '../ayuda.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
 
 describe('lista de cocina en vivo', () => {
@@ -65,13 +70,15 @@ describe('lista de cocina en vivo', () => {
 
     const marcado = await request(app)
       .put(`/api/pedidos/${pedidoId}/lineas/${linea.body.id}/estado?partida=entrantes`)
-      .set(CABECERA_CAMARERO)
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(marcado.status).toBe(200);
     expect(entrantes.escrito.join('')).toContain('event: pedido.pendientes-cambiado');
 
-    const pendientes = await request(app).get('/api/partidas/entrantes/pedidos-pendientes');
+    const pendientes = await request(app)
+      .get('/api/partidas/entrantes/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
     expect(pendientes.body).toEqual([]);
   });
 });

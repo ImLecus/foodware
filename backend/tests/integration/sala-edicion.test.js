@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { reiniciarHub, suscribir } from '../../src/realtime/hub.js';
 import {
   CABECERA_CAMARERO,
+  cookieCocinero,
   clienteSseFalso,
   crearAppDePrueba,
   crearPedidoEnviado,
@@ -30,7 +31,7 @@ describe('recálculo de la mesa completa al editar una comanda enviada', () => {
     for (const linea of lineas) {
       await request(app)
         .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado?partida=${linea.partida}`)
-        .set(CABECERA_CAMARERO)
+        .set(cookieCocinero(linea.partida))
         .send({ estado: 'listo' });
     }
     return lineas;
@@ -74,7 +75,7 @@ describe('recálculo de la mesa completa al editar una comanda enviada', () => {
     expect(nuevaLinea.estado).toBe('pendiente');
     await request(app)
       .put(`/api/pedidos/${pedidoId}/lineas/${nuevaLinea.id}/estado?partida=${nuevaLinea.partida}`)
-      .set(CABECERA_CAMARERO)
+      .set(cookieCocinero(nuevaLinea.partida))
       .send({ estado: 'listo' });
 
     const reCompleta = await leerMesa();

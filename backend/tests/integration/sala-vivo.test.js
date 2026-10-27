@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../src/app.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
-import { CABECERA_CAMARERO } from '../ayuda.js';
+import { CABECERA_CAMARERO, CABECERA_COCINERO, CABECERA_COCINERO_PRINCIPALES } from '../ayuda.js';
 
 describe('sala en vivo (US1)', () => {
   let db;
@@ -25,7 +25,7 @@ describe('sala en vivo (US1)', () => {
 
     const marcar = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
-      .set(CABECERA_CAMARERO)
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(marcar.status).toBe(200);
@@ -50,12 +50,12 @@ describe('sala en vivo (US1)', () => {
 
     await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
-      .set(CABECERA_CAMARERO)
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-2/estado?partida=principales')
-      .set(CABECERA_CAMARERO)
+      .set(CABECERA_COCINERO_PRINCIPALES)
       .send({ estado: 'listo' });
 
     const sala = await request(app).get('/api/sala/mesas').set(CABECERA_CAMARERO);

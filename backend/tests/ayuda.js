@@ -1,10 +1,31 @@
+import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { createDb } from '../src/db/index.js';
-import request from 'supertest';
+import {
+  CABECERA_ADMIN,
+  CABECERA_CAMARERO,
+  CABECERA_CAMARERO_2,
+  CABECERA_COCINERO,
+  CABECERA_COCINERO_POSTRES,
+  CABECERA_COCINERO_PRINCIPALES,
+  CABECERA_COCINERO_SIN_PARTIDA,
+  CABECERA_ENCARGADO,
+  cookieCocinero,
+  insertarSesionesPrueba,
+} from './helpers/auth.js';
 
+export {
+  CABECERA_ADMIN,
+  CABECERA_CAMARERO,
+  CABECERA_CAMARERO_2,
+  CABECERA_COCINERO,
+  CABECERA_COCINERO_POSTRES,
+  CABECERA_COCINERO_PRINCIPALES,
+  CABECERA_COCINERO_SIN_PARTIDA,
+  CABECERA_ENCARGADO,
+  cookieCocinero,
+};
 export const CAMARERO_ID = 'camarero-1';
-export const CABECERA_CAMARERO = { 'X-Camarero-Id': CAMARERO_ID };
-export const CABECERA_CAMARERO_2 = { 'X-Camarero-Id': 'camarero-2' };
 
 /**
  * Base de datos en memoria con las partidas fijas, dos camareros, dos mesas y
@@ -20,9 +41,17 @@ export function crearBaseDePrueba() {
   insertarPartida.run('principales', 'Principales', 2);
   insertarPartida.run('postres', 'Postres', 3);
 
-  const insertarUsuario = db.prepare('INSERT INTO usuarios (id, nombre, rol) VALUES (?, ?, ?)');
-  insertarUsuario.run(CAMARERO_ID, 'Ana (camarera)', 'camarero');
-  insertarUsuario.run('camarero-2', 'Luis (camarero)', 'camarero');
+  const insertarUsuario = db.prepare(
+    'INSERT INTO usuarios (id, nombre, rol, partida_codigo) VALUES (?, ?, ?, ?)',
+  );
+  insertarUsuario.run(CAMARERO_ID, 'Ana (camarera)', 'camarero', null);
+  insertarUsuario.run('camarero-2', 'Luis (camarero)', 'camarero', null);
+  insertarUsuario.run('cocinero-entrantes', 'Marta (entrantes)', 'cocinero', 'entrantes');
+  insertarUsuario.run('cocinero-principales', 'Pablo (principales)', 'cocinero', 'principales');
+  insertarUsuario.run('cocinero-postres', 'Lucía (postres)', 'cocinero', 'postres');
+  insertarUsuario.run('cocinero-sin-partida', 'Sin partida', 'cocinero', null);
+  insertarUsuario.run('encargado-1', 'Carmen (encargada)', 'encargado', null);
+  insertarUsuario.run('admin-1', 'Administración', 'administrador', null);
 
   const insertarMesa = db.prepare('INSERT INTO mesas (id, identificador, estado) VALUES (?, ?, ?)');
   insertarMesa.run('mesa-1', 'Mesa 1', 'libre');
@@ -36,6 +65,7 @@ export function crearBaseDePrueba() {
   insertarPlato.run('plato-principal', 'Paella de marisco', 'principales', 1800);
   insertarPlato.run('plato-postre', 'Tarta de queso', 'postres', 600);
 
+  insertarSesionesPrueba(db);
   return db;
 }
 

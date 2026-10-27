@@ -72,9 +72,7 @@ describe('Pedidos · abrir mesa', () => {
   it('devuelve 401 si el camarero no está identificado', async () => {
     preparar();
 
-    const respuesta = await request(app)
-      .post('/api/mesas/mesa-1/abrir')
-      .set('X-Camarero-Id', 'desconocido');
+    const respuesta = await request(app).post('/api/mesas/mesa-1/abrir');
 
     expect(respuesta.status).toBe(401);
   });
