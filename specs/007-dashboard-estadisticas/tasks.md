@@ -92,16 +92,16 @@ por camarero y la cantidad/importe por plato, mostrando `0,00 €` en los que no
 ### Pruebas de US2
 
 - [X] T025 [P] [US2] Prueba de contrato de los campos `porCamarero`/`porPlato` en `backend/tests/contract/reports_breakdowns.test.js`
-- [ ] T026 [P] [US2] Prueba unitaria de agrupación por camarero y por plato en `backend/tests/unit/reporting_breakdowns.test.js`
-- [ ] T027 [P] [US2] Prueba de componente de las tablas de desglose en `frontend/tests/components/dashboard_breakdowns.test.jsx`
+- [X] T026 [P] [US2] Prueba unitaria de agrupación por camarero y por plato en `backend/tests/unit/reporting_breakdowns.test.js`
+- [X] T027 [P] [US2] Prueba de componente de las tablas de desglose en `frontend/tests/components/dashboard_breakdowns.test.jsx`
 
 ### Implementación de US2
 
-- [ ] T028 [US2] Ampliar el servicio con la agrupación por camarero en `backend/src/services/reportingService.js`
-- [ ] T029 [US2] Ampliar el servicio con la agrupación por plato, incluyendo actores con 0,00 € en `backend/src/services/reportingService.js`
-- [ ] T030 [US2] Incluir `porCamarero` y `porPlato` en la respuesta del endpoint en `backend/src/api/reportsRouter.js`
-- [ ] T031 [P] [US2] Crear el componente de tabla de desglose reutilizable en `frontend/src/components/TablaDesglose.jsx`
-- [ ] T032 [US2] Renderizar las tablas de desglose en la página del dashboard en `frontend/src/pages/PaginaDashboard.jsx` (depende de T031)
+- [X] T028 [US2] Ampliar el servicio con la agrupación por camarero en `backend/src/services/reportingService.js`
+- [X] T029 [US2] Ampliar el servicio con la agrupación por plato en `backend/src/services/reportingService.js`
+- [X] T030 [US2] Incluir `porCamarero` y `porPlato` en la respuesta del endpoint en `backend/src/api/reportsRouter.js`
+- [X] T031 [P] [US2] Crear el componente de tabla de desglose reutilizable en `frontend/src/components/TablaDesglose.jsx`
+- [X] T032 [US2] Renderizar las tablas de desglose en la página del dashboard en `frontend/src/pages/PaginaDashboard.jsx` (depende de T031)
 
 **Checkpoint**: US1 y US2 funcionan de forma independiente
 
