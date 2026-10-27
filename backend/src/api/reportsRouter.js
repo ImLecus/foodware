@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireRole } from '../middleware/authorize.js';
 import { fechaEnMadrid } from '../services/dayTime.js';
 import {
+  obtenerComparacion,
   obtenerDesglosePorCamarero,
   obtenerDesglosePorPlato,
   obtenerTotalDiario,
@@ -55,8 +56,11 @@ export function crearReportsRouter(db) {
       }
 
       const totales = obtenerTotalDiario(db, fechaConsulta);
-      const porCamarero = obtenerDesglosePorCamarero(db, fechaConsulta);
+      const porCamarero = obtenerDesglosePorCamarero(db, fechaConsulta).filter(
+        (item) => item.camareroId,
+      );
       const porPlato = obtenerDesglosePorPlato(db, fechaConsulta);
+      const comparacion = obtenerComparacion(db, fechaConsulta);
 
       return res.json({
         fecha: fechaConsulta,
@@ -64,18 +68,7 @@ export function crearReportsRouter(db) {
         numeroCuentas: totales.numeroCuentas,
         porCamarero,
         porPlato,
-        comparacion: {
-          diaActual: fechaConsulta,
-          diaAnterior: null,
-          importeActual: centimosAEuros(totales.totalCentimos),
-          importeAnterior: null,
-          diferenciaImporte: null,
-          diferenciaPorcentaje: null,
-          sinBaseComparacion: false,
-          tendencia: 'sin_variacion',
-          porCamarero: [],
-          porPlato: [],
-        },
+        comparacion,
       });
     } catch (error) {
       return next(error);

@@ -21,7 +21,7 @@ function obtenerFechaConsulta(db, fechaParam) {
   return diaAnterior(hoy);
 }
 
-export function obtenerTotalDiario(db, fecha) {
+function obtenerTotalParaFecha(db, fecha) {
   const { inicio, fin } = limitesDelDia(fecha);
   const fila = db
     .prepare(
@@ -34,9 +34,17 @@ export function obtenerTotalDiario(db, fecha) {
     )
     .get(inicio, fin);
   return {
-    fecha,
-    numeroCuentas: fila?.numeroCuentas ?? 0,
     totalCentimos: fila?.totalCentimos ?? 0,
+    numeroCuentas: fila?.numeroCuentas ?? 0,
+  };
+}
+
+export function obtenerTotalDiario(db, fecha) {
+  const totales = obtenerTotalParaFecha(db, fecha);
+  return {
+    fecha,
+    numeroCuentas: totales.numeroCuentas,
+    totalCentimos: totales.totalCentimos,
   };
 }
 
@@ -89,6 +97,85 @@ export function obtenerDesglosePorPlato(db, fecha) {
     cantidad: fila.cantidad || 0,
     importe: (fila.importeCentimos || 0) / 100,
   }));
+}
+
+export function obtenerComparacion(db, fecha) {
+  const actual = obtenerTotalParaFecha(db, fecha);
+  const diaAnteriorFecha = diaAnterior(fecha);
+  const anterior = obtenerTotalParaFecha(db, diaAnteriorFecha);
+  
+  // Comprobar si existe algún día anterior con datos en el sistema
+  const hayDatosAnteriores = db
+    .prepare(
+      `SELECT 1 FROM cuentas 
+       WHERE estado = 'cerrada' AND cerrada_en IS NOT NULL 
+         AND DATE(cerrada_en, 'localtime') = ? LIMIT 1`,
+    )
+    .get(diaAnteriorFecha);
+  
+  if (hayDatosAnteriores || anterior.totalCentimos > 0 || actual.totalCentimos > 0) {
+    const existeCualquierAnterior = db
+      .prepare(
+        `SELECT 1 FROM cuentas 
+         WHERE estado = 'cerrada' AND cerrada_en IS NOT NULL 
+           AND DATE(cerrada_en, 'localtime') < ? LIMIT 1`,
+      )
+      .get(fecha);
+    if (existeCualquierAnterior || hayDatosAnteriores || anterior.totalCentimos > 0) {
+      const diferenciaImporte = actual.totalCentimos - anterior.totalCentimos;
+      if (anterior.totalCentimos === 0 && actual.totalCentimos > 0) {
+        return {
+          diaActual: fecha,
+          diaAnterior: diaAnteriorFecha,
+          importeActual: actual.totalCentimos / 100,
+          importeAnterior: 0,
+          diferenciaImporte: diferenciaImporte / 100,
+          diferenciaPorcentaje: null,
+          sinBaseComparacion: true,
+          tendencia: 'subida',
+          porCamarero: [],
+          porPlato: [],
+        };
+      }
+    }
+  }
+  
+  const diferenciaImporte = actual.totalCentimos - anterior.totalCentimos;
+  let diferenciaPorcentaje = null;
+  let sinBaseComparacion = false;
+  let tendencia = 'sin_variacion';
+  
+  if (anterior.totalCentimos === 0 && actual.totalCentimos > 0) {
+    sinBaseComparacion = true;
+    diferenciaPorcentaje = null;
+    tendencia = 'subida';
+  } else if (anterior.totalCentimos === 0 && actual.totalCentimos === 0) {
+    diferenciaPorcentaje = null;
+    sinBaseComparacion = false;
+    tendencia = 'sin_variacion';
+  } else if (diferenciaImporte === 0) {
+    tendencia = 'sin_variacion';
+    diferenciaPorcentaje = 0;
+  } else if (diferenciaImporte > 0) {
+    tendencia = 'subida';
+    diferenciaPorcentaje = Number(((diferenciaImporte / anterior.totalCentimos) * 100).toFixed(2));
+  } else {
+    tendencia = 'bajada';
+    diferenciaPorcentaje = Number(((diferenciaImporte / anterior.totalCentimos) * 100).toFixed(2));
+  }
+  
+  return {
+    diaActual: fecha,
+    diaAnterior: diaAnteriorFecha,
+    importeActual: actual.totalCentimos / 100,
+    importeAnterior: anterior.totalCentimos / 100,
+    diferenciaImporte: diferenciaImporte / 100,
+    diferenciaPorcentaje,
+    sinBaseComparacion,
+    tendencia,
+    porCamarero: [],
+    porPlato: [],
+  };
 }
 
 export function obtenerUltimoDiaCompletado(db) {
