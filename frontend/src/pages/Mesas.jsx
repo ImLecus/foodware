@@ -15,6 +15,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import EditorPedido from '../components/EditorPedido.jsx';
 import Pedido from '../components/Pedido.jsx';
 import SelectorPlatos from '../components/SelectorPlatos.jsx';
@@ -32,6 +33,7 @@ import {
 import { crearConexionEventos } from '../services/realtime.js';
 
 export default function Mesas() {
+  const navigate = useNavigate();
   const [mesas, setMesas] = useState([]);
   const [platos, setPlatos] = useState([]);
   const [pedido, setPedido] = useState(null);
@@ -110,6 +112,7 @@ export default function Mesas() {
     conexion.addEventListener('pedido-confirmado', alCambiar);
     conexion.addEventListener('pedido-anulado', alCambiar);
     conexion.addEventListener('pedido-modificado', alCambiar);
+    conexion.addEventListener('mesa-cerrada', alCambiar);
 
     return () => {
       conexion.removeEventListener('open', alConectar);
@@ -117,11 +120,14 @@ export default function Mesas() {
       conexion.removeEventListener('pedido-confirmado', alCambiar);
       conexion.removeEventListener('pedido-anulado', alCambiar);
       conexion.removeEventListener('pedido-modificado', alCambiar);
+      conexion.removeEventListener('mesa-cerrada', alCambiar);
       conexion.close();
     };
   }, [cargarMesas]);
 
   const mesaSeleccionada = mesas.find((mesa) => mesa.id === mesaSeleccionadaId) ?? null;
+  // Las mesas cerradas dejan de mostrarse en la vista de sala (FR-011).
+  const mesasVisibles = mesas.filter((mesa) => mesa.estado !== 'cerrada');
   const puedeEditar = Boolean(pedido && pedido.estado === 'en_curso' && enLinea);
 
   function mostrarError(error) {
@@ -269,17 +275,23 @@ export default function Mesas() {
             <Heading size="md" mb={3}>
               Mesas
             </Heading>
-            {mesas.length === 0 && (
+            {mesasVisibles.length === 0 && (
               <Alert status="info" borderRadius="md" mb={3}>
                 <AlertIcon />
                 <AlertDescription>
-                  No hay mesas cargadas. Ejecuta los datos de ejemplo con <code>npm run seed</code>{' '}
-                  en el backend.
+                  {mesas.length === 0 ? (
+                    <>
+                      No hay mesas cargadas. Ejecuta los datos de ejemplo con{' '}
+                      <code>npm run seed</code> en el backend.
+                    </>
+                  ) : (
+                    'No hay mesas abiertas: todas están cerradas.'
+                  )}
                 </AlertDescription>
               </Alert>
             )}
             <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3}>
-              {mesas.map((mesa) => (
+              {mesasVisibles.map((mesa) => (
                 <Button
                   key={mesa.id}
                   variant={mesaSeleccionadaId === mesa.id ? 'solid' : 'outline'}
@@ -335,6 +347,15 @@ export default function Mesas() {
               />
             ) : (
               <Stack spacing={3}>
+                <Button
+                  colorScheme="teal"
+                  variant="outline"
+                  onClick={() =>
+                    navigate(`/cuentas?mesa=${encodeURIComponent(mesaSeleccionadaId)}`)
+                  }
+                >
+                  Cobrar cuenta
+                </Button>
                 {pedido.estado === 'enviada' && (
                   <Button
                     colorScheme="purple"

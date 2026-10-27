@@ -86,3 +86,11 @@ export function emitirAvisoDescartado({ avisoId, mesaId, descartadoEn }) {
     descartado_en: descartadoEn,
   });
 }
+
+export function emitirMesaCerrada({ mesaId, cuentaId, cerradaEn }) {
+  publicar('mesa-cerrada', {
+    mesa_id: mesaId,
+    cuenta_id: cuentaId,
+    cerrada_en: cerradaEn,
+  });
+}

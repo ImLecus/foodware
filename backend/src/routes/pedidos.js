@@ -26,6 +26,8 @@ import {
   agruparPorPartida,
   exigirAnulable,
   exigirConfirmable,
+  exigirMesa,
+  exigirMesaAbierta,
   exigirPedido,
   PARTIDAS,
   serializarPedido,
@@ -41,6 +43,7 @@ import {
 } from '../realtime/emit.js';
 import { publicar } from '../realtime/hub.js';
 import { sincronizarAvisoMesa } from '../services/avisos.js';
+import { descartarDivision } from '../services/cuentasService.js';
 import { aISO } from '../utils/fechas.js';
 import { marcarLinea } from '../services/marcarListo.js';
 import { validarLineaPatchEdicion, validarNuevaLineaEdicion } from '../schemas/edicion.js';
@@ -51,6 +54,12 @@ function buscarLinea(pedido, lineaId) {
     throw new ErrorHttp(404, 'Línea de pedido no encontrada');
   }
   return linea;
+}
+
+/** Una mesa cerrada no admite nuevas operaciones sobre sus pedidos (FR-012). */
+function exigirMesaAbiertaDelPedido(db, pedido) {
+  exigirMesaAbierta(exigirMesa(obtenerMesa(db, pedido.mesa_id)));
+  return pedido;
 }
 
 function emitirNuevoPorPartida(pedido, mesa) {
@@ -115,7 +124,10 @@ export function pedidosRouter(db) {
 
   router.post('/:pedidoId/editar', (req, res, next) => {
     try {
-      const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
+      const pedido = exigirMesaAbiertaDelPedido(
+        db,
+        exigirPedido(obtenerPedido(db, req.params.pedidoId)),
+      );
       adquirirBloqueoEdicion(db, pedido, req.camarero.id);
       res.json(serializarPedido(obtenerPedido(db, pedido.id)));
     } catch (error) {
@@ -142,6 +154,8 @@ export function pedidosRouter(db) {
       if (!plato || !plato.disponible) {
         throw new ErrorHttp(400, 'El plato no está disponible en la carta');
       }
+
+      descartarDivision(db, pedido.mesa_id);
 
       const linea = anadirLinea(db, {
         pedidoId: pedido.id,
@@ -173,6 +187,7 @@ export function pedidosRouter(db) {
       const datos = validarLineaPatchEdicion(req.body);
       const pedido = req.pedido;
       const linea = buscarLinea(pedido, req.params.lineaId);
+      descartarDivision(db, pedido.mesa_id);
       const actualizada = modificarLinea(db, linea.id, datos);
 
       if (pedido.estado === 'enviada') {
@@ -203,6 +218,7 @@ export function pedidosRouter(db) {
       const pedido = req.pedido;
       const linea = buscarLinea(pedido, req.params.lineaId);
       exigirNoQuedaVacio(pedido.lineas.length - 1);
+      descartarDivision(db, pedido.mesa_id);
       retirarLinea(db, linea.id);
 
       if (pedido.estado === 'enviada') {
@@ -224,7 +240,10 @@ export function pedidosRouter(db) {
 
   router.post('/:pedidoId/enviar-cambios', (req, res, next) => {
     try {
-      const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
+      const pedido = exigirMesaAbiertaDelPedido(
+        db,
+        exigirPedido(obtenerPedido(db, req.params.pedidoId)),
+      );
       exigirEditable(pedido);
       exigirBloqueoPropio(pedido, req.camarero.id);
       exigirCambiosPendientes(pedido);
@@ -276,7 +295,12 @@ export function pedidosRouter(db) {
 
   router.post('/:pedidoId/confirmar', (req, res, next) => {
     try {
-      const pedido = exigirConfirmable(exigirPedido(obtenerPedido(db, req.params.pedidoId)));
+      const pedido = exigirConfirmable(
+        exigirMesaAbiertaDelPedido(
+          db,
+          exigirPedido(obtenerPedido(db, req.params.pedidoId)),
+        ),
+      );
       const confirmado = confirmarPedido(db, pedido.id);
       const mesa = obtenerMesa(db, confirmado.mesa_id);
 
@@ -296,7 +320,13 @@ export function pedidosRouter(db) {
 
   router.post('/:pedidoId/anular', (req, res, next) => {
     try {
-      const pedido = exigirAnulable(exigirPedido(obtenerPedido(db, req.params.pedidoId)));
+      const pedido = exigirAnulable(
+        exigirMesaAbiertaDelPedido(
+          db,
+          exigirPedido(obtenerPedido(db, req.params.pedidoId)),
+        ),
+      );
+      descartarDivision(db, pedido.mesa_id);
       anularPedido(db, pedido.id);
 
       let primera = true;

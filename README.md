@@ -293,6 +293,42 @@ existente `linea.actualizada`. El contrato completo está en
 y la validación manual en
 [`specs/005-senales-platos-listos/quickstart.md`](specs/005-senales-platos-listos/quickstart.md).
 
+## Cierre y división de la cuenta (historia 006)
+
+La página `/cuentas?mesa=<mesaId>` permite revisar lo consumido, dividir la cuenta y cobrarla:
+
+1. **Revisar el total**: se muestran los consumos con el precio fijado al pedir y el total en
+   euros con formato español. Cancelar no modifica la mesa ni la cuenta.
+2. **Cobro único**: cierra la mesa y emite el ticket final con el total, sin desglose de partes.
+3. **Dividir en partes iguales**: el reparto se hace al céntimo; el sobrante se reparte de uno en
+   uno empezando por las primeras partes. La suma coincide siempre con el total.
+4. **Dividir por consumo**: cada plato se asigna a una parte y un plato compartido puede repartirse
+   por importe entre varias partes.
+5. **Cobro por partes**: cada parte se marca como pagada por separado. La mesa no se cierra y no
+   hay ticket hasta pagar la última parte; entonces se emite un único ticket con el desglose.
+6. **Reversión**: mientras la mesa siga abierta, una parte pagada puede volver a pendiente.
+7. **Cuenta cambiada**: si el total cambia tras confirmar la división, el pago o la reversión se
+   rechazan con `422 total_desactualizado` y la división se descarta para rehacerla.
+8. **Mesa cerrada**: cualquier operación posterior (nuevo pedido, pago, reversión o nuevo cierre)
+   se rechaza con `409`.
+
+### API de la historia 006
+
+| Método   | Ruta                                                              | Descripción                                                        |
+| -------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `GET`    | `/api/sala/mesas/{mesaId}/cuenta`                                 | Cuenta abierta con consumos, total y división (`409` si cerrada)    |
+| `POST`   | `/api/sala/mesas/{mesaId}/cuenta/cierre`                          | Cobro único: cierra la mesa y emite el ticket (`201`)               |
+| `POST`   | `/api/sala/mesas/{mesaId}/cuenta/division`                        | Confirma la división (`201`; `409` con partes pagadas)              |
+| `POST`   | `/api/sala/mesas/{mesaId}/cuenta/partes/{parteId}/pago`           | Marca una parte como pagada (`200`; cierra al pagar la última)      |
+| `DELETE` | `/api/sala/mesas/{mesaId}/cuenta/partes/{parteId}/pago`           | Devuelve una parte pagada a pendiente con la mesa abierta           |
+| `GET`    | `/api/sala/mesas/{mesaId}/cuenta/ticket`                          | Ticket final (`409 ticket_no_emitido` antes de la última parte)     |
+
+Los importes viajan en **céntimos** y las claves en `snake_case`. Al cerrar la mesa se publica el
+evento SSE `mesa-cerrada` con `mesa_id`, `cuenta_id` y `cerrada_en`. El contrato de referencia está
+en [`specs/006-cierre-cuenta-division/contracts/api.md`](specs/006-cierre-cuenta-division/contracts/api.md)
+y la validación manual en
+[`specs/006-cierre-cuenta-division/quickstart.md`](specs/006-cierre-cuenta-division/quickstart.md).
+
 ## Alcance actual
 
 - Esqueleto compartido: estructura, Docker, SQLite, hub SSE, cliente HTTP/SSE, tema y pruebas de
@@ -316,4 +352,6 @@ Ruta frontend: `/dashboard` (protegida para `encargado`).
 - Historia **007**: dashboard de estadísticas del servicio (total diario, desgloses por camarero/plato y comparación con día anterior).
 - Historia **005**: estado de platos en vivo por mesa, aviso visual y sonoro de mesa completa,
   descarte global y recálculo al editar comandas ya enviadas.
-- Las historias `006`–`008` siguen pendientes.
+- Historia **006**: cierre y división de la cuenta, pago por partes, ticket final único, reversión
+  de pagos y rechazo de operaciones sobre mesas cerradas.
+- Las historias `007`–`008` siguen pendientes.
