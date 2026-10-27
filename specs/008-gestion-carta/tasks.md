@@ -42,16 +42,16 @@ independientes.
 
 **⚠️ CRÍTICO**: ninguna historia puede empezar hasta completar esta fase.
 
-- [ ] T008 Crear el esquema SQLite (`plato`, `ingrediente`, `plato_ingrediente`) en `backend/db/schema.sql`
-- [ ] T009 Crear la migración que garantiza las tablas `ingrediente` y `plato_ingrediente` (claves foráneas y par único) sobre bases existentes en `backend/db/migrations/002-ingredientes.sql`
-- [ ] T010 [P] Crear el script de datos semilla (platos e ingredientes) en `backend/db/seed.js`
-- [ ] T011 Implementar modelos y acceso a datos `Plato`, `Ingrediente`, `PlatoIngrediente` en `backend/src/models/carta.js`
-- [ ] T012 [P] Implementar middleware de autorización por rol `requireRole` en `backend/src/middleware/authorize.js`
-- [ ] T013 [P] Definir esquemas de validación zod (plato e ingrediente) en `backend/src/api/cartaSchemas.js`
-- [ ] T014 Implementar el cálculo de disponibilidad derivada (`ofrecible`/`motivo`) en `backend/src/services/cartaService.js`
-- [ ] T015 Configurar el router de la API y el manejo de errores HTTP en `backend/src/api/index.js`
-- [ ] T016 [P] Crear el cliente HTTP de carta (`fetch`) en `frontend/src/services/cartaClient.js`
-- [ ] T017 [P] Crear la utilidad de formato de precio y número es-ES en `frontend/src/utils/format.js`
+- [X] T008 Crear el esquema SQLite (`plato`, `ingrediente`, `plato_ingrediente`) en `backend/db/schema.sql`
+- [X] T009 Crear la migración que garantiza las tablas `ingrediente` y `plato_ingrediente` (claves foráneas y par único) sobre bases existentes en `backend/db/migrations/002-ingredientes.sql`
+- [X] T010 [P] Crear el script de datos semilla (platos e ingredientes) en `backend/db/seed.js`
+- [X] T011 Implementar modelos y acceso a datos `Plato`, `Ingrediente`, `PlatoIngrediente` en `backend/src/models/carta.js`
+- [X] T012 [P] Implementar middleware de autorización por rol `requireRole` en `backend/src/middleware/authorize.js`
+- [X] T013 [P] Definir esquemas de validación zod (plato e ingrediente) en `backend/src/api/cartaSchemas.js`
+- [X] T014 Implementar el cálculo de disponibilidad derivada (`ofrecible`/`motivo`) en `backend/src/services/cartaService.js`
+- [X] T015 Configurar el router de la API y el manejo de errores HTTP en `backend/src/api/index.js`
+- [X] T016 [P] Crear el cliente HTTP de carta (`fetch`) en `frontend/src/services/cartaClient.js`
+- [X] T017 [P] Crear la utilidad de formato de precio y número es-ES en `frontend/src/utils/format.js`
 
 **Punto de control**: base lista; las historias pueden empezar.
 
