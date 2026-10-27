@@ -161,13 +161,13 @@ mesas y las líneas de pedido (consumos) de las historias 01–04.
 
 **Purpose**: Mejoras que afectan a varias historias
 
-- [ ] T062 [P] Actualizar la documentación de puesta en marcha y de la funcionalidad en `README.md`
-- [ ] T063 [P] Revisar que todos los textos visibles estén en español de España y los importes en € con formato español en `frontend/src/`
-- [ ] T064 Revisar la frontera de datos: 006 solo escribe sus tablas y cierra la mesa, sin escrituras en mesas ni consumos ajenos en `backend/src/services/cuentasService.js`
-- [ ] T065 [P] Verificar que `.gitignore` excluye `.env` y que no hay secretos en el repositorio (`.gitignore`)
-- [ ] T066 Verificar la reproducibilidad de Docker con `docker compose up --build` (`docker-compose.yml`)
-- [ ] T067 Ejecutar los escenarios de validación A–I de `specs/006-cierre-cuenta-division/quickstart.md`
-- [ ] T068 Ejecutar los escenarios de validación J, K y L de `specs/006-cierre-cuenta-division/quickstart.md`
+- [x] T062 [P] Actualizar la documentación de puesta en marcha y de la funcionalidad en `README.md` (sección de la historia 006, API, eventos y alcance actual)
+- [x] T063 [P] Revisar que todos los textos visibles estén en español de España y los importes en € con formato español en `frontend/src/` (plurales de partes corregidos y revisión de `DivisionCuenta`, `AsignarConsumos`, `ParteCuenta`, `TicketFinal` y `ResumenCuenta`)
+- [x] T064 Revisar la frontera de datos: 006 solo escribe sus tablas (`cuentas`, `cuentas_partes`, `cuentas_parte_consumos`) y cierra la mesa (`mesas.estado`), sin escrituras en pedidos ni consumos ajenos en `backend/src/services/cuentasService.js`
+- [x] T065 [P] Verificar que `.gitignore` excluye `.env` y que no hay secretos en el repositorio (`.gitignore`); solo hay `.env.example` versionados
+- [x] T066 Verificar la reproducibilidad de Docker con `docker compose up --build` (`docker-compose.yml`); backend y frontend arrancan y responden en los puertos 3000 y 5173
+- [x] T067 Ejecutar los escenarios de validación A–I de `specs/006-cierre-cuenta-division/quickstart.md` (A–H mediante API sobre una copia aislada de la base; I cubierto con la prueba de «sin conexión» de `CierreCuenta`)
+- [x] T068 Ejecutar los escenarios de validación J, K y L de `specs/006-cierre-cuenta-division/quickstart.md` (partes intermedias sin ticket, ticket único al pagar la última y reversión con la mesa abierta)
 
 ---
 

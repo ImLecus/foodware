@@ -247,7 +247,8 @@ export default function CierreCuenta() {
                 <Alert status="info" borderRadius="md">
                   <AlertIcon />
                   <AlertDescription>
-                    Cuenta dividida en {cuenta.division.partes.length} parte(s) con{' '}
+                    Cuenta dividida en {cuenta.division.partes.length}{' '}
+                    {cuenta.division.partes.length === 1 ? 'parte' : 'partes'} con{' '}
                     {cuenta.division.modo === 'iguales'
                       ? 'partes iguales'
                       : 'consumos asignados'}
@@ -290,7 +291,8 @@ export default function CierreCuenta() {
               <Alert status="success" borderRadius="md" mt={4}>
                 <AlertIcon />
                 <AlertDescription>
-                  Ticket emitido con {ticket.partes?.length ?? 0} parte(s) y un total de{' '}
+                  Ticket emitido con {ticket.partes?.length ?? 0}{' '}
+                  {(ticket.partes?.length ?? 0) === 1 ? 'parte' : 'partes'} y un total de{' '}
                   {formatearEuros(ticket.total_centimos)}.
                 </AlertDescription>
               </Alert>

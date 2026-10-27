@@ -76,8 +76,7 @@ describe('CierreCuenta (US2)', () => {
     expect(dividirCuenta).not.toHaveBeenCalled();
   });
 
-  it('divide la cuenta y sustituye el cobro único por el aviso de cuenta dividida', async () => {
-    obtenerCuenta.mockResolvedValue(cuenta);
+  it('divide la cuenta y sustituye el cobro único por el aviso de cuenta dividida', async () => {    obtenerCuenta.mockResolvedValue(cuenta);
     dividirCuenta.mockResolvedValue({
       cuenta: { ...cuenta, modo_division: 'iguales' },
       division: {
@@ -115,6 +114,19 @@ describe('CierreCuenta (US2)', () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/cuenta dividida en 2 parte/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Confirmar cobro único' })).not.toBeInTheDocument();
+    expect(cerrarCuentaUnica).not.toHaveBeenCalled();
+  });
+
+  it('avisa de que no hay conexión y bloquea el cobro', async () => {
+    obtenerCuenta.mockRejectedValue(new Error('Failed to fetch'));
+
+    renderizar();
+
+    expect(
+      await screen.findByText(/sin conexión\. no se puede confirmar el cierre/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Confirmar cobro único' })).toBeDisabled();
+    expect(screen.queryByText('Failed to fetch')).not.toBeInTheDocument();
     expect(cerrarCuentaUnica).not.toHaveBeenCalled();
   });
 });
