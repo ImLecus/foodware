@@ -44,12 +44,20 @@ export function actualizarEstadoLinea(db, lineaId, estado, listoEn) {
   );
 }
 
-export function contarLineasPendientes(db, pedidoId) {
+export function contarLineasPendientes(db, pedidoId, partida = null) {
+  const filtroPartida = partida ? 'AND pl.partida_codigo = ?' : '';
+  const parametros = partida ? [pedidoId, partida] : [pedidoId];
+
   return db
     .prepare(
-      "SELECT COUNT(*) AS total FROM lineas_pedido WHERE pedido_id = ? AND estado = 'pendiente'",
+      `SELECT COUNT(*) AS total
+         FROM lineas_pedido l
+         JOIN platos pl ON pl.id = l.plato_id
+        WHERE l.pedido_id = ?
+          AND l.estado = 'pendiente'
+          ${filtroPartida}`,
     )
-    .get(pedidoId).total;
+    .get(...parametros).total;
 }
 
 /** Líneas del último pedido enviado de una mesa (pantalla del camarero). */

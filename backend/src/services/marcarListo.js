@@ -53,7 +53,7 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
 
   const mesa = buscarMesa(db, pedido.mesa_id);
   const mesaNumero = numeroDeMesa(mesa?.identificador);
-  const pendientesAntes = contarLineasPendientes(db, pedidoId);
+  const pendientesAntes = contarLineasPendientes(db, pedidoId, linea.partida);
 
   if (estado === 'listo') {
     if (pedido.estado !== 'enviada' || pendientesAntes === 0) {
@@ -66,7 +66,7 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
 
     const listoEn = new Date().toISOString();
     actualizarEstadoLinea(db, lineaId, 'listo', listoEn);
-    const pendientesDespues = contarLineasPendientes(db, pedidoId);
+    const pendientesDespues = contarLineasPendientes(db, pedidoId, linea.partida);
     const respuesta = respuestaLinea(
       { ...linea, estado: 'listo', listoEn },
       { pedidoCompletado: pendientesDespues === 0 },

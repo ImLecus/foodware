@@ -152,6 +152,36 @@ describe('CocinaPage (US1)', () => {
     expect(screen.getByRole('button', { name: 'Marcar listo' })).toBeDisabled();
   });
 
+  it('muestra el aviso al completar la partida de un pedido mixto', async () => {
+    const pedidoMixto = {
+      ...pedido,
+      lineas: [
+        { ...pedido.lineas[0], id: 'linea-1', nombrePlato: 'Croquetas' },
+        { ...pedido.lineas[0], id: 'linea-2', nombrePlato: 'Paella' },
+      ],
+    };
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes
+      .mockResolvedValueOnce([pedidoMixto])
+      .mockResolvedValueOnce([]);
+    marcarEstado.mockResolvedValue({
+      id: 'linea-1',
+      estado: 'listo',
+      pedidoCompletado: true,
+    });
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Marcar listo' })[0]);
+
+    expect(await screen.findByText('Pedido completado')).toBeInTheDocument();
+  });
+
   it('ofrece Deshacer tras completar el pedido y revierte la última marca', async () => {
     obtenerCocinero.mockResolvedValue({
       id: 'cocinero-entrantes',
