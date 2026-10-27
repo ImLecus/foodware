@@ -1,4 +1,5 @@
 import { Box, Heading, ListItem, Stack, Text, UnorderedList } from '@chakra-ui/react';
+import AvisoSinConexion from '../components/AvisoSinConexion.jsx';
 import EstadoCarga from '../components/EstadoCarga.jsx';
 import LineaPlato from '../components/LineaPlato.jsx';
 import { useEstadoPlatos } from '../state/useEstadoPlatos.js';
@@ -11,7 +12,7 @@ function resolverMesa(mesaId) {
 export default function SalaPage({ mesaId, numeroMesa }) {
   const id = resolverMesa(mesaId);
   const numero = numeroMesa ?? (Number(String(id).replace(/\D/g, '')) || 1);
-  const { lineas, cargando, error } = useEstadoPlatos(id);
+  const { lineas, cargando, error, sinConexion } = useEstadoPlatos(id);
 
   return (
     <Box>
@@ -21,6 +22,8 @@ export default function SalaPage({ mesaId, numeroMesa }) {
       <Text color="gray.600" mb={6}>
         Estado de los platos de la mesa
       </Text>
+
+      {sinConexion && <AvisoSinConexion />}
 
       {cargando && <EstadoCarga />}
 
