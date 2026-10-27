@@ -30,4 +30,18 @@ describe('marca de pedido modificado', () => {
     expect(pedido.modificado).toBe(false);
     expect(pedido.modificadoEn).toBeNull();
   });
+
+  it('no marca modificado si el flag legado está activo pero no hay modificadoEn', () => {
+    db = crearBase();
+    insertarPedido(db, { id: 'pedido-flag' });
+    insertarLinea(db, { id: 'linea-3', pedidoId: 'pedido-flag' });
+    db.prepare(
+      "UPDATE pedidos SET modificado = 1, modificado_en = NULL WHERE id = 'pedido-flag'",
+    ).run();
+
+    const [pedido] = listarPedidosPendientes(db, 'entrantes');
+
+    expect(pedido.modificado).toBe(false);
+    expect(pedido.modificadoEn).toBeNull();
+  });
 });

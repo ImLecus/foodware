@@ -46,7 +46,7 @@ describe('deshacer la última marca de un pedido completado', () => {
     await completarPedido();
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-2/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-2/estado?partida=entrantes')
       .send({ estado: 'pendiente' });
 
     expect(respuesta.status).toBe(200);
@@ -65,7 +65,7 @@ describe('deshacer la última marca de un pedido completado', () => {
     expect(antes.body).toEqual([]);
 
     await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-2/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-2/estado?partida=entrantes')
       .send({ estado: 'pendiente' });
 
     const despues = await request(app).get('/api/partidas/entrantes/pedidos-pendientes');

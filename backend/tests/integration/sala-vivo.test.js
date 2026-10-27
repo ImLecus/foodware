@@ -24,7 +24,7 @@ describe('sala en vivo (US1)', () => {
     preparar();
 
     const marcar = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 
@@ -49,12 +49,12 @@ describe('sala en vivo (US1)', () => {
     preparar();
 
     await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 
     await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-2/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-2/estado?partida=principales')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 

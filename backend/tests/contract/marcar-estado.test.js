@@ -59,6 +59,18 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
     expect(segunda.body.listoEn).toBe(primera.body.listoEn);
   });
 
+  it('exige la partida del cocinero', async () => {
+    const respuesta = await request(app)
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .send({ estado: 'listo' });
+
+    expect(respuesta.status).toBe(400);
+    expect(respuesta.body).toMatchObject({
+      codigo: 'partida_requerida',
+      mensaje: 'La partida del cocinero es obligatoria',
+    });
+  });
+
   it('rechaza un estado no válido', async () => {
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
@@ -81,6 +93,10 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(403);
+    expect(respuesta.body).toMatchObject({
+      codigo: 'partida_ajena',
+      mensaje: 'La línea no pertenece a tu partida',
+    });
   });
 
   it('devuelve 409 al marcar listo un pedido ya completado', async () => {
@@ -91,5 +107,9 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(409);
+    expect(respuesta.body).toMatchObject({
+      codigo: 'pedido_completado',
+      mensaje: 'El pedido ya está completado',
+    });
   });
 });

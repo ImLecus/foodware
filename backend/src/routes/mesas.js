@@ -5,6 +5,7 @@ import { exigirMesa, exigirMesaAbierta, exigirSinPedidoEnCurso, serializarPedido
 import { identificarCamarero } from '../middleware/camarero.js';
 import { ErrorHttp } from '../middleware/error.js';
 import { listarLineasDeMesa } from '../models/lineaPedido.js';
+import { suscribirAMesa } from '../realtime/sse.js';
 import { aISO } from '../utils/fechas.js';
 
 export function mesasRouter(db) {
@@ -14,6 +15,15 @@ export function mesasRouter(db) {
 
   router.get('/', (req, res) => {
     res.json(listarMesas(db));
+  });
+
+  router.get('/:mesaId/eventos', (req, res, next) => {
+    try {
+      const mesa = exigirMesa(obtenerMesa(db, req.params.mesaId));
+      return suscribirAMesa(req, res, mesa.id);
+    } catch (error) {
+      next(error);
+    }
   });
 
   router.get('/:mesaId/estado-platos', (req, res, next) => {

@@ -35,7 +35,7 @@ describe('eventos SSE de aviso de mesa completa', () => {
 
   function marcar(lineaId, estado = 'listo') {
     return request(app)
-      .put(`/api/pedidos/pedido-1/lineas/${lineaId}/estado`)
+      .put(`/api/pedidos/pedido-1/lineas/${lineaId}/estado?partida=entrantes`)
       .set(CABECERA_CAMARERO)
       .send({ estado });
   }

@@ -26,7 +26,9 @@ mesas, un cocinero por partida y pedidos enviados con varias líneas.
 1. Abre la **pantalla de cocina** identificada con una partida (por ejemplo, `principales`).
 2. Abre en otra ventana la **pantalla de sala** de la mesa de uno de los pedidos pendientes.
 3. Comprueba que la cocina muestra solo pedidos pendientes de esa partida, ordenados del más
-   antiguo al más reciente (historia 03).
+   antiguo al más reciente (historia 03). La marca se aplica a la **partida del cocinero**; un
+   pedido con líneas de otras partidas puede seguir pendiente en ellas sin impedir que el aviso
+   «Pedido completado» aparezca al terminar la parte de esta partida.
 
 ## Escenarios a validar
 
@@ -34,7 +36,7 @@ mesas, un cocinero por partida y pedidos enviados con varias líneas.
 |---|------------------|------------------|--------------------|
 | 1 | Marcar un plato como listo (US1.1) | En cocina, pulsa marcar en una línea del pedido | La línea pasa a `listo` y muestra su marca |
 | 2 | Los demás platos siguen pendientes (US1.2) | Tras marcar una línea, observa el resto del pedido | Las demás líneas siguen `pendiente` |
-| 3 | El pedido desaparece al completarlo (US1.3) | Marca todas las líneas del pedido | El pedido deja de aparecer como pendiente en cocina |
+| 3 | El pedido desaparece al completar la partida (US1.3) | Marca todas las líneas de tu partida del pedido | El pedido deja de aparecer como pendiente en cocina para esa partida |
 | 4 | Solo la partida propia (US1.4) | Intenta actuar sobre una línea de otra partida | La acción no está disponible / no cambia nada |
 | 5 | Deshacer la marca (US1.5) | Deshaz la marca de una línea lista | La línea vuelve a `pendiente` en cocina |
 | 6 | Reflejo en sala (US2.1, US2.2) | Marca una línea y mira la pantalla de sala | El plato aparece `listo` sin recargar |
@@ -43,7 +45,11 @@ mesas, un cocinero por partida y pedidos enviados con varias líneas.
 | 9 | Re-marcar no altera el momento (US3.2) | Vuelve a marcar una línea ya lista | `listoEn` no cambia |
 | 10 | Marcado simultáneo (edge case) | Desde dos pantallas de cocina de la misma partida, marca la misma línea | Un único `listoEn`, sin duplicados |
 | 11 | Corte momentáneo (edge case) | Detén y reinicia el backend; vuelve a marcar | La marca no se pierde y el estado es coherente |
-| 12 | Deshacer tras completar el pedido (US1.6, FR-014, SC-009) | Marca todas las líneas del pedido y, en el aviso «Pedido completado», pulsa «Deshacer» dentro de los 10 s siguientes | El pedido reaparece como pendiente en cocina con la última línea en `pendiente`; el aviso se retira y sala refleja el cambio |
+| 12 | Deshacer tras completar la partida (US1.6, FR-014, SC-009) | Marca todas las líneas de tu partida del pedido y, en el aviso «Pedido completado», pulsa «Deshacer» dentro de los 10 s siguientes | El pedido reaparece como pendiente en cocina para esa partida con la última línea en `pendiente`; el aviso se retira y sala refleja el cambio |
+
+El seed incluye pedidos mixtos para comprobar que la completitud es por partida. No se debe intentar
+completar una línea de otra partida: la interfaz no ofrece esa acción y la API responde `403` si se
+intenta.
 
 ## Cómo ver las pruebas automatizadas
 
@@ -57,7 +63,8 @@ cd frontend && npm test
 
 Las pruebas cubren la regla de negocio de marcar/deshacer (idempotencia y momento único), el aviso
 temporal con «Deshacer» (duración mínima y reversión del pedido completado), los contratos REST
-(`contracts/openapi.yaml`) y los flujos de la pantalla de cocina y de sala.
+(`contracts/openapi.yaml`) y los flujos de la pantalla de cocina y de sala. El mapa de requisitos a
+pruebas está en [`verification.md`](./verification.md).
 
 ## Fuera de alcance de esta guía
 

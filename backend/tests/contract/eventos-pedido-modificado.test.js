@@ -30,8 +30,10 @@ describe('evento pedido.modificado', () => {
 
     const contenido = escrito.join('');
     expect(contenido).toContain('event: pedido.modificado');
+    expect(contenido).toContain('"tipo":"pedido.modificado"');
     expect(contenido).toContain('"pedidoId":"pedido-1"');
     expect(contenido).toContain('"partida":"entrantes"');
+    expect(contenido).toContain('"modificado":true');
     expect(contenido).toContain('"modificadoEn":"2026-10-20T10:30:00.000Z"');
   });
 });

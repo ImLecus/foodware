@@ -39,6 +39,7 @@ describe('Contrato de detalle del pedido de cocina', () => {
       {
         id: 'linea-lista',
         nombrePlato: 'Croquetas',
+        partida: 'entrantes',
         cantidad: 1,
         estado: 'listo',
         listoEn: '2026-10-20T10:05:00.000Z',
@@ -46,6 +47,7 @@ describe('Contrato de detalle del pedido de cocina', () => {
       {
         id: 'linea-pendiente',
         nombrePlato: 'Ensalada',
+        partida: 'entrantes',
         cantidad: 3,
         estado: 'pendiente',
         listoEn: null,

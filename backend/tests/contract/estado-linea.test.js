@@ -33,7 +33,7 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', ()
     preparar();
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 
@@ -53,12 +53,12 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', ()
     preparar();
 
     await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'pendiente' });
 
@@ -70,29 +70,27 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', ()
     expect(mesa.platos.find((plato) => plato.id === 'linea-1').estado).toBe('pendiente');
   });
 
-  it('es idempotente al marcar dos veces como listo', async () => {
+  it('rechaza re-marcar una línea de una partida ya completada', async () => {
     preparar();
 
     const primero = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
     const segundo = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 
     expect(primero.status).toBe(200);
-    expect(segundo.status).toBe(200);
-    expect(segundo.body.estado).toBe('listo');
-    expect(segundo.body.listoEn).toBe(primero.body.listoEn);
+    expect(segundo.status).toBe(409);
   });
 
   it('rechaza un estado no válido con 400', async () => {
     preparar();
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'servido' });
 
@@ -108,7 +106,7 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', ()
     insertarLinea(db, { id: 'linea-curso', pedidoId: 'pedido-curso' });
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-curso/lineas/linea-curso/estado')
+      .put('/api/pedidos/pedido-curso/lineas/linea-curso/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 
@@ -119,7 +117,7 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', ()
     preparar();
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/inexistente/estado')
+      .put('/api/pedidos/pedido-1/lineas/inexistente/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 

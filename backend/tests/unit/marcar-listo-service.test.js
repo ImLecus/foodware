@@ -58,6 +58,29 @@ describe('servicio de marcar/deshacer platos', () => {
     expect(segunda.listoEn).toBe(primera.listoEn);
   });
 
+  it('mantiene un único listoEn tras dos marcas de la misma línea', () => {
+    const primera = marcarLinea(db, {
+      pedidoId: 'pedido-1',
+      lineaId: 'linea-1',
+      estado: 'listo',
+      partida: 'entrantes',
+    });
+    const segunda = marcarLinea(db, {
+      pedidoId: 'pedido-1',
+      lineaId: 'linea-1',
+      estado: 'listo',
+      partida: 'entrantes',
+    });
+
+    const fila = db
+      .prepare('SELECT COUNT(*) AS total, MIN(listo_en) AS listo FROM lineas_pedido WHERE id = ?')
+      .get('linea-1');
+
+    expect(fila.total).toBe(1);
+    expect(fila.listo).toBe(primera.listoEn);
+    expect(segunda.listoEn).toBe(primera.listoEn);
+  });
+
   it('indica que el pedido se completa al marcar la última línea', () => {
     marcarLinea(db, {
       pedidoId: 'pedido-1',
@@ -99,7 +122,7 @@ describe('servicio de marcar/deshacer platos', () => {
         estado: 'listo',
         partida: 'principales',
       }),
-    ).toThrowError(expect.objectContaining({ status: 403 }));
+    ).toThrowError(expect.objectContaining({ status: 403, codigo: 'partida_ajena' }));
   });
 
   it('rechaza marcar como listo un pedido completado con 409', () => {

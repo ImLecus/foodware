@@ -58,12 +58,15 @@ que los necesiten.
 
 ### Aviso de pedido completado (estado de cliente, no persistido)
 - **Descripción**: referencia temporal de la pantalla de cocina que permite revertir la última marca
-  cuando el pedido ya no aparece en la lista por estar completado.
+  de cada pedido completado cuando ya no aparece en la lista de su partida.
 - **Campos**: `pedidoId`, `lineaId` (identificador de la última marca reversible), `mostradoEn` y
-  `visibleHasta` (al menos `mostradoEn + 10 s`).
-- **Reglas**: se crea al completarse el pedido; la acción «Deshacer» envía `estado = pendiente` para
-  `pedidoId`/`lineaId` y retira el aviso. Vive solo en el cliente (no se persiste en SQLite ni se
-  comparte entre pantallas); una nueva marca o el fin del plazo lo descartan (FR-014, SC-009).
+  `visibleHasta` (al menos `mostradoEn + 10 s`). Pueden coexistir varios avisos, uno por pedido o
+  línea completada.
+- **Reglas**: se crea al completarse la partida del cocinero; la acción «Deshacer» envía
+  `estado = pendiente` para `pedidoId`/`lineaId` y retira el aviso correspondiente. Una nueva marca
+  añade otro aviso a la cola y no descarta automáticamente los anteriores; cada aviso vive hasta su
+  propio plazo. Todo el estado vive solo en el cliente (no se persiste en SQLite ni se comparte entre
+  pantallas) (FR-014, SC-009).
 
 ## Transiciones de estado de una línea de pedido
 

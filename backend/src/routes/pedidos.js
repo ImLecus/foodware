@@ -11,6 +11,7 @@ import {
   retirarLinea,
 } from '../db/pedidos.js';
 import { obtenerPlato } from '../db/platos.js';
+import { numeroDeMesa } from '../models/mesa.js';
 import {
   adquirirBloqueoEdicion,
   estadoBloqueo,
@@ -28,15 +29,22 @@ import {
   exigirMesa,
   exigirMesaAbierta,
   exigirPedido,
+  PARTIDAS,
   serializarPedido,
   serializarPedidoConfirmado,
 } from '../domain/pedidos.js';
 import { identificarCamarero } from '../middleware/camarero.js';
 import { comprobarEdicion } from '../middleware/bloqueo.js';
 import { ErrorHttp } from '../middleware/error.js';
+import {
+  emitirPedidoModificado,
+  emitirPedidoNuevo,
+  emitirPendientesCambiado,
+} from '../realtime/emit.js';
 import { publicar } from '../realtime/hub.js';
 import { sincronizarAvisoMesa } from '../services/avisos.js';
 import { descartarDivision } from '../services/cuentasService.js';
+import { aISO } from '../utils/fechas.js';
 import { marcarLinea } from '../services/marcarListo.js';
 import { validarLineaPatchEdicion, validarNuevaLineaEdicion } from '../schemas/edicion.js';
 
@@ -52,6 +60,20 @@ function buscarLinea(pedido, lineaId) {
 function exigirMesaAbiertaDelPedido(db, pedido) {
   exigirMesaAbierta(exigirMesa(obtenerMesa(db, pedido.mesa_id)));
   return pedido;
+}
+
+function emitirNuevoPorPartida(pedido, mesa) {
+  const grupos = agruparPorPartida(pedido.lineas);
+  const numero = numeroDeMesa(mesa.identificador);
+  let primera = true;
+
+  for (const partida of PARTIDAS) {
+    if (grupos[partida].length === 0) continue;
+    const mesaId = primera ? mesa.id : undefined;
+    emitirPedidoNuevo({ pedidoId: pedido.id, mesa: numero, mesaId, partida });
+    emitirPendientesCambiado({ partida, mesaId });
+    primera = false;
+  }
 }
 
 export function pedidosRouter(db) {
@@ -70,11 +92,20 @@ export function pedidosRouter(db) {
 
   router.put('/:pedidoId/lineas/:lineaId/estado', (req, res, next) => {
     try {
+      const partida = req.query.partida;
+      if (!partida) {
+        throw new ErrorHttp(
+          400,
+          'La partida del cocinero es obligatoria',
+          'partida_requerida',
+        );
+      }
+
       const linea = marcarLinea(db, {
         pedidoId: req.params.pedidoId,
         lineaId: req.params.lineaId,
         estado: req.body?.estado,
-        partida: req.query.partida,
+        partida,
       });
       res.json(linea);
     } catch (error) {
@@ -223,6 +254,24 @@ export function pedidosRouter(db) {
       const mesa = obtenerMesa(db, actualizado.mesa_id);
       const porPartida = agruparPorPartida(actualizado.lineas);
       const estadoMesa = sincronizarAvisoMesa(db, actualizado.mesa_id, { nuevoPlatoListo: false });
+      const modificadoEn = aISO(actualizado.cambios_enviados_en) ?? aISO(actualizado.modificado_en);
+      const numero = numeroDeMesa(mesa.identificador);
+      let primera = true;
+
+      for (const partida of PARTIDAS) {
+        const mesaId = primera ? mesa.id : undefined;
+        if (porPartida[partida].length > 0) {
+          emitirPedidoModificado({
+            pedidoId: actualizado.id,
+            partida,
+            modificadoEn,
+            mesa: numero,
+            mesaId,
+          });
+        }
+        emitirPendientesCambiado({ partida, mesaId });
+        primera = false;
+      }
 
       publicar('pedido-modificado', {
         pedidoId: actualizado.id,
@@ -255,6 +304,8 @@ export function pedidosRouter(db) {
       const confirmado = confirmarPedido(db, pedido.id);
       const mesa = obtenerMesa(db, confirmado.mesa_id);
 
+      emitirNuevoPorPartida(confirmado, mesa);
+
       publicar('pedido-confirmado', {
         pedidoId: confirmado.id,
         mesaId: confirmado.mesa_id,
@@ -277,6 +328,12 @@ export function pedidosRouter(db) {
       );
       descartarDivision(db, pedido.mesa_id);
       anularPedido(db, pedido.id);
+
+      let primera = true;
+      for (const partida of PARTIDAS) {
+        emitirPendientesCambiado({ partida, mesaId: primera ? pedido.mesa_id : undefined });
+        primera = false;
+      }
 
       publicar('pedido-anulado', { pedidoId: pedido.id, mesaId: pedido.mesa_id });
 

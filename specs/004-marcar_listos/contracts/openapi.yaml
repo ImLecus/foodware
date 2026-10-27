@@ -37,10 +37,11 @@ paths:
       description: >
         Asignación idempotente de estado. `listo` fija `listoEn` la primera vez; repetir no cambia
         el momento. `pendiente` (deshacer) limpia `listoEn` y devuelve la línea a pendiente. Si al
-        marcar `listo` se completa el pedido (era la última línea pendiente), la respuesta contiene
-        `pedidoId` e `id` de la línea, que el cliente usa para ofrecer el aviso temporal «Pedido
-        completado» con la acción «Deshacer» durante al menos 10 s (FR-014, SC-009). Esa acción es
-        otra llamada a esta misma operación con `estado: pendiente`.
+        marcar `listo` se completa la partida del cocinero (era la última línea pendiente de esa
+        partida), la respuesta contiene `pedidoId` e `id` de la línea, que el cliente usa para
+        ofrecer el aviso temporal «Pedido completado» con la acción «Deshacer» durante al menos
+        10 s (FR-014, SC-009). Esa acción es otra llamada a esta misma operación con
+        `estado: pendiente`.
       parameters:
         - name: pedidoId
           in: path
@@ -50,6 +51,13 @@ paths:
           in: path
           required: true
           schema: { type: string }
+        - name: partida
+          in: query
+          required: true
+          description: Partida del cocinero; debe coincidir con la partida del plato.
+          schema:
+            type: string
+            enum: [entrantes, principales, postres]
       requestBody:
         required: true
         content:
@@ -61,6 +69,11 @@ paths:
                 estado:
                   type: string
                   enum: [listo, pendiente]
+            examples:
+              marcarListo:
+                value: { estado: listo }
+              deshacer:
+                value: { estado: pendiente }
       responses:
         "200":
           description: >
@@ -71,7 +84,7 @@ paths:
               schema: { $ref: "#/components/schemas/LineaPedido" }
               examples:
                 ultimaLinea:
-                  summary: Marca de la última línea pendiente (el pedido se completa)
+                  summary: Marca de la última línea pendiente (la partida se completa)
                   value:
                     id: "l-9"
                     pedidoId: "p-123"
@@ -88,6 +101,12 @@ paths:
                     cantidad: 2
                     estado: "pendiente"
                     listoEn: null
+        "400":
+          description: >
+            Falta la partida del cocinero (`partida_requerida`) o el estado no es válido.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
         "403":
           description: La línea no pertenece a la partida del cocinero (FR-003)
           content:
@@ -100,8 +119,8 @@ paths:
               schema: { $ref: "#/components/schemas/Error" }
         "409":
           description: >
-            Se intenta marcar `listo` una línea de un pedido que ya no está pendiente (FR-003).
-            Deshacer una línea `listo` se admite aunque el pedido esté `completado`, para permitir la
+            Se intenta marcar `listo` una línea de una partida que ya está completada (FR-003).
+            Deshacer una línea `listo` se admite aunque la partida esté completada, para permitir la
             reversión desde el aviso (FR-014).
           content:
             application/json:
@@ -151,6 +170,10 @@ components:
         id: { type: string }
         pedidoId: { type: string }
         nombrePlato: { type: string }
+        partida:
+          type: string
+          enum: [entrantes, principales, postres]
+          description: Partida del plato; presente en la lista de pendientes de cocina.
         cantidad: { type: integer, minimum: 1 }
         estado: { type: string, enum: [pendiente, listo] }
         listoEn:

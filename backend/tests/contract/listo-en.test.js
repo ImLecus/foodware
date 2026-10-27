@@ -45,7 +45,7 @@ describe('listoEn en las respuestas de la API', () => {
     marcarLinea(db, { pedidoId: 'pedido-1', lineaId: 'linea-1', estado: 'listo' });
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
       .send({ estado: 'pendiente' });
 
     expect(respuesta.body.listoEn).toBeNull();

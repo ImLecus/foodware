@@ -1,10 +1,11 @@
-import { crearConexionEventos } from './realtime.js';
+import { crearConexionEventos, crearConexionEventosMesa } from './realtime.js';
 
 export const EVENTOS_COCINA = [
   'pedido.nuevo',
   'pedido.pendientes-cambiado',
   'linea.actualizada',
   'pedido.modificado',
+  'pedido.reabierto',
   // Eventos publicados por las historias 001 y 002 con su nomenclatura original.
   'pedido-confirmado',
   'pedido-modificado',
@@ -45,9 +46,9 @@ const EVENTOS_SALA = [
   'pedido-confirmado',
 ];
 
-/** Suscripción de la pantalla de sala al estado de los platos. */
-export function suscribirSala({ onEvento, onEstadoConexion } = {}) {
-  const conexion = crearConexionEventos();
+/** Suscripción de la pantalla de sala al estado de los platos de una mesa. */
+export function suscribirSala({ mesaId, onEvento, onEstadoConexion } = {}) {
+  const conexion = mesaId ? crearConexionEventosMesa(mesaId) : crearConexionEventos();
 
   conexion.addEventListener('open', () => onEstadoConexion?.('conectado'));
   conexion.addEventListener('error', () => onEstadoConexion?.('sin-conexion'));

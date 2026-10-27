@@ -27,11 +27,11 @@ independientes.
 
 **Propósito**: Inicialización del proyecto y estructura básica
 
-- [ ] T001 Crear la estructura de backend y frontend según plan.md (`backend/`, `frontend/`, `backend/Dockerfile`, `frontend/Dockerfile`)
-- [ ] T002 Inicializar el backend con Express + JavaScript en `backend/package.json`
-- [ ] T003 [P] Inicializar el frontend con React + Vite + Chakra UI + JavaScript en `frontend/package.json`
-- [ ] T004 [P] Configurar Vitest, ESLint y Prettier en `backend/vitest.config.js` y `frontend/vitest.config.js`
-- [ ] T005 Configurar los servicios `backend` y `frontend` en `docker-compose.yml`
+- [X] T001 Crear la estructura de backend y frontend según plan.md (`backend/`, `frontend/`, `backend/Dockerfile`, `frontend/Dockerfile`)
+- [X] T002 Inicializar el backend con Express + JavaScript en `backend/package.json`
+- [X] T003 [P] Inicializar el frontend con React + Vite + Chakra UI + JavaScript en `frontend/package.json`
+- [X] T004 [P] Configurar Vitest, ESLint y Prettier en `backend/vitest.config.js` y `frontend/vitest.config.js`
+- [X] T005 Configurar los servicios `backend` y `frontend` en `docker-compose.yml`
 
 ---
 
@@ -41,15 +41,15 @@ independientes.
 
 **⚠️ CRÍTICO**: Ninguna historia puede empezar hasta terminar esta fase
 
-- [ ] T006 Crear el esquema SQLite de `cuentas`, `consumos`, `camareros` y `platos` en `backend/db/schema.sql`
-- [ ] T007 [P] Configurar el cliente de SQLite en `backend/src/models/db.js`
-- [ ] T008 [P] Definir los tipos de entidad compartidos (`Cuenta`, `Consumo`, `Camarero`, `Plato`, `InformeDiario`) en `backend/src/models/types.js`
-- [ ] T009 Implementar el middleware de autorización por rol `encargado` en `backend/src/middleware/auth.js`
-- [ ] T010 Configurar el enrutador de la API y el middleware de errores en `backend/src/api/index.js`
-- [ ] T011 Implementar utilidades de límites del día natural Europe/Madrid en `backend/src/services/dayTime.js`
-- [ ] T012 [P] Crear el script de datos semilla con cuentas cerradas en dos días distintos en `backend/db/seed.js`
-- [ ] T013 [P] Configurar el enrutado del frontend y el acceso por rol en `frontend/src/App.jsx`
-- [ ] T014 [P] Implementar el cliente HTTP de informes (fetch) en `frontend/src/services/reports.js`
+- [X] T006 Crear el esquema SQLite de `cuentas`, `platos`, `usuarios` y `pedidos`/`lineas_pedido` en `backend/migrations/001_init.sql` (esquema canónico compartido; ya en el esqueleto)
+- [X] T007 [P] Configurar el cliente de SQLite en `backend/src/db/index.js` (ya en el esqueleto)
+- [X] T008 [P] Tipos de entidad compartidos: no aplica (JavaScript sin TypeScript); las entidades quedan documentadas en `data-model.md`
+- [X] T009 Implementar el middleware de autorización por rol `encargado` en `backend/src/middleware/authorize.js` (identidad por cabecera `x-usuario-id`)
+- [X] T010 Configurar el enrutador de la API y el middleware de errores en `backend/src/app.js` y `backend/src/middleware/error.js` (ya en el esqueleto)
+- [X] T011 Implementar utilidades de límites del día natural Europe/Madrid en `backend/src/services/dayTime.js`
+- [X] T012 [P] Crear el script de datos semilla con cuentas cerradas en dos días distintos en `backend/src/db/seed.js`
+- [X] T013 [P] Configurar el enrutado del frontend y el acceso por rol en `frontend/src/App.jsx` (guarda `frontend/src/components/RutaEncargado.jsx`, identidad/rol en `frontend/src/services/sesion.js`)
+- [X] T014 [P] Implementar el cliente HTTP de informes (fetch) en `frontend/src/services/reports.js`
 
 **Checkpoint**: Base lista — las historias de usuario pueden comenzar
 
@@ -64,19 +64,19 @@ total del día y la página `/dashboard` lo muestra en euros; un día sin ventas
 
 ### Pruebas de US1
 
-- [ ] T015 [P] [US1] Prueba de contrato del total en `GET /api/reports/daily` en `backend/tests/contract/reports_daily.test.js`
-- [ ] T016 [P] [US1] Prueba unitaria del cálculo del total diario en `backend/tests/unit/reporting_total.test.js`
-- [ ] T017 [P] [US1] Prueba de componente del total y estados de la página en `frontend/tests/components/dashboard_total.test.jsx`
+- [X] T015 [P] [US1] Prueba de contrato del total en `GET /api/reports/daily` en `backend/tests/contract/reports_daily.test.js`
+- [X] T016 [P] [US1] Prueba unitaria del cálculo del total diario en `backend/tests/unit/reporting_total.test.js`
+- [X] T017 [P] [US1] Prueba de componente del total y estados de la página en `frontend/tests/components/dashboard_total.test.jsx`
 
 ### Implementación de US1
 
-- [ ] T018 [US1] Implementar la agregación del total diario por fecha (por defecto, el último día natural completado) en `backend/src/services/reportingService.js` (depende de T007, T008, T011)
-- [ ] T019 [US1] Implementar el endpoint `GET /api/reports/daily` devolviendo el total en `backend/src/api/reportsRouter.js` (depende de T018)
-- [ ] T020 [US1] Añadir validación del parámetro `date` (formato, fecha válida, rechazo del día en curso y de fechas futuras con `400`) en `backend/src/api/reportsRouter.js`
-- [ ] T021 [US1] Aplicar la autorización de rol `encargado` al endpoint en `backend/src/api/reportsRouter.js` (depende de T009)
-- [ ] T022 [US1] Implementar utilidades de formato es-ES de importes y fechas en `frontend/src/utils/format.js`
-- [ ] T023 [US1] Construir la página del dashboard con total y estados cargando/vacío/sin conexión en `frontend/src/pages/PaginaDashboard.jsx`
-- [ ] T024 [US1] Conectar la página con el cliente de informes en `frontend/src/pages/PaginaDashboard.jsx` (depende de T014, T023)
+- [X] T018 [US1] Implementar la agregación del total diario por fecha (por defecto, el último día natural completado) en `backend/src/services/reportingService.js` (depende de T007, T008, T011)
+- [X] T019 [US1] Implementar el endpoint `GET /api/reports/daily` devolviendo el total en `backend/src/api/reportsRouter.js` (depende de T018)
+- [X] T020 [US1] Añadir validación del parámetro `date` (formato, fecha válida, rechazo del día en curso y de fechas futuras con `400`) en `backend/src/api/reportsRouter.js`
+- [X] T021 [US1] Aplicar la autorización de rol `encargado` al endpoint en `backend/src/api/reportsRouter.js` (depende de T009)
+- [X] T022 [US1] Implementar utilidades de formato es-ES de importes y fechas en `frontend/src/utils/format.js`
+- [X] T023 [US1] Construir la página del dashboard con total y estados cargando/vacío/sin conexión en `frontend/src/pages/PaginaDashboard.jsx`
+- [X] T024 [US1] Conectar la página con el cliente de informes en `frontend/src/pages/PaginaDashboard.jsx` (depende de T014, T023)
 
 **Checkpoint**: US1 funcional y verificable de forma independiente (MVP del dashboard)
 
@@ -91,17 +91,17 @@ por camarero y la cantidad/importe por plato, mostrando `0,00 €` en los que no
 
 ### Pruebas de US2
 
-- [ ] T025 [P] [US2] Prueba de contrato de los campos `porCamarero`/`porPlato` en `backend/tests/contract/reports_breakdowns.test.js`
-- [ ] T026 [P] [US2] Prueba unitaria de agrupación por camarero y por plato en `backend/tests/unit/reporting_breakdowns.test.js`
-- [ ] T027 [P] [US2] Prueba de componente de las tablas de desglose en `frontend/tests/components/dashboard_breakdowns.test.jsx`
+- [X] T025 [P] [US2] Prueba de contrato de los campos `porCamarero`/`porPlato` en `backend/tests/contract/reports_breakdowns.test.js`
+- [X] T026 [P] [US2] Prueba unitaria de agrupación por camarero y por plato en `backend/tests/unit/reporting_breakdowns.test.js`
+- [X] T027 [P] [US2] Prueba de componente de las tablas de desglose en `frontend/tests/components/dashboard_breakdowns.test.jsx`
 
 ### Implementación de US2
 
-- [ ] T028 [US2] Ampliar el servicio con la agrupación por camarero en `backend/src/services/reportingService.js`
-- [ ] T029 [US2] Ampliar el servicio con la agrupación por plato, incluyendo actores con 0,00 € en `backend/src/services/reportingService.js`
-- [ ] T030 [US2] Incluir `porCamarero` y `porPlato` en la respuesta del endpoint en `backend/src/api/reportsRouter.js`
-- [ ] T031 [P] [US2] Crear el componente de tabla de desglose reutilizable en `frontend/src/components/TablaDesglose.jsx`
-- [ ] T032 [US2] Renderizar las tablas de desglose en la página del dashboard en `frontend/src/pages/PaginaDashboard.jsx` (depende de T031)
+- [X] T028 [US2] Ampliar el servicio con la agrupación por camarero en `backend/src/services/reportingService.js`
+- [X] T029 [US2] Ampliar el servicio con la agrupación por plato en `backend/src/services/reportingService.js`
+- [X] T030 [US2] Incluir `porCamarero` y `porPlato` en la respuesta del endpoint en `backend/src/api/reportsRouter.js`
+- [X] T031 [P] [US2] Crear el componente de tabla de desglose reutilizable en `frontend/src/components/TablaDesglose.jsx`
+- [X] T032 [US2] Renderizar las tablas de desglose en la página del dashboard en `frontend/src/pages/PaginaDashboard.jsx` (depende de T031)
 
 **Checkpoint**: US1 y US2 funcionan de forma independiente
 
@@ -120,22 +120,22 @@ porcentaje.
 
 ### Pruebas de US3
 
-- [ ] T033 [P] [US3] Prueba de contrato del bloque `comparacion` en `backend/tests/contract/reports_comparison.test.js`
-- [ ] T034 [P] [US3] Prueba unitaria de diferencia y tendencia y del caso sin día anterior en `backend/tests/unit/reporting_comparison.test.js`
-- [ ] T035 [P] [US3] Prueba de componente del indicador de tendencia en `frontend/tests/components/dashboard_comparison.test.jsx`
-- [ ] T036 [P] [US3] Prueba de integración del cálculo con base cero (sin división por cero, sin porcentaje, tendencia `subida`) en `backend/tests/integration/reporting_zero_base.test.js`
-- [ ] T037 [P] [US3] Prueba de componente de la presentación «sin base de comparación» en `frontend/tests/components/dashboard_comparison_zero_base.test.jsx`
+- [X] T033 [P] [US3] Prueba de contrato del bloque `comparacion` en `backend/tests/contract/reports_comparison.test.js`
+- [X] T034 [P] [US3] Prueba unitaria de diferencia y tendencia y del caso sin día anterior en `backend/tests/unit/reporting_comparison.test.js`
+- [X] T035 [P] [US3] Prueba de componente del indicador de tendencia en `frontend/tests/components/dashboard_comparison.test.jsx`
+- [X] T036 [P] [US3] Prueba de integración del cálculo con base cero (sin división por cero, sin porcentaje, tendencia `subida`) en `backend/tests/integration/reporting_zero_base.test.js`
+- [X] T037 [P] [US3] Prueba de componente de la presentación «sin base de comparación» en `frontend/tests/components/dashboard_comparison_zero_base.test.jsx`
 
 ### Implementación de US3
 
-- [ ] T038 [US3] Implementar el cálculo de la comparación (importe, porcentaje, tendencia) en `backend/src/services/reportingService.js`
-- [ ] T039 [US3] Manejar el caso sin día anterior (`diaAnterior = null`) en `backend/src/services/reportingService.js`
-- [ ] T040 [US3] Añadir la comparación por camarero y por plato en `backend/src/services/reportingService.js`
-- [ ] T041 [US3] Incluir `comparacion` en la respuesta del endpoint en `backend/src/api/reportsRouter.js`
-- [ ] T042 [US3] Implementar la comparación con base cero (`diferenciaImporte` absoluta, `diferenciaPorcentaje = null`, tendencia `subida`) y exponer `sinBaseComparacion` en la respuesta en `backend/src/services/reportingService.js` y `backend/src/api/reportsRouter.js` (depende de T041)
-- [ ] T043 [P] [US3] Crear el componente de indicador de tendencia (icono + color + texto) en `frontend/src/components/IndicadorTendencia.jsx`
-- [ ] T044 [US3] Renderizar el bloque de comparación en la página del dashboard en `frontend/src/pages/PaginaDashboard.jsx` (depende de T043)
-- [ ] T045 [US3] Mostrar «sin base de comparación» con la diferencia absoluta en euros y sin porcentaje cuando `sinBaseComparacion = true` en `frontend/src/pages/PaginaDashboard.jsx` (depende de T044)
+- [X] T038 [US3] Implementar el cálculo de la comparación (importe, porcentaje, tendencia) en `backend/src/services/reportingService.js`
+- [X] T039 [US3] Manejar el caso sin día anterior (`diaAnterior = null`) en `backend/src/services/reportingService.js`
+- [X] T040 [US3] Añadir la comparación por camarero y por plato en `backend/src/services/reportingService.js`
+- [X] T041 [US3] Incluir `comparacion` en la respuesta del endpoint en `backend/src/api/reportsRouter.js`
+- [X] T042 [US3] Implementar la comparación con base cero (`diferenciaImporte` absoluta, `diferenciaPorcentaje = null`, tendencia `subida`) y exponer `sinBaseComparacion` en la respuesta en `backend/src/services/reportingService.js` y `backend/src/api/reportsRouter.js` (depende de T041)
+- [X] T043 [P] [US3] Crear el componente de indicador de tendencia (icono + color + texto) en `frontend/src/components/IndicadorTendencia.jsx`
+- [X] T044 [US3] Renderizar el bloque de comparación en la página del dashboard en `frontend/src/pages/PaginaDashboard.jsx` (depende de T043)
+- [X] T045 [US3] Mostrar «sin base de comparación» con la diferencia absoluta en euros y sin porcentaje cuando `sinBaseComparacion = true` en `frontend/src/pages/PaginaDashboard.jsx` (depende de T044)
 
 **Checkpoint**: las tres historias son funcionales e independientemente verificables
 
@@ -145,14 +145,14 @@ porcentaje.
 
 **Propósito**: Mejoras que afectan a varias historias
 
-- [ ] T046 [P] Añadir índice sobre `cuentas(fechaCierre, estado)` para el rendimiento (<3 s) en `backend/db/schema.sql`
-- [ ] T047 [P] Implementar el estado "sin conexión" reutilizable en `frontend/src/components/EstadoConexion.jsx`
-- [ ] T048 [P] Actualizar la documentación de puesta en marcha en `README.md`
-- [ ] T049 Auditar accesibilidad de tablas e indicadores (texto + icono, no solo color) en `frontend/src/components/TablaDesglose.jsx` y `frontend/src/components/IndicadorTendencia.jsx`
-- [ ] T050 Ejecutar los escenarios E1–E9 de `quickstart.md` y registrar resultados
-- [ ] T051 Ejecutar el escenario E10 de `quickstart.md` (día anterior sin ventas: diferencia en euros, «sin base de comparación», sin porcentaje) y registrar resultados (depende de T042, T045)
-- [ ] T052 [P] Endurecer la seguridad (comprobación de rol en backend, sin datos de más) en `backend/src/api/reportsRouter.js`
-- [ ] T053 [P] Añadir prueba de formato es-ES de importes y fechas (punto de miles, coma decimal, € y fecha) en `frontend/tests/utils/format.test.js`
+- [X] T046 [P] Añadir índice sobre `cuentas(fechaCierre, estado)` para el rendimiento (<3 s) en `backend/db/schema.sql`
+- [X] T047 [P] Implementar el estado "sin conexión" reutilizable en `frontend/src/components/EstadoConexion.jsx`
+- [X] T048 [P] Actualizar la documentación de puesta en marcha en `README.md`
+- [X] T049 Auditar accesibilidad de tablas e indicadores (texto + icono, no solo color) en `frontend/src/components/TablaDesglose.jsx` y `frontend/src/components/IndicadorTendencia.jsx`
+- [X] T050 Ejecutar los escenarios E1–E9 de `quickstart.md` y registrar resultados
+- [X] T051 Ejecutar el escenario E10 de `quickstart.md` (día anterior sin ventas: diferencia en euros, «sin base de comparación», sin porcentaje) y registrar resultados (depende de T042, T045)
+- [X] T052 [P] Endurecer la seguridad (comprobación de rol en backend, sin datos de más) en `backend/src/api/reportsRouter.js`
+- [X] T053 [P] Añadir prueba de formato es-ES de importes y fechas (punto de miles, coma decimal, € y fecha) en `frontend/tests/utils/format.test.js`
 
 ---
 

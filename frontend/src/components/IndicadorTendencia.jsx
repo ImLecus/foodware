@@ -1,0 +1,35 @@
+import { Box, Icon, Text } from '@chakra-ui/react';
+
+export default function IndicadorTendencia({ tendencia, diferenciaPorcentaje, sinBaseComparacion }) {
+  if (tendencia === 'sin_variacion') {
+    return (
+      <Box display="flex" alignItems="center" gap={2}>
+        <Text aria-label="sin variación">→</Text>
+        <Text>Sin variación</Text>
+      </Box>
+    );
+  }
+  if (tendencia === 'subida') {
+    return (
+      <Box display="flex" alignItems="center" gap={2} color="green.600">
+        <Text aria-label="subida">▲</Text>
+        <Text>Subida</Text>
+        {!sinBaseComparacion && diferenciaPorcentaje !== null ? (
+          <Text>({diferenciaPorcentaje >= 0 ? '+' : ''}{diferenciaPorcentaje}%)</Text>
+        ) : null}
+      </Box>
+    );
+  }
+  if (tendencia === 'bajada') {
+    return (
+      <Box display="flex" alignItems="center" gap={2} color="red.600">
+        <Text aria-label="bajada">▼</Text>
+        <Text>Bajada</Text>
+        {!sinBaseComparacion && diferenciaPorcentaje !== null ? (
+          <Text>({diferenciaPorcentaje}%)</Text>
+        ) : null}
+      </Box>
+    );
+  }
+  return <Text>{tendencia}</Text>;
+}

@@ -244,3 +244,32 @@ Task: "Build kitchen page and components in frontend/src/pages/CocinaPage.jsx, f
   lo hecho y esperar a que la persona revise y haga el commit antes de continuar
 - Commits con Conventional Commits en español de España (constitución, principio VI)
 - Evitar tareas vagas o que toquen el mismo fichero en paralelo sin dependencia
+
+---
+
+## Phase 7: Convergence
+
+- [X] T047 CRITICAL Normalizar los mensajes de error visibles al español y unificar el cuerpo de error de la API a `{ codigo, mensaje }` en `backend/src/middleware/error.js`, `backend/src/routes/mesas.js`, `backend/src/routes/pedidos.js` y `frontend/src/services/api.js`; hacer que `SalaPage.jsx` y `CocinaPage.jsx` muestren mensajes en español también ante fallos de red, y cubrirlo con pruebas per Constitution II, FR-012, T034, T012, T027, T033 (contradicts)
+- [X] T048 CRITICAL Corregir el criterio de pedido completado para que el aviso y el deshacer se disparen cuando el pedido deja de estar pendiente en la partida del cocinero: filtrar por partida en `contarLineasPendientes()` y `marcarListo.js`, ajustar `CocinaPage.jsx` y las pruebas de T019/T020/T026/T043/T044/T045; con pedidos mixtos del seed, la última línea de la partida debe producir `pedidoCompletado: true` y mostrar el aviso per FR-006, FR-014, US1/AC3, US1/AC6, `data-model.md` (contradicts)
+- [X] T049 HIGH Exigir o derivar la partida del cocinero en `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` y rechazar con 400/403 cuando falte o no coincida, en lugar de validar solo si llega `?partida=`; actualizar `backend/tests/contract/marcar-estado.test.js` y `backend/tests/unit/marcar-listo-service.test.js` per FR-002, FR-003, T019, T021 (partial)
+- [X] T050 HIGH Exponer la partida de cada línea y ocultar o deshabilitar la acción de marcar/deshacer en `LineaPlato.jsx`, `PedidoCard.jsx` y `CocinaPage.jsx` cuando la línea no pertenece a la partida del cocinero, de modo que la UI no ofrezca una acción que el backend rechaza; añadir prueba de componente per FR-003, T023, T024, quickstart 4 (contradicts)
+- [X] T051 HIGH Corregir `AvisoPedidoCompletado`: llamar a `onCerrar` al pulsar Deshacer (o reiniciar el estado con `key` por pedido/línea), estabilizar el temporizador para que no se reinicie en cada render, mostrar el aviso a partir de la respuesta del marcado aunque falle el refetch y añadir una prueba de dos completados consecutivos per FR-014, SC-009, T025, T026, T045 (partial)
+- [X] T052 HIGH Implementar `GET /api/mesas/{mesaId}/eventos` y enrutar `linea.actualizada`, `pedido.pendientes-cambiado` y `pedido.reabierto` por mesa/partida con los payloads de `contracts/events.md` (incluyendo `tipo`, `mesa`, `partida`, `linea` anidada y `lineaId`); actualizar `hub.js`, `sse.js`, `emit.js`, `routes/mesas.js`, `services/events.js`, `state/useEstadoPlatos.js` y las pruebas T027/T029/T031/T032/T035 per FR-008, FR-011, `contracts/events.md` (contradicts)
+- [X] T053 HIGH Hacer que `useEstadoPlatos` reaccione a `onEstadoConexion`: mostrar el indicador de «sin conexión» y datos no actualizados en `SalaPage` y volver a pedir `estado-platos` al reconectar, sin duplicar ni perder líneas; añadir prueba de reconexión per FR-011, T035, `contracts/events.md` (partial)
+- [X] T054 MEDIUM Reejecutar el quickstart 004 completo tras las correcciones (escenarios 1–12), actualizar `README.md` y `quickstart.md` para el criterio de completado por partida y documentar la verificación per T044, T045, Constitution IV (partial)
+- [X] T055 LOW Envolver `marcarLinea` en una transacción de SQLite y añadir una prueba de doble marcado simultáneo que garantice un único `listoEn` per T019, plan R6, `data-model.md` V-002 (partial)
+- [X] T056 LOW Añadir el mapa de FR-001…FR-016 a las pruebas o a un documento de verificación de la historia, indicando qué test cubre cada requisito per T046 (missing)
+
+---
+
+## Phase 8: Convergence
+
+- [X] T057 Documentar en `specs/004-marcar_listos/contracts/openapi.yaml` el parámetro obligatorio `partida` de `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado`, la respuesta `400 partida_requerida` y ejemplos actualizados; verificar el contrato con una prueba per T049, FR-002, FR-003 (`contradicts`)
+- [X] T058 Reiniciar el plazo de 10 s del aviso al cambiar de pedido/línea —o encolar los avisos— para que dos completados consecutivos sin cerrar el aviso conserven la acción «Deshacer» durante al menos 10 s cada uno; añadir una prueba de dos completados consecutivos sin pulsar antes «Deshacer» per FR-014, SC-009, T025, T026, T045, T051 (`partial`)
+
+---
+
+## Phase 9: Convergence
+
+- [X] T059 Alinear `specs/004-marcar_listos/contracts/openapi.yaml` con la semántica por partida: añadir `partida` opcional a `LineaPedido`, corregir el resumen del ejemplo 200 y la descripción del 409 (partida completada, no pedido completo), y verificar el contrato con la prueba existente per T050, T057, FR-006, FR-014 (`partial`)
+- [X] T060 Actualizar `specs/004-marcar_listos/data-model.md` para documentar que los avisos de pedido completado pueden coexistir hasta su plazo (cola) y que una nueva marca no descarta automáticamente los anteriores, en coherencia con T058 per SC-009, FR-014, `data-model.md` (`partial`)

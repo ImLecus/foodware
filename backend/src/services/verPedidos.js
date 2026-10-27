@@ -22,11 +22,12 @@ export function listarPedidosPendientes(db, partidaId) {
       partida: partidaId,
       enviadoEn: aISO(pedido.enviado_en),
       modificadoEn: aISO(pedido.modificado_en),
-      modificado: Boolean(pedido.modificado || pedido.modificado_en),
+      modificado: Boolean(pedido.modificado_en),
       estado: tienePendientes ? 'pendiente' : 'completado',
       lineas: lineas.map((linea) => ({
         id: linea.id,
         nombrePlato: linea.nombre_plato,
+        partida: linea.partida,
         cantidad: linea.cantidad,
         estado: linea.estado,
         listoEn: aISO(linea.listo_en),

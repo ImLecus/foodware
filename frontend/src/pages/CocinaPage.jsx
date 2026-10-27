@@ -31,7 +31,7 @@ export default function CocinaPage({ cocineroId }) {
   const [intento, setIntento] = useState(0);
   const [sinConexion, setSinConexion] = useState(false);
   const [errorAccion, setErrorAccion] = useState(null);
-  const [avisoCompletado, setAvisoCompletado] = useState(null);
+  const [avisosCompletados, setAvisosCompletados] = useState([]);
 
   useEffect(() => {
     let cancelado = false;
@@ -107,10 +107,20 @@ export default function CocinaPage({ cocineroId }) {
 
     try {
       const resultado = await marcarEstado(pedido.id, linea.id, estado, partida);
-      const datosPedidos = await obtenerPedidosPendientes(partida);
-      setPedidos(datosPedidos);
       if (resultado?.pedidoCompletado) {
-        setAvisoCompletado({ pedidoId: pedido.id, lineaId: linea.id });
+        setAvisosCompletados((actuales) => {
+          const yaExiste = actuales.some(
+            (aviso) => aviso.pedidoId === pedido.id && aviso.lineaId === linea.id,
+          );
+          if (yaExiste) return actuales;
+          return [...actuales, { pedidoId: pedido.id, lineaId: linea.id }];
+        });
+      }
+      try {
+        const datosPedidos = await obtenerPedidosPendientes(partida);
+        setPedidos(datosPedidos);
+      } catch {
+        // El aviso ya está disponible aunque falle la recarga de la lista.
       }
     } catch (fallo) {
       setErrorAccion(fallo.message ?? 'No se pudo cambiar el estado del plato');
@@ -128,16 +138,24 @@ export default function CocinaPage({ cocineroId }) {
 
       {sinConexion && <AvisoSinConexion />}
 
-      {avisoCompletado && (
+      {avisosCompletados.map((aviso) => (
         <AvisoPedidoCompletado
-          pedidoId={avisoCompletado.pedidoId}
-          lineaId={avisoCompletado.lineaId}
+          key={`${aviso.pedidoId}-${aviso.lineaId}`}
+          pedidoId={aviso.pedidoId}
+          lineaId={aviso.lineaId}
           onDeshacer={({ pedidoId, lineaId }) =>
             cambiarEstado({ id: pedidoId }, { id: lineaId }, 'pendiente')
           }
-          onCerrar={() => setAvisoCompletado(null)}
+          onCerrar={() =>
+            setAvisosCompletados((actuales) =>
+              actuales.filter(
+                (item) =>
+                  item.pedidoId !== aviso.pedidoId || item.lineaId !== aviso.lineaId,
+              ),
+            )
+          }
         />
-      )}
+      ))}
 
       {errorAccion && (
         <Alert status="error" borderRadius="md" mb={4}>
