@@ -30,7 +30,6 @@ export default function CierreCuenta() {
   const [mesas, setMesas] = useState([]);
   const [cargandoMesas, setCargandoMesas] = useState(false);
   const [errorMesas, setErrorMesas] = useState(null);
-  const [ticket, setTicket] = useState(null);
   const [aviso, setAviso] = useState(null);
 
   const {
@@ -50,7 +49,6 @@ export default function CierreCuenta() {
   } = useCuenta(mesaId);
 
   useEffect(() => {
-    setTicket(null);
     setAviso(null);
   }, [mesaId]);
 
@@ -82,7 +80,6 @@ export default function CierreCuenta() {
   async function confirmar() {
     try {
       const resultado = await cerrar();
-      setTicket(resultado?.ticket ?? null);
       setAviso({
         tipo: 'success',
         texto: `Cuenta cerrada y ticket emitido por ${formatearEuros(
@@ -95,7 +92,6 @@ export default function CierreCuenta() {
   }
 
   function cancelar() {
-    setTicket(null);
     setAviso(null);
     setParametros({});
   }
@@ -251,7 +247,7 @@ export default function CierreCuenta() {
 
             <ResumenCuenta cuenta={cuenta} cargando={cargando} />
 
-            {!cargando && cuenta && !cuenta.division && (
+            {!cargando && cuenta && cuenta.estado !== 'cerrada' && !cuenta.division && (
               <Box mt={4}>
                 <DivisionCuenta
                   cuenta={cuenta}
@@ -307,15 +303,16 @@ export default function CierreCuenta() {
               </Box>
             )}
 
-            {ticket && (
-              <Alert status="success" borderRadius="md" mt={4}>
-                <AlertIcon />
-                <AlertDescription>
-                  Ticket emitido con {ticket.partes?.length ?? 0}{' '}
-                  {(ticket.partes?.length ?? 0) === 1 ? 'parte' : 'partes'} y un total de{' '}
-                  {formatearEuros(ticket.total_centimos)}.
-                </AlertDescription>
-              </Alert>
+            {!cargando && cuenta?.estado === 'cerrada' && !cuenta.division && (
+              <Box mt={4}>
+                <Alert status="success" borderRadius="md" mb={4}>
+                  <AlertIcon />
+                  <AlertDescription>
+                    La cuenta está cerrada. Este es el ticket final.
+                  </AlertDescription>
+                </Alert>
+                <TicketFinal ticket={ticketPartes} ticketEstado="emitido" />
+              </Box>
             )}
 
             {!cargando && cuenta && cuenta.total_centimos === 0 && (
@@ -324,7 +321,7 @@ export default function CierreCuenta() {
               </Text>
             )}
 
-            {!cuenta?.division && (
+            {!cuenta?.division && cuenta?.estado !== 'cerrada' && (
               <Button
                 mt={4}
                 colorScheme="teal"

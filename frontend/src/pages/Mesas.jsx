@@ -112,6 +112,7 @@ export default function Mesas() {
     conexion.addEventListener('pedido-confirmado', alCambiar);
     conexion.addEventListener('pedido-anulado', alCambiar);
     conexion.addEventListener('pedido-modificado', alCambiar);
+    conexion.addEventListener('mesa-cerrada', alCambiar);
 
     return () => {
       conexion.removeEventListener('open', alConectar);
@@ -119,6 +120,7 @@ export default function Mesas() {
       conexion.removeEventListener('pedido-confirmado', alCambiar);
       conexion.removeEventListener('pedido-anulado', alCambiar);
       conexion.removeEventListener('pedido-modificado', alCambiar);
+      conexion.removeEventListener('mesa-cerrada', alCambiar);
       conexion.close();
     };
   }, [cargarMesas]);

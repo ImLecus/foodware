@@ -59,12 +59,19 @@ describe('CierreCuenta (US2)', () => {
     listarMesas.mockResolvedValue([{ id: 'mesa-1', identificador: 'Mesa 1', estado: 'abierta' }]);
   });
 
-  it('confirma el cobro único cuando la cuenta no está dividida', async () => {
+  it('confirma el cobro único y muestra el ticket final', async () => {
     obtenerCuenta.mockResolvedValue(cuenta);
     cerrarCuentaUnica.mockResolvedValue({
       cuenta: { ...cuenta, estado: 'cerrada' },
       ticket_estado: 'emitido',
-      ticket: { total_centimos: 4250, partes: [{ comensal: null, importe_centimos: 4250 }] },
+      ticket: {
+        estado: 'emitido',
+        mesa_id: 'mesa-1',
+        identificador: 'Mesa 1',
+        total_centimos: 4250,
+        generado_en: '2026-10-27T21:00:00.000Z',
+        partes: [],
+      },
     });
 
     renderizar();
@@ -74,8 +81,55 @@ describe('CierreCuenta (US2)', () => {
 
     await waitFor(() => expect(cerrarCuentaUnica).toHaveBeenCalledWith('mesa-1', 4250));
     expect(await screen.findByText(/cuenta cerrada y ticket emitido/i)).toBeInTheDocument();
-    expect(screen.getByText(/ticket emitido con 1 parte/i)).toBeInTheDocument();
+    const ticket = await screen.findByTestId('ticket-final');
+    expect(within(ticket).getAllByText('42,50 €')).toHaveLength(2);
+    expect(within(ticket).getByText('Mesa 1')).toBeInTheDocument();
+    expect(screen.queryByText('Dividir la cuenta')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Confirmar cobro único' })).not.toBeInTheDocument();
     expect(dividirCuenta).not.toHaveBeenCalled();
+  });
+
+  it('recarga la cuenta si el cobro único detecta un total desactualizado', async () => {
+    obtenerCuenta
+      .mockResolvedValueOnce(cuenta)
+      .mockResolvedValueOnce({ ...cuenta, total_centimos: 4850 });
+
+    const error = new Error('El total de la cuenta ha cambiado: vuelve a revisarlo');
+    error.status = 422;
+    error.codigo = 'total_desactualizado';
+    cerrarCuentaUnica.mockRejectedValue(error);
+
+    renderizar();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirmar cobro único' }));
+
+    await waitFor(() => expect(obtenerCuenta).toHaveBeenCalledTimes(2));
+    expect(
+      (await screen.findAllByText(/ha cambiado: vuelve a revisarlo/i)).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText('48,50 €').length).toBeGreaterThan(0);
+    expect(screen.queryByTestId('ticket-final')).not.toBeInTheDocument();
+  });
+
+  it('recarga la cuenta si la división detecta un total desactualizado', async () => {
+    obtenerCuenta
+      .mockResolvedValueOnce(cuenta)
+      .mockResolvedValueOnce({ ...cuenta, total_centimos: 4850 });
+
+    const error = new Error('El total de la cuenta ha cambiado: vuelve a revisarlo');
+    error.status = 422;
+    error.codigo = 'total_desactualizado';
+    dividirCuenta.mockRejectedValue(error);
+
+    renderizar();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirmar división' }));
+
+    await waitFor(() => expect(obtenerCuenta).toHaveBeenCalledTimes(2));
+    expect(
+      (await screen.findAllByText(/ha cambiado: vuelve a revisarlo/i)).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText('Dividir la cuenta')).toBeInTheDocument();
   });
 
   it('divide la cuenta y sustituye el cobro único por el aviso de cuenta dividida', async () => {    obtenerCuenta.mockResolvedValue(cuenta);

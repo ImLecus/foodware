@@ -115,6 +115,9 @@ export function useCuenta(mesaId) {
     } catch (err) {
       if (esSinConexion(err)) {
         setSinConexion(true);
+      } else if (esTotalDesactualizado(err)) {
+        await recargar();
+        setError(err);
       } else {
         setError(err);
       }
@@ -122,7 +125,7 @@ export function useCuenta(mesaId) {
     } finally {
       setCerrando(false);
     }
-  }, [cuenta, mesaId]);
+  }, [cuenta, mesaId, recargar]);
 
   const dividir = useCallback(
     async (division) => {
@@ -143,6 +146,9 @@ export function useCuenta(mesaId) {
       } catch (err) {
         if (esSinConexion(err)) {
           setSinConexion(true);
+        } else if (esTotalDesactualizado(err)) {
+          await recargar();
+          setError(err);
         } else {
           setError(err);
         }
@@ -151,7 +157,7 @@ export function useCuenta(mesaId) {
         setConfirmandoDivision(false);
       }
     },
-    [mesaId],
+    [mesaId, recargar],
   );
 
   const pagarParte = useCallback(
