@@ -76,21 +76,21 @@
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Implementar el acceso a mesas abiertas en `backend/src/db/mesas.js`: reunir por mesa el pedido **enviado** (cuyas líneas se muestran) y detectar si además hay un pedido **en curso** (`en_curso` ⇒ mesa sin platos marcables); incluir las mesas ocupadas mientras su cuenta no se haya cerrado
-- [ ] T019 [US1] Implementar el servicio de instantánea de sala (mesas abiertas, platos por partida, `completa`; mesa en curso con `platos` vacío, `completa` falso y `aviso` nulo; si la mesa deja de estar abierta por cierre de cuenta desaparece de la lista y su aviso no se muestra) en `backend/src/services/salaMesas.js`
-- [ ] T020 [US1] Implementar el servicio de marcado/deshace de línea y la difusión del evento `linea.actualizada` (reutilizando el emisor existente de `backend/src/realtime/emit.js`) en `backend/src/services/estadoLinea.js` y `backend/src/realtime/emit.js`
-- [ ] T021 [US1] Implementar el esquema de validación de la entrada de estado con `zod` en `backend/src/schemas/estadoLinea.js`
-- [ ] T022 [US1] Implementar `GET /api/sala/mesas` en `backend/src/routes/sala.js`
-- [ ] T023 [US1] Implementar `PUT /api/pedidos/{pedidoId}/lineas/{lineaId}/estado` en `backend/src/routes/lineas.js` y montarlo en `backend/src/app.js`
-- [ ] T024 [P] [US1] Implementar el cliente HTTP de sala (fetch) en `frontend/src/services/api.js`
-- [ ] T025 [P] [US1] Añadir el canal SSE de sala al envoltorio existente en `frontend/src/services/realtime.js`
-- [ ] T026 [US1] Implementar el hook `useSala` (instantánea + SSE + reconexión + estado sin conexión) en `frontend/src/hooks/useSala.js`
-- [ ] T027 [P] [US1] Implementar el componente `PlatoEstado` (indicador pendiente/listo) en `frontend/src/components/PlatoEstado.jsx`
-- [ ] T028 [P] [US1] Implementar el componente `MesaCard` (mesa con sus platos agrupados por partida) en `frontend/src/components/MesaCard.jsx`
-- [ ] T029 [P] [US1] Reutilizar (o adaptar) el componente existente `AvisoSinConexion` como indicador de "sin conexión" en `frontend/src/components/AvisoSinConexion.jsx` (evitar crear un duplicado)
-- [ ] T030 [US1] Implementar la página `SalaEstado` reutilizando los componentes existentes `EstadoVacio` ("No hay mesas abiertas"), `EstadoCarga` (indicador de carga) y `AvisoSinConexion`, con la lista de mesas y el estado sin conexión, en `frontend/src/pages/SalaEstado.jsx`
-- [ ] T031 [US1] Añadir la ruta y el enlace de la vista de sala (sin sustituir la pantalla de comandas existente) en `frontend/src/App.jsx`
-- [ ] T032 [US1] Test de integración de US1 (marcar listo → reflejo en sala sin recargar) en `backend/tests/integration/sala-vivo.test.js`
+- [x] T018 [US1] Implementar el acceso a mesas abiertas en `backend/src/db/mesas.js`: reunir por mesa el pedido **enviado** (cuyas líneas se muestran) y detectar si además hay un pedido **en curso** (`en_curso` ⇒ mesa sin platos marcables); incluir las mesas ocupadas mientras su cuenta no se haya cerrado
+- [x] T019 [US1] Implementar el servicio de instantánea de sala (mesas abiertas, platos por partida, `completa`; mesa en curso con `platos` vacío, `completa` falso y `aviso` nulo; si la mesa deja de estar abierta por cierre de cuenta desaparece de la lista y su aviso no se muestra) en `backend/src/services/salaMesas.js`
+- [x] T020 [US1] Implementar el servicio de marcado/deshace de línea y la difusión del evento `linea.actualizada` (reutilizando el emisor existente de `backend/src/realtime/emit.js`) en `backend/src/services/estadoLinea.js` y `backend/src/realtime/emit.js`
+- [x] T021 [US1] Implementar el esquema de validación de la entrada de estado con `zod` en `backend/src/schemas/estadoLinea.js`
+- [x] T022 [US1] Implementar `GET /api/sala/mesas` en `backend/src/routes/sala.js`
+- [x] T023 [US1] Implementar `PUT /api/pedidos/{pedidoId}/lineas/{lineaId}/estado` en `backend/src/routes/lineas.js` y montarlo en `backend/src/app.js`
+- [x] T024 [P] [US1] Implementar el cliente HTTP de sala (fetch) en `frontend/src/services/api.js`
+- [x] T025 [P] [US1] Añadir el canal SSE de sala al envoltorio existente en `frontend/src/services/realtime.js`
+- [x] T026 [US1] Implementar el hook `useSala` (instantánea + SSE + reconexión + estado sin conexión) en `frontend/src/hooks/useSala.js`
+- [x] T027 [P] [US1] Implementar el componente `PlatoEstado` (indicador pendiente/listo) en `frontend/src/components/PlatoEstado.jsx`
+- [x] T028 [P] [US1] Implementar el componente `MesaCard` (mesa con sus platos agrupados por partida) en `frontend/src/components/MesaCard.jsx`
+- [x] T029 [P] [US1] Reutilizar (o adaptar) el componente existente `AvisoSinConexion` como indicador de "sin conexión" en `frontend/src/components/AvisoSinConexion.jsx` (evitar crear un duplicado)
+- [x] T030 [US1] Implementar la página `SalaEstado` reutilizando los componentes existentes `EstadoVacio` ("No hay mesas abiertas"), `EstadoCarga` (indicador de carga) y `AvisoSinConexion`, con la lista de mesas y el estado sin conexión, en `frontend/src/pages/SalaEstado.jsx`
+- [x] T031 [US1] Añadir la ruta y el enlace de la vista de sala (sin sustituir la pantalla de comandas existente) en `frontend/src/App.jsx`
+- [x] T032 [US1] Test de integración de US1 (marcar listo → reflejo en sala sin recargar) en `backend/tests/integration/sala-vivo.test.js`
 
 **Checkpoint**: User Story 1 totalmente funcional y probable por separado
 
