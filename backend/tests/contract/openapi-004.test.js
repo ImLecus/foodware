@@ -22,4 +22,12 @@ describe('contrato OpenAPI de marcar estado (004)', () => {
     expect(contenido).toContain('marcarListo:');
     expect(contenido).toContain('deshacer:');
   });
+
+  it('documenta la partida por línea y la semántica por partida', () => {
+    expect(contenido).toContain(
+      'description: Partida del plato; presente en la lista de pendientes de cocina.',
+    );
+    expect(contenido).toContain('la partida se completa');
+    expect(contenido).toContain('partida que ya está completada');
+  });
 });

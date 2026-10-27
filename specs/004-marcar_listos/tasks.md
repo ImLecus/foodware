@@ -266,3 +266,10 @@ Task: "Build kitchen page and components in frontend/src/pages/CocinaPage.jsx, f
 
 - [X] T057 Documentar en `specs/004-marcar_listos/contracts/openapi.yaml` el parámetro obligatorio `partida` de `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado`, la respuesta `400 partida_requerida` y ejemplos actualizados; verificar el contrato con una prueba per T049, FR-002, FR-003 (`contradicts`)
 - [X] T058 Reiniciar el plazo de 10 s del aviso al cambiar de pedido/línea —o encolar los avisos— para que dos completados consecutivos sin cerrar el aviso conserven la acción «Deshacer» durante al menos 10 s cada uno; añadir una prueba de dos completados consecutivos sin pulsar antes «Deshacer» per FR-014, SC-009, T025, T026, T045, T051 (`partial`)
+
+---
+
+## Phase 9: Convergence
+
+- [X] T059 Alinear `specs/004-marcar_listos/contracts/openapi.yaml` con la semántica por partida: añadir `partida` opcional a `LineaPedido`, corregir el resumen del ejemplo 200 y la descripción del 409 (partida completada, no pedido completo), y verificar el contrato con la prueba existente per T050, T057, FR-006, FR-014 (`partial`)
+- [ ] T060 Actualizar `specs/004-marcar_listos/data-model.md` para documentar que los avisos de pedido completado pueden coexistir hasta su plazo (cola) y que una nueva marca no descarta automáticamente los anteriores, en coherencia con T058 per SC-009, FR-014, `data-model.md` (`partial`)

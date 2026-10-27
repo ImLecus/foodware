@@ -84,7 +84,7 @@ paths:
               schema: { $ref: "#/components/schemas/LineaPedido" }
               examples:
                 ultimaLinea:
-                  summary: Marca de la última línea pendiente (el pedido se completa)
+                  summary: Marca de la última línea pendiente (la partida se completa)
                   value:
                     id: "l-9"
                     pedidoId: "p-123"
@@ -119,8 +119,8 @@ paths:
               schema: { $ref: "#/components/schemas/Error" }
         "409":
           description: >
-            Se intenta marcar `listo` una línea de un pedido que ya no está pendiente (FR-003).
-            Deshacer una línea `listo` se admite aunque el pedido esté `completado`, para permitir la
+            Se intenta marcar `listo` una línea de una partida que ya está completada (FR-003).
+            Deshacer una línea `listo` se admite aunque la partida esté completada, para permitir la
             reversión desde el aviso (FR-014).
           content:
             application/json:
@@ -170,6 +170,10 @@ components:
         id: { type: string }
         pedidoId: { type: string }
         nombrePlato: { type: string }
+        partida:
+          type: string
+          enum: [entrantes, principales, postres]
+          description: Partida del plato; presente en la lista de pendientes de cocina.
         cantidad: { type: integer, minimum: 1 }
         estado: { type: string, enum: [pendiente, listo] }
         listoEn:
