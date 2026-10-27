@@ -25,3 +25,7 @@ CREATE TABLE IF NOT EXISTS plato_ingredientes (
   ingrediente_id TEXT NOT NULL REFERENCES ingredientes(id) ON DELETE CASCADE,
   PRIMARY KEY (plato_id, ingrediente_id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_platos_partida_codigo ON platos(partida_codigo);
+CREATE INDEX IF NOT EXISTS idx_plato_ingredientes_ingrediente_id ON plato_ingredientes(ingrediente_id);
+CREATE INDEX IF NOT EXISTS idx_plato_ingredientes_plato_id ON plato_ingredientes(plato_id);
