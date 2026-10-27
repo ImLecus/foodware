@@ -11,6 +11,7 @@ import {
   retirarLinea,
 } from '../db/pedidos.js';
 import { obtenerPlato } from '../db/platos.js';
+import { numeroDeMesa } from '../models/mesa.js';
 import {
   adquirirBloqueoEdicion,
   estadoBloqueo,
@@ -26,14 +27,21 @@ import {
   exigirAnulable,
   exigirConfirmable,
   exigirPedido,
+  PARTIDAS,
   serializarPedido,
   serializarPedidoConfirmado,
 } from '../domain/pedidos.js';
 import { identificarCamarero } from '../middleware/camarero.js';
 import { comprobarEdicion } from '../middleware/bloqueo.js';
 import { ErrorHttp } from '../middleware/error.js';
+import {
+  emitirPedidoModificado,
+  emitirPedidoNuevo,
+  emitirPendientesCambiado,
+} from '../realtime/emit.js';
 import { publicar } from '../realtime/hub.js';
 import { sincronizarAvisoMesa } from '../services/avisos.js';
+import { aISO } from '../utils/fechas.js';
 import { marcarLinea } from '../services/marcarListo.js';
 import { validarLineaPatchEdicion, validarNuevaLineaEdicion } from '../schemas/edicion.js';
 
@@ -43,6 +51,17 @@ function buscarLinea(pedido, lineaId) {
     throw new ErrorHttp(404, 'Línea de pedido no encontrada');
   }
   return linea;
+}
+
+function emitirNuevoPorPartida(pedido, mesa) {
+  const grupos = agruparPorPartida(pedido.lineas);
+  const numero = numeroDeMesa(mesa.identificador);
+
+  for (const partida of PARTIDAS) {
+    if (grupos[partida].length === 0) continue;
+    emitirPedidoNuevo({ pedidoId: pedido.id, mesa: numero, partida });
+    emitirPendientesCambiado({ partida });
+  }
 }
 
 export function pedidosRouter(db) {
@@ -204,6 +223,20 @@ export function pedidosRouter(db) {
       const mesa = obtenerMesa(db, actualizado.mesa_id);
       const porPartida = agruparPorPartida(actualizado.lineas);
       const estadoMesa = sincronizarAvisoMesa(db, actualizado.mesa_id, { nuevoPlatoListo: false });
+      const modificadoEn = aISO(actualizado.cambios_enviados_en) ?? aISO(actualizado.modificado_en);
+      const numero = numeroDeMesa(mesa.identificador);
+
+      for (const partida of PARTIDAS) {
+        if (porPartida[partida].length > 0) {
+          emitirPedidoModificado({
+            pedidoId: actualizado.id,
+            partida,
+            modificadoEn,
+            mesa: numero,
+          });
+        }
+        emitirPendientesCambiado({ partida });
+      }
 
       publicar('pedido-modificado', {
         pedidoId: actualizado.id,
@@ -231,6 +264,8 @@ export function pedidosRouter(db) {
       const confirmado = confirmarPedido(db, pedido.id);
       const mesa = obtenerMesa(db, confirmado.mesa_id);
 
+      emitirNuevoPorPartida(confirmado, mesa);
+
       publicar('pedido-confirmado', {
         pedidoId: confirmado.id,
         mesaId: confirmado.mesa_id,
@@ -247,6 +282,10 @@ export function pedidosRouter(db) {
     try {
       const pedido = exigirAnulable(exigirPedido(obtenerPedido(db, req.params.pedidoId)));
       anularPedido(db, pedido.id);
+
+      for (const partida of PARTIDAS) {
+        emitirPendientesCambiado({ partida });
+      }
 
       publicar('pedido-anulado', { pedidoId: pedido.id, mesaId: pedido.mesa_id });
 

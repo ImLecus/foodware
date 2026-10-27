@@ -3,6 +3,7 @@ import {
   buscarLineaDePedido,
   contarLineasPendientes,
 } from '../models/lineaPedido.js';
+import { buscarMesa, numeroDeMesa } from '../models/mesa.js';
 import { buscarPedido } from '../models/pedido.js';
 import { ErrorHttp } from '../middleware/error.js';
 import { logger } from '../config/logger.js';
@@ -50,6 +51,8 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
     throw new ErrorHttp(403, 'La línea no pertenece a tu partida', 'partida_ajena');
   }
 
+  const mesa = buscarMesa(db, pedido.mesa_id);
+  const mesaNumero = numeroDeMesa(mesa?.identificador);
   const pendientesAntes = contarLineasPendientes(db, pedidoId);
 
   if (estado === 'listo') {
@@ -74,6 +77,8 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
       lineaId,
       estado: 'listo',
       listoEn: respuesta.listoEn,
+      mesa: mesaNumero,
+      partida: linea.partida,
     });
     respuesta.mesa = sincronizarAvisoMesa(db, pedido.mesa_id, { nuevoPlatoListo: true });
     if (respuesta.pedidoCompletado) {
@@ -98,11 +103,23 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
     { pedidoReabierto: pendientesAntes === 0 },
   );
 
-  emitirLineaActualizada({ pedidoId, lineaId, estado: 'pendiente', listoEn: null });
+  emitirLineaActualizada({
+    pedidoId,
+    lineaId,
+    estado: 'pendiente',
+    listoEn: null,
+    mesa: mesaNumero,
+    partida: linea.partida,
+  });
   respuesta.mesa = sincronizarAvisoMesa(db, pedido.mesa_id);
   if (respuesta.pedidoReabierto) {
     emitirPendientesCambiado({ partida: linea.partida });
-    emitirPedidoReabierto({ pedidoId, partida: linea.partida });
+    emitirPedidoReabierto({
+      pedidoId,
+      partida: linea.partida,
+      mesa: mesaNumero,
+      lineaId,
+    });
   }
   logger.info('Línea devuelta a pendiente', {
     pedidoId,

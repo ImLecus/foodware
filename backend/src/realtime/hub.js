@@ -1,11 +1,32 @@
-const clientes = new Set();
-const latidos = new Map();
+import { logger } from '../config/logger.js';
+
+/** Clientes SSE: respuesta HTTP -> canal y temporizador de latido. */
+const clientes = new Map();
+
+function canalDe(partida) {
+  return partida ? `partida:${partida}` : null;
+}
+
+function cerrarCliente(res) {
+  const cliente = clientes.get(res);
+  if (!cliente) return;
+  clearInterval(cliente.latido);
+  clientes.delete(res);
+}
+
+function escribir(res, mensaje) {
+  try {
+    res.write(mensaje);
+  } catch {
+    cerrarCliente(res);
+  }
+}
 
 /**
- * Suscribe una respuesta HTTP al canal SSE compartido.
+ * Suscribe una respuesta HTTP al canal SSE global o al canal de una partida.
  * El cliente recibe un comentario inicial y un latido periódico.
  */
-export function suscribir(req, res) {
+export function suscribir(req, res, partida = null) {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache, no-transform',
@@ -13,29 +34,44 @@ export function suscribir(req, res) {
     'X-Accel-Buffering': 'no',
   });
   res.write(': conectado\n\n');
-  clientes.add(res);
 
   const latido = setInterval(() => {
-    res.write(': ping\n\n');
+    escribir(res, ': ping\n\n');
   }, 25_000);
-  latidos.set(res, latido);
+  clientes.set(res, { canal: canalDe(partida), latido });
 
-  const cerrar = () => {
-    clearInterval(latidos.get(res));
-    latidos.delete(res);
-    clientes.delete(res);
-  };
-
+  const cerrar = () => cerrarCliente(res);
   req.on('close', cerrar);
   req.on('error', cerrar);
 }
 
-/** Difunde un evento a todos los clientes conectados. */
-export function publicar(evento, datos) {
-  const mensaje = `event: ${evento}\ndata: ${JSON.stringify(datos)}\n\n`;
-  for (const cliente of clientes) {
-    cliente.write(mensaje);
+function identificadoresDe(datos) {
+  const identificadores = {};
+  for (const clave of ['pedidoId', 'lineaId', 'mesaId', 'aviso_id', 'mesa_id']) {
+    if (datos[clave] !== undefined) identificadores[clave] = datos[clave];
   }
+  return identificadores;
+}
+
+/**
+ * Difunde un evento a los clientes globales y, si el evento lleva `partida`,
+ * también al canal de esa partida. Los clientes de otras partidas no lo reciben.
+ */
+export function publicar(evento, datos = {}) {
+  const mensaje = `event: ${evento}\ndata: ${JSON.stringify(datos)}\n\n`;
+  const canal = datos.partida ? canalDe(datos.partida) : null;
+
+  for (const [cliente, info] of clientes.entries()) {
+    if (info.canal === null || (canal !== null && info.canal === canal)) {
+      escribir(cliente, mensaje);
+    }
+  }
+
+  logger.info('Evento SSE emitido', {
+    evento,
+    partida: datos.partida ?? null,
+    ...identificadoresDe(datos),
+  });
 }
 
 export function numeroDeClientes() {
@@ -44,14 +80,13 @@ export function numeroDeClientes() {
 
 /** Solo para pruebas: cierra y limpia todas las suscripciones. */
 export function reiniciarHub() {
-  for (const [cliente, latido] of latidos.entries()) {
-    clearInterval(latido);
+  for (const [cliente, info] of clientes.entries()) {
+    clearInterval(info.latido);
     try {
       cliente.end();
     } catch {
       // El cliente ya puede estar cerrado.
     }
   }
-  latidos.clear();
   clientes.clear();
 }

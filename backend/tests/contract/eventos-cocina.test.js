@@ -73,6 +73,7 @@ describe('SSE de cocina', () => {
 
     const contenido = escrito.join('');
     expect(contenido).toContain('event: pedido.nuevo');
+    expect(contenido).toContain('"tipo":"pedido.nuevo"');
     expect(contenido).toContain('"pedidoId":"pedido-1"');
     expect(contenido).toContain('"mesa":3');
   });
@@ -86,7 +87,9 @@ describe('SSE de cocina', () => {
 
     const contenido = escrito.join('');
     expect(contenido).toContain('event: pedido.pendientes-cambiado');
+    expect(contenido).toContain('"tipo":"pedido.pendientes-cambiado"');
     expect(contenido).toContain('event: linea.actualizada');
+    expect(contenido).toContain('"tipo":"linea.actualizada"');
     expect(contenido).toContain('"estado":"listo"');
   });
 });

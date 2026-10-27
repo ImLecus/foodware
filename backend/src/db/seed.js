@@ -20,6 +20,12 @@ const usuarios = [
     partida: 'principales',
   },
   { id: 'cocinero-postres', nombre: 'Lucía (postres)', rol: 'cocinero', partida: 'postres' },
+  {
+    id: 'cocinero-sin-partida',
+    nombre: 'Cocinero sin partida',
+    rol: 'cocinero',
+    partida: null,
+  },
   { id: 'encargado-1', nombre: 'Carmen (encargada)', rol: 'encargado', partida: null },
   { id: 'admin-1', nombre: 'Administración', rol: 'administrador', partida: null },
 ];
@@ -31,6 +37,20 @@ const mesas = [
   { id: 'mesa-4', identificador: 'Mesa 4' },
   { id: 'mesa-5', identificador: 'Mesa 5' },
   { id: 'mesa-6', identificador: 'Mesa 6' },
+  { id: 'mesa-7', identificador: 'Mesa 7' },
+  { id: 'mesa-8', identificador: 'Mesa 8' },
+  { id: 'mesa-9', identificador: 'Mesa 9' },
+  { id: 'mesa-10', identificador: 'Mesa 10' },
+  { id: 'mesa-11', identificador: 'Mesa 11' },
+  { id: 'mesa-12', identificador: 'Mesa 12' },
+  { id: 'mesa-13', identificador: 'Mesa 13' },
+  { id: 'mesa-14', identificador: 'Mesa 14' },
+  { id: 'mesa-15', identificador: 'Mesa 15' },
+  { id: 'mesa-16', identificador: 'Mesa 16' },
+  { id: 'mesa-17', identificador: 'Mesa 17' },
+  { id: 'mesa-18', identificador: 'Mesa 18' },
+  { id: 'mesa-19', identificador: 'Mesa 19' },
+  { id: 'mesa-20', identificador: 'Mesa 20' },
 ];
 
 const platos = [
@@ -131,9 +151,30 @@ const cargar = db.transaction(() => {
     `INSERT OR REPLACE INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
      VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
   );
-  insertarCuenta.run('cuenta-ayer-1', 'mesa-1', 'camarero-1', 35500, `${ayer} 10:00:00`, `${ayer} 12:00:00`);
-  insertarCuenta.run('cuenta-ayer-2', 'mesa-2', 'camarero-2', 22000, `${ayer} 10:00:00`, `${ayer} 12:00:00`);
-  insertarCuenta.run('cuenta-anteayer-1', 'mesa-3', 'camarero-1', 18000, `${anteayer} 10:00:00`, `${anteayer} 12:00:00`);
+  insertarCuenta.run(
+    'cuenta-ayer-1',
+    'mesa-1',
+    'camarero-1',
+    35500,
+    `${ayer} 10:00:00`,
+    `${ayer} 12:00:00`,
+  );
+  insertarCuenta.run(
+    'cuenta-ayer-2',
+    'mesa-2',
+    'camarero-2',
+    22000,
+    `${ayer} 10:00:00`,
+    `${ayer} 12:00:00`,
+  );
+  insertarCuenta.run(
+    'cuenta-anteayer-1',
+    'mesa-3',
+    'camarero-1',
+    18000,
+    `${anteayer} 10:00:00`,
+    `${anteayer} 12:00:00`,
+  );
 
   const insertarPedido = db.prepare(
     `INSERT OR IGNORE INTO pedidos (id, mesa_id, camarero_id, estado, creado_en, enviado_en)
@@ -154,6 +195,11 @@ const cargar = db.transaction(() => {
     ocuparMesa.run(pedido.mesaId);
   }
 });
+
+// Momento compartido para demostrar el desempate por identificador (FR-004).
+const enviadoEnEmpate = db
+  .prepare("SELECT datetime('now', '-25 minutes') AS momento")
+  .get().momento;
 
 const pedidosDemo = [
   {
@@ -212,6 +258,39 @@ const pedidosDemo = [
       { id: 'linea-demo-11', plato: 'plato-4', cantidad: 1, estado: 'pendiente' },
     ],
   },
+  {
+    id: 'pedido-demo-6',
+    mesa: 'mesa-6',
+    camarero: 'camarero-1',
+    enviadoEn: '-75 minutes',
+    modificado: 0,
+    lineas: [
+      { id: 'linea-demo-12', plato: 'plato-2', cantidad: 1, estado: 'pendiente' },
+      { id: 'linea-demo-13', plato: 'plato-4', cantidad: 1, estado: 'pendiente' },
+    ],
+  },
+  {
+    id: 'pedido-demo-7',
+    mesa: 'mesa-7',
+    camarero: 'camarero-2',
+    enviadoEnExacto: enviadoEnEmpate,
+    modificado: 0,
+    lineas: [
+      { id: 'linea-demo-14', plato: 'plato-1', cantidad: 1, estado: 'pendiente' },
+      { id: 'linea-demo-15', plato: 'plato-3', cantidad: 1, estado: 'pendiente' },
+    ],
+  },
+  {
+    id: 'pedido-demo-8',
+    mesa: 'mesa-8',
+    camarero: 'camarero-1',
+    enviadoEnExacto: enviadoEnEmpate,
+    modificado: 0,
+    lineas: [
+      { id: 'linea-demo-16', plato: 'plato-2', cantidad: 1, estado: 'pendiente' },
+      { id: 'linea-demo-17', plato: 'plato-5', cantidad: 1, estado: 'pendiente' },
+    ],
+  },
 ];
 
 const precios = new Map(platos.map((plato) => [plato.id, plato.precio]));
@@ -223,6 +302,11 @@ const cargarDemo = db.transaction(() => {
     VALUES (?, ?, ?, 'enviada', ?, datetime('now', ?),
             CASE WHEN ? = 1 THEN datetime('now', ?) ELSE NULL END)
   `);
+  const insertarPedidoExacto = db.prepare(`
+    INSERT OR IGNORE INTO pedidos
+      (id, mesa_id, camarero_id, estado, modificado, enviado_en, modificado_en)
+    VALUES (?, ?, ?, 'enviada', ?, ?, CASE WHEN ? = 1 THEN ? ELSE NULL END)
+  `);
   const insertarLinea = db.prepare(`
     INSERT OR IGNORE INTO lineas_pedido
       (id, pedido_id, plato_id, cantidad, precio_centimos, estado, listo_en)
@@ -233,15 +317,27 @@ const cargarDemo = db.transaction(() => {
   `);
 
   for (const pedido of pedidosDemo) {
-    insertarPedido.run(
-      pedido.id,
-      pedido.mesa,
-      pedido.camarero,
-      pedido.modificado,
-      pedido.enviadoEn,
-      pedido.modificado,
-      pedido.enviadoEn,
-    );
+    if (pedido.enviadoEnExacto) {
+      insertarPedidoExacto.run(
+        pedido.id,
+        pedido.mesa,
+        pedido.camarero,
+        pedido.modificado,
+        pedido.enviadoEnExacto,
+        pedido.modificado,
+        pedido.enviadoEnExacto,
+      );
+    } else {
+      insertarPedido.run(
+        pedido.id,
+        pedido.mesa,
+        pedido.camarero,
+        pedido.modificado,
+        pedido.enviadoEn,
+        pedido.modificado,
+        pedido.enviadoEn,
+      );
+    }
     ocuparMesa.run(pedido.mesa);
 
     for (const linea of pedido.lineas) {

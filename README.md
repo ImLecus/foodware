@@ -87,8 +87,13 @@ publicar('pedido-confirmado', { pedidoId: 'pedido-1' });
 ```
 
 Los nombres de evento acordados en los contratos de las historias son, entre otros:
-`pedido-confirmado`, `pedido-anulado`, `pedido.modificado`, `linea.actualizada`,
-`pedido.reabierto`, `aviso.activo`, `aviso.retirado`, `aviso.descartado`, `mesa-cerrada`.
+`pedido.nuevo`, `pedido.pendientes-cambiado`, `pedido.modificado`, `linea.actualizada`,
+`pedido.reabierto`, `pedido-confirmado`, `pedido-anulado`, `aviso.activo`, `aviso.retirado`,
+`aviso.descartado`, `mesa-cerrada`.
+
+`GET /api/eventos` es el canal global (compatibilidad y pantallas de sala). La cocina usa
+`GET /api/partidas/{partidaId}/eventos`: cada canal recibe solo los eventos de su partida. Si un
+evento incluye `partida`, `publicar()` lo entrega al canal global y al canal de esa partida.
 
 ## Base de datos compartida
 
@@ -139,7 +144,8 @@ La pantalla de sala (`/sala`) implementa el flujo completo de la historia 001:
 5. **Confirmar**: el pedido pasa a `enviada`, queda vinculado a su mesa y se publica el evento SSE
    `pedido-confirmado` con el pedido agrupado por partidas.
 6. **Anular**: con el pedido en curso, «Anular pedido» pide confirmación, elimina el pedido y sus
-   líneas, deja la mesa `libre` y publica `pedido-anulado`. No se envía nada a cocina.
+   líneas, deja la mesa `libre` y publica `pedido-anulado` y `pedido.pendientes-cambiado` para que
+   cocina retire el pedido de sus canales de partida.
 7. **Sin conexión**: si se pierde el SSE, la pantalla lo avisa y bloquea la edición y la
    confirmación, conservando lo anotado.
 
@@ -173,7 +179,8 @@ Sobre la pantalla de sala, al seleccionar un pedido en estado `enviada` aparece 
    indicaciones y retirar líneas (nunca la última). Cada cambio se aplica al mismo pedido y a la
    misma mesa, y lo marca como **Modificada** con **Cambios pendientes**.
 3. **Enviar cambios**: los cambios no se comunican a cocina hasta pulsar explícitamente
-   **Enviar cambios**; entonces se publica el evento SSE `pedido-modificado`.
+   **Enviar cambios**; entonces se publican `pedido.modificado` y
+   `pedido.pendientes-cambiado` (además del evento heredado `pedido-modificado`).
 4. **Bloqueo**: solo un camarero puede editar el pedido a la vez. Si otro lo tiene, la API responde
    `423 pedido_bloqueado`. Si el bloqueo caduca por inactividad, al guardar se responde
    `409 bloqueo_expirado` y el editor ofrece **Reabrir edición**.
@@ -215,6 +222,19 @@ npm test
 
 La vista de cocina identifica al cocinero con `?cocinero=<id>` (por defecto
 `cocinero-entrantes`). El canal SSE se abre por partida y refresca la lista sin recargar.
+
+El seed crea 20 mesas, un cocinero por partida y un cocinero sin partida
+(`cocinero-sin-partida`), pedidos pendientes en las tres partidas, un pedido con más de una hora de
+espera (`pedido-demo-6`) y dos pedidos con el mismo `enviadoEn` para comprobar el desempate por
+identificador (`pedido-demo-7` y `pedido-demo-8`). Para el escenario sin partida:
+
+```text
+http://localhost:5173/cocina?cocinero=cocinero-sin-partida
+```
+
+La guía de validación y el mapa de requisitos están en
+[`specs/003-ver_pedidos/quickstart.md`](specs/003-ver_pedidos/quickstart.md) y
+[`specs/003-ver_pedidos/verification.md`](specs/003-ver_pedidos/verification.md).
 
 ## Cocina: marcar platos como listos (historia 004)
 

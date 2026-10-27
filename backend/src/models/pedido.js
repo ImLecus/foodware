@@ -10,7 +10,6 @@ export function listarPedidosConPendientes(db, partidaId) {
         p.id,
         p.mesa_id,
         p.enviado_en,
-        p.modificado,
         p.modificado_en,
         m.identificador AS mesa_identificador
       FROM pedidos p
