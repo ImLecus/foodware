@@ -32,12 +32,12 @@ Aplicación web (monorepositorio): `backend/src/`, `backend/tests/`, `frontend/s
 
 **Purpose**: Inicialización del proyecto y estructura básica
 
-- [ ] T001 Create monorepo structure (`backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/tests/`) and root `docker-compose.yml` per plan
-- [ ] T002 [P] Init backend Node project in `backend/package.json` with `express`, `better-sqlite3`; dev deps `vitest`, `supertest`
-- [ ] T003 [P] Init frontend project in `frontend/package.json` and `frontend/vite.config.js` with `vite`, `react`, `react-dom`, `@chakra-ui/react`; dev deps `vitest`, `@testing-library/react`, `jsdom`
-- [ ] T004 [P] Configure ESLint + Prettier in `backend/.eslintrc.cjs` and `frontend/.eslintrc.cjs`
-- [ ] T005 [P] Create `backend/Dockerfile` and `frontend/Dockerfile`
-- [ ] T006 [P] Create frontend entry with Chakra provider in `frontend/src/main.jsx` and `frontend/src/App.jsx`
+- [X] T001 Create monorepo structure (`backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/tests/`) and root `docker-compose.yml` per plan
+- [X] T002 [P] Init backend Node project in `backend/package.json` with `express`, `better-sqlite3`; dev deps `vitest`, `supertest`
+- [X] T003 [P] Init frontend project in `frontend/package.json` and `frontend/vite.config.js` with `vite`, `react`, `react-dom`, `@chakra-ui/react`; dev deps `vitest`, `@testing-library/react`, `jsdom`
+- [X] T004 [P] Configure ESLint + Prettier in `backend/.eslintrc.cjs` and `frontend/.eslintrc.cjs`
+- [X] T005 [P] Create `backend/Dockerfile` and `frontend/Dockerfile`
+- [X] T006 [P] Create frontend entry with Chakra provider in `frontend/src/main.jsx` and `frontend/src/App.jsx`
 
 ---
 
@@ -47,11 +47,11 @@ Aplicación web (monorepositorio): `backend/src/`, `backend/tests/`, `frontend/s
 
 **⚠️ CRITICAL**: ninguna historia puede empezar hasta terminar esta fase
 
-- [ ] T007 Create SQLite connection and schema/migrations for `partidas`, `usuarios`, `mesas`, `pedidos`, `lineas_pedido` (with `estado` and `listoEn` columns) in `backend/src/db/index.js` and `backend/src/db/schema.js`
-- [ ] T008 [P] Create seed data (partidas, mesas, cocineros/camareros, pedidos de ejemplo) in `backend/src/db/seed.js`
-- [ ] T009 [P] Create Express app skeleton, config and error-handling middleware in `backend/src/app.js`, `backend/src/server.js`, `backend/src/config/env.js`, `backend/src/middleware/error.js`
-- [ ] T010 [P] Implement data-access models for partidas, mesas and usuarios in `backend/src/models/partida.js`, `backend/src/models/mesa.js`, `backend/src/models/usuario.js`
-- [ ] T011 [P] Create frontend REST client and SSE subscription service in `frontend/src/services/api.js` and `frontend/src/services/events.js`
+- [X] T007 Create SQLite connection and schema/migrations for `partidas`, `usuarios`, `mesas`, `pedidos`, `lineas_pedido` (with `estado` and `listoEn` columns) in `backend/src/db/index.js` and `backend/src/db/schema.js`
+- [X] T008 [P] Create seed data (partidas, mesas, cocineros/camareros, pedidos de ejemplo) in `backend/src/db/seed.js`
+- [X] T009 [P] Create Express app skeleton, config and error-handling middleware in `backend/src/app.js`, `backend/src/server.js`, `backend/src/config/env.js`, `backend/src/middleware/error.js`
+- [X] T010 [P] Implement data-access models for partidas, mesas and usuarios in `backend/src/models/partida.js`, `backend/src/models/mesa.js`, `backend/src/models/usuario.js`
+- [X] T011 [P] Create frontend REST client and SSE subscription service in `frontend/src/services/api.js` and `frontend/src/services/events.js`
 
 **Checkpoint**: base lista; las historias pueden empezar
 
@@ -69,24 +69,24 @@ reaparición del pedido en la pantalla de cocina.
 
 ### Tests for User Story 1 ⚠️ (escribir primero, deben fallar)
 
-- [ ] T012 [P] [US1] Contract test for `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` in `backend/tests/contract/marcar-estado.test.js`
-- [ ] T013 [P] [US1] Unit test for mark/undo service (validation by partida, idempotency, order completion) in `backend/tests/unit/marcar-listo-service.test.js`
-- [ ] T014 [P] [US1] Contract test for undoing the last line of a completed order (`estado: pendiente`, `listoEn: null`, and `409` still returned when marking `listo`) in `backend/tests/contract/desmarcar-completado.test.js`
-- [ ] T015 [P] [US1] Integration test for reopening after undo of the last line (line back to `pendiente`, `listoEn` cleared, order reappears in the pending list) in `backend/tests/integration/reapertura-pedido.test.js`
-- [ ] T016 [P] [US1] Component test for the kitchen mark/undo flow, the accessible ready distinction (colour + symbol/text) and the offline state (indicator and blocked marking) in `frontend/tests/pages/CocinaPage.test.jsx`
-- [ ] T017 [P] [US1] Component test for the «Pedido completado» notice and its ≥10 s «Deshacer» window (fake timers) in `frontend/tests/components/AvisoPedidoCompletado.test.jsx`
+- [X] T012 [P] [US1] Contract test for `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` in `backend/tests/contract/marcar-estado.test.js`
+- [X] T013 [P] [US1] Unit test for mark/undo service (validation by partida, idempotency, order completion) in `backend/tests/unit/marcar-listo-service.test.js`
+- [X] T014 [P] [US1] Contract test for undoing the last line of a completed order (`estado: pendiente`, `listoEn: null`, and `409` still returned when marking `listo`) in `backend/tests/contract/desmarcar-completado.test.js`
+- [X] T015 [P] [US1] Integration test for reopening after undo of the last line (line back to `pendiente`, `listoEn` cleared, order reappears in the pending list) in `backend/tests/integration/reapertura-pedido.test.js`
+- [X] T016 [P] [US1] Component test for the kitchen mark/undo flow, the accessible ready distinction (colour + symbol/text) and the offline state (indicator and blocked marking) in `frontend/tests/pages/CocinaPage.test.jsx`
+- [X] T017 [P] [US1] Component test for the «Pedido completado» notice and its ≥10 s «Deshacer» window (fake timers) in `frontend/tests/components/AvisoPedidoCompletado.test.jsx`
 
 ### Implementation for User Story 1
 
-- [ ] T018 [P] [US1] Implement `pedido` and `lineaPedido` data-access and queries (kitchen pending list) in `backend/src/models/pedido.js` and `backend/src/models/lineaPedido.js`
-- [ ] T019 [US1] Implement mark/undo service with rules (own partida, pending order, line-level mark, order completion) in `backend/src/services/marcarListo.js`
-- [ ] T020 [US1] Allow undoing the last line when the order is no longer pending: clear `listoEn` and recalculate the derived order state in `backend/src/services/marcarListo.js`
-- [ ] T021 [US1] Implement `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` and register routes in `backend/src/routes/pedidos.js` and `backend/src/app.js`
-- [ ] T022 [US1] Implement `GET /partidas/{partidaId}/pedidos-pendientes` in `backend/src/routes/partidas.js` and register it in `backend/src/app.js`
-- [ ] T023 [P] [US1] Build kitchen page and components (`PedidoCard`, `LineaPlato`) with accessible ready marking (colour + «listo» text/symbol and `aria-label`) in `frontend/src/pages/CocinaPage.jsx`, `frontend/src/components/PedidoCard.jsx`, `frontend/src/components/LineaPlato.jsx`
-- [ ] T024 [US1] Wire mark/undo actions, disallowed-action feedback (403/409) and the offline state (indicator «sin conexión», blocked marking and on-screen data preserved) in `frontend/src/pages/CocinaPage.jsx`, `frontend/src/components/IndicadorConexion.jsx` and `frontend/src/services/api.js`
-- [ ] T025 [US1] Build the «Pedido completado» toast/notice with a «Deshacer» action and a minimum 10 s timer in `frontend/src/components/AvisoPedidoCompletado.jsx`
-- [ ] T026 [US1] Wire the notice: keep the last `pedidoId`/`lineaId`, call the undo operation and make the reordered order reappear in the kitchen list in `frontend/src/pages/CocinaPage.jsx` and `frontend/src/services/api.js`
+- [X] T018 [P] [US1] Implement `pedido` and `lineaPedido` data-access and queries (kitchen pending list) in `backend/src/models/pedido.js` and `backend/src/models/lineaPedido.js`
+- [X] T019 [US1] Implement mark/undo service with rules (own partida, pending order, line-level mark, order completion) in `backend/src/services/marcarListo.js`
+- [X] T020 [US1] Allow undoing the last line when the order is no longer pending: clear `listoEn` and recalculate the derived order state in `backend/src/services/marcarListo.js`
+- [X] T021 [US1] Implement `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado` and register routes in `backend/src/routes/pedidos.js` and `backend/src/app.js`
+- [X] T022 [US1] Implement `GET /partidas/{partidaId}/pedidos-pendientes` in `backend/src/routes/partidas.js` and register it in `backend/src/app.js`
+- [X] T023 [P] [US1] Build kitchen page and components (`PedidoCard`, `LineaPlato`) with accessible ready marking (colour + «listo» text/symbol and `aria-label`) in `frontend/src/pages/CocinaPage.jsx`, `frontend/src/components/PedidoCard.jsx`, `frontend/src/components/LineaPlato.jsx`
+- [X] T024 [US1] Wire mark/undo actions, disallowed-action feedback (403/409) and the offline state (indicator «sin conexión», blocked marking and on-screen data preserved) in `frontend/src/pages/CocinaPage.jsx`, `frontend/src/components/IndicadorConexion.jsx` and `frontend/src/services/api.js`
+- [X] T025 [US1] Build the «Pedido completado» toast/notice with a «Deshacer» action and a minimum 10 s timer in `frontend/src/components/AvisoPedidoCompletado.jsx`
+- [X] T026 [US1] Wire the notice: keep the last `pedidoId`/`lineaId`, call the undo operation and make the reordered order reappear in the kitchen list in `frontend/src/pages/CocinaPage.jsx` and `frontend/src/services/api.js`
 
 **Checkpoint**: US1 funcional y probable de forma independiente
 
@@ -102,18 +102,18 @@ comprobar que sala lo muestra como listo sin recargar.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T027 [P] [US2] Contract test for `GET /mesas/{mesaId}/estado-platos` and the SSE event shape in `backend/tests/contract/estado-sala.test.js`
-- [ ] T028 [P] [US2] Integration test for the mark→sala reflection in `backend/tests/integration/reflejo-sala.test.js`
-- [ ] T029 [P] [US2] Integration test for `linea.actualizada` and `pedido.reabierto` events emitted when undoing the last line of a completed order in `backend/tests/integration/eventos-reapertura.test.js`
-- [ ] T030 [P] [US2] Component test for the waiter view in `frontend/tests/pages/SalaPage.test.jsx`
+- [X] T027 [P] [US2] Contract test for `GET /mesas/{mesaId}/estado-platos` and the SSE event shape in `backend/tests/contract/estado-sala.test.js`
+- [X] T028 [P] [US2] Integration test for the mark→sala reflection in `backend/tests/integration/reflejo-sala.test.js`
+- [X] T029 [P] [US2] Integration test for `linea.actualizada` and `pedido.reabierto` events emitted when undoing the last line of a completed order in `backend/tests/integration/eventos-reapertura.test.js`
+- [X] T030 [P] [US2] Component test for the waiter view in `frontend/tests/pages/SalaPage.test.jsx`
 
 ### Implementation for User Story 2
 
-- [ ] T031 [US2] Implement SSE channel and event emission (`linea.actualizada`, `pedido.pendientes-cambiado`) in `backend/src/realtime/sse.js` and `backend/src/realtime/emit.js`
-- [ ] T032 [US2] Emit `linea.actualizada` and `pedido.reabierto` when undoing the last line of a completed order in `backend/src/realtime/emit.js` and `backend/src/services/marcarListo.js`
-- [ ] T033 [US2] Implement `GET /mesas/{mesaId}/estado-platos` in `backend/src/routes/mesas.js` and register it in `backend/src/app.js`
-- [ ] T034 [P] [US2] Build waiter page showing plate states in `frontend/src/pages/SalaPage.jsx`
-- [ ] T035 [US2] Subscribe the frontend to SSE and update state without reload in `frontend/src/services/events.js` and `frontend/src/state/useEstadoPlatos.js`
+- [X] T031 [US2] Implement SSE channel and event emission (`linea.actualizada`, `pedido.pendientes-cambiado`) in `backend/src/realtime/sse.js` and `backend/src/realtime/emit.js`
+- [X] T032 [US2] Emit `linea.actualizada` and `pedido.reabierto` when undoing the last line of a completed order in `backend/src/realtime/emit.js` and `backend/src/services/marcarListo.js`
+- [X] T033 [US2] Implement `GET /mesas/{mesaId}/estado-platos` in `backend/src/routes/mesas.js` and register it in `backend/src/app.js`
+- [X] T034 [P] [US2] Build waiter page showing plate states in `frontend/src/pages/SalaPage.jsx`
+- [X] T035 [US2] Subscribe the frontend to SSE and update state without reload in `frontend/src/services/events.js` and `frontend/src/state/useEstadoPlatos.js`
 
 **Checkpoint**: US1 y US2 funcionan de forma independiente
 
@@ -129,14 +129,14 @@ su momento; re-marcar uno ya listo no lo altera.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T036 [P] [US3] Unit test for `listoEn` semantics (set once, unchanged on re-mark, cleared on undo) in `backend/tests/unit/momento-listo.test.js`
-- [ ] T037 [P] [US3] Contract test asserting `listoEn` appears in API responses in `backend/tests/contract/listo-en.test.js`
+- [X] T036 [P] [US3] Unit test for `listoEn` semantics (set once, unchanged on re-mark, cleared on undo) in `backend/tests/unit/momento-listo.test.js`
+- [X] T037 [P] [US3] Contract test asserting `listoEn` appears in API responses in `backend/tests/contract/listo-en.test.js`
 
 ### Implementation for User Story 3
 
-- [ ] T038 [US3] Extend the mark/undo service to record `listoEn` on mark and clear it on undo in `backend/src/services/marcarListo.js`
-- [ ] T039 [US3] Expose `listoEn` in API responses in `backend/src/models/lineaPedido.js` and `backend/src/routes/pedidos.js`
-- [ ] T040 [US3] Show the preparation moment in the plate component in `frontend/src/components/LineaPlato.jsx`
+- [X] T038 [US3] Extend the mark/undo service to record `listoEn` on mark and clear it on undo in `backend/src/services/marcarListo.js`
+- [X] T039 [US3] Expose `listoEn` in API responses in `backend/src/models/lineaPedido.js` and `backend/src/routes/pedidos.js`
+- [X] T040 [US3] Show the preparation moment in the plate component in `frontend/src/components/LineaPlato.jsx`
 
 **Checkpoint**: las tres historias funcionan de forma independiente
 
@@ -146,12 +146,12 @@ su momento; re-marcar uno ya listo no lo altera.
 
 **Purpose**: mejoras que afectan a varias historias
 
-- [ ] T041 [P] Add logging for mark/undo operations in `backend/src/config/logger.js` and `backend/src/services/marcarListo.js`
-- [ ] T042 [P] Document docker-compose usage and project setup in `README.md`
-- [ ] T043 [P] Add integration test for order completion/disappearance in `backend/tests/integration/pedido-completado.test.js`
-- [ ] T044 Run the validation guide in `specs/004-marcar_listos/quickstart.md` end-to-end and fix gaps found
-- [ ] T045 Run the «Deshacer tras completar el pedido» scenario (12) in `specs/004-marcar_listos/quickstart.md` end-to-end and fix gaps found in `frontend/src/components/AvisoPedidoCompletado.jsx` and `backend/src/services/marcarListo.js`
-- [ ] T046 Verify full test suites pass and map results to FR-001…FR-016 in `backend/tests/` and `frontend/tests/`
+- [X] T041 [P] Add logging for mark/undo operations in `backend/src/config/logger.js` and `backend/src/services/marcarListo.js`
+- [X] T042 [P] Document docker-compose usage and project setup in `README.md`
+- [X] T043 [P] Add integration test for order completion/disappearance in `backend/tests/integration/pedido-completado.test.js`
+- [X] T044 Run the validation guide in `specs/004-marcar_listos/quickstart.md` end-to-end and fix gaps found
+- [X] T045 Run the «Deshacer tras completar el pedido» scenario (12) in `specs/004-marcar_listos/quickstart.md` end-to-end and fix gaps found in `frontend/src/components/AvisoPedidoCompletado.jsx` and `backend/src/services/marcarListo.js`
+- [X] T046 Verify full test suites pass and map results to FR-001…FR-016 in `backend/tests/` and `frontend/tests/`
 
 ---
 

@@ -145,17 +145,17 @@ La pantalla de sala (`/sala`) implementa el flujo completo de la historia 001:
 
 ### API de la historia 001
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/api/mesas` | Mesas con su estado y `pedido_en_curso_id` |
-| `POST` | `/api/mesas/{mesaId}/abrir` | Abre la mesa y crea el pedido (`409` si ya hay uno) |
-| `GET` | `/api/platos` | Carta vigente (platos disponibles) |
-| `GET` | `/api/pedidos/{id}` | Pedido con líneas y `por_partida` |
-| `POST` | `/api/pedidos/{id}/lineas` | Añade un plato con cantidad |
-| `PATCH` | `/api/pedidos/{id}/lineas/{lineaId}` | Ajusta la cantidad |
-| `DELETE` | `/api/pedidos/{id}/lineas/{lineaId}` | Retira el plato |
-| `POST` | `/api/pedidos/{id}/confirmar` | Confirma y devuelve el pedido agrupado |
-| `POST` | `/api/pedidos/{id}/anular` | Anula el pedido en curso y libera la mesa |
+| Método   | Ruta                                 | Descripción                                         |
+| -------- | ------------------------------------ | --------------------------------------------------- |
+| `GET`    | `/api/mesas`                         | Mesas con su estado y `pedido_en_curso_id`          |
+| `POST`   | `/api/mesas/{mesaId}/abrir`          | Abre la mesa y crea el pedido (`409` si ya hay uno) |
+| `GET`    | `/api/platos`                        | Carta vigente (platos disponibles)                  |
+| `GET`    | `/api/pedidos/{id}`                  | Pedido con líneas y `por_partida`                   |
+| `POST`   | `/api/pedidos/{id}/lineas`           | Añade un plato con cantidad                         |
+| `PATCH`  | `/api/pedidos/{id}/lineas/{lineaId}` | Ajusta la cantidad                                  |
+| `DELETE` | `/api/pedidos/{id}/lineas/{lineaId}` | Retira el plato                                     |
+| `POST`   | `/api/pedidos/{id}/confirmar`        | Confirma y devuelve el pedido agrupado              |
+| `POST`   | `/api/pedidos/{id}/anular`           | Anula el pedido en curso y libera la mesa           |
 
 La identidad del camarero se toma de la cabecera `X-Camarero-Id` (por defecto `camarero-1`, que
 existe en los datos de ejemplo); el inicio de sesión queda fuera del alcance de esta historia.
@@ -182,13 +182,13 @@ Sobre la pantalla de sala, al seleccionar un pedido en estado `enviada` aparece 
 
 ### API de la historia 002
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/api/pedidos/{id}/editar` | Estado del bloqueo (`libre`, `bloqueado`, `expirado`) |
-| `POST` | `/api/pedidos/{id}/editar` | Toma el bloqueo (`423` si es de otro, `409` si no es editable) |
-| `DELETE` | `/api/pedidos/{id}/editar` | Libera el bloqueo (idempotente) |
-| `POST` | `/api/pedidos/{id}/enviar-cambios` | Comunica los cambios a cocina y libera el bloqueo |
-| `GET` | `/api/pedidos/{id}` | Incluye `modificada`, `cambios_pendientes` y el bloqueo |
+| Método   | Ruta                               | Descripción                                                    |
+| -------- | ---------------------------------- | -------------------------------------------------------------- |
+| `GET`    | `/api/pedidos/{id}/editar`         | Estado del bloqueo (`libre`, `bloqueado`, `expirado`)          |
+| `POST`   | `/api/pedidos/{id}/editar`         | Toma el bloqueo (`423` si es de otro, `409` si no es editable) |
+| `DELETE` | `/api/pedidos/{id}/editar`         | Libera el bloqueo (idempotente)                                |
+| `POST`   | `/api/pedidos/{id}/enviar-cambios` | Comunica los cambios a cocina y libera el bloqueo              |
+| `GET`    | `/api/pedidos/{id}`                | Incluye `modificada`, `cambios_pendientes` y el bloqueo        |
 
 Los endpoints de líneas (`POST`/`PATCH`/`DELETE`) admiten pedidos `enviada` cuando el camarero
 tiene el bloqueo. Detalles en
@@ -216,6 +216,22 @@ npm test
 La vista de cocina identifica al cocinero con `?cocinero=<id>` (por defecto
 `cocinero-entrantes`). El canal SSE se abre por partida y refresca la lista sin recargar.
 
+## Cocina: marcar platos como listos (historia 004)
+
+La pantalla de cocina (`/cocina?cocinero=cocinero-entrantes`) permite marcar cada plato como
+**listo** o **deshacer** la marca. Al completar el último plato de un pedido, el pedido desaparece y
+aparece un aviso «Pedido completado» con la acción «Deshacer» durante 10 segundos.
+
+La pantalla de sala de una mesa está en `/sala/platos?mesa=mesa-1` y muestra el estado de los platos,
+actualizándose por SSE sin recargar.
+
+### API de la historia 004
+
+| Método | Ruta                                              | Descripción                                        |
+| ------ | ------------------------------------------------- | -------------------------------------------------- |
+| `PUT`  | `/api/pedidos/{pedidoId}/lineas/{lineaId}/estado` | Marca o deshace (`listo`/`pendiente`); idempotente |
+| `GET`  | `/api/mesas/{mesaId}/estado-platos`               | Platos de la mesa con estado y `listoEn`           |
+
 ## Alcance actual
 
 - Esqueleto compartido: estructura, Docker, SQLite, hub SSE, cliente HTTP/SSE, tema y pruebas de
@@ -224,4 +240,6 @@ La vista de cocina identifica al cocinero con `?cocinero=<id>` (por defecto
 - Historia **002**: edición de pedidos enviados, bloqueo y envío explícito de cambios.
 - Historia **003**: pedidos pendientes por partida, tiempo de espera, detalle de platos, marcado
   accesible, aviso «Modificado», actualización en vivo, sin conexión y reintento.
-- Las historias `004`–`008` siguen pendientes.
+- Historia **004**: marcar/deshacer platos como listos, aviso «Pedido completado» con «Deshacer»,
+  reflejo en sala y canal SSE.
+- Las historias `005`–`008` siguen pendientes.

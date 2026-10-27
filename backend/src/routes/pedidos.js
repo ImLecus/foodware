@@ -33,6 +33,7 @@ import { identificarCamarero } from '../middleware/camarero.js';
 import { comprobarEdicion } from '../middleware/bloqueo.js';
 import { ErrorHttp } from '../middleware/error.js';
 import { publicar } from '../realtime/hub.js';
+import { marcarLinea } from '../services/marcarListo.js';
 import { validarLineaPatchEdicion, validarNuevaLineaEdicion } from '../schemas/edicion.js';
 
 function buscarLinea(pedido, lineaId) {
@@ -52,6 +53,20 @@ export function pedidosRouter(db) {
     try {
       const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
       res.json(serializarPedido(pedido));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.put('/:pedidoId/lineas/:lineaId/estado', (req, res, next) => {
+    try {
+      const linea = marcarLinea(db, {
+        pedidoId: req.params.pedidoId,
+        lineaId: req.params.lineaId,
+        estado: req.body?.estado,
+        partida: req.query.partida,
+      });
+      res.json(linea);
     } catch (error) {
       next(error);
     }

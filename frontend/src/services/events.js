@@ -35,3 +35,34 @@ export function suscribirAPartida(partidaId, { onEvento, onEstadoConexion } = {}
 
   return () => conexion.close();
 }
+
+const EVENTOS_SALA = [
+  'linea.actualizada',
+  'pedido.reabierto',
+  'pedido.pendientes-cambiado',
+  'pedido.modificado',
+  'pedido-modificado',
+  'pedido-confirmado',
+];
+
+/** Suscripción de la pantalla de sala al estado de los platos. */
+export function suscribirSala({ onEvento, onEstadoConexion } = {}) {
+  const conexion = crearConexionEventos();
+
+  conexion.addEventListener('open', () => onEstadoConexion?.('conectado'));
+  conexion.addEventListener('error', () => onEstadoConexion?.('sin-conexion'));
+
+  for (const nombre of EVENTOS_SALA) {
+    conexion.addEventListener(nombre, (evento) => {
+      let datos = {};
+      try {
+        datos = JSON.parse(evento.data);
+      } catch {
+        // El evento puede venir sin datos JSON.
+      }
+      onEvento?.(nombre, datos);
+    });
+  }
+
+  return () => conexion.close();
+}

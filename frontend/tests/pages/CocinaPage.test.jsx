@@ -1,12 +1,14 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CocinaPage from '../../src/pages/CocinaPage.jsx';
-import { obtenerCocinero, obtenerPedidosPendientes } from '../../src/services/api.js';
+import { marcarEstado, obtenerCocinero, obtenerPedidosPendientes } from '../../src/services/api.js';
+import { suscribirAPartida } from '../../src/services/events.js';
 
 vi.mock('../../src/services/api.js', () => ({
   obtenerCocinero: vi.fn(),
   obtenerPedidosPendientes: vi.fn(),
+  marcarEstado: vi.fn(),
 }));
 
 vi.mock('../../src/services/events.js', () => ({
@@ -84,5 +86,101 @@ describe('CocinaPage (US1)', () => {
 
     expect(await screen.findByText('No tienes una partida asignada')).toBeInTheDocument();
     expect(obtenerPedidosPendientes).not.toHaveBeenCalled();
+  });
+
+  it('marca un plato como listo desde la cocina', async () => {
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes.mockResolvedValue([pedido]);
+    marcarEstado.mockResolvedValue({ id: 'linea-1', estado: 'listo', pedidoCompletado: false });
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Marcar listo' }));
+
+    await waitFor(() =>
+      expect(marcarEstado).toHaveBeenCalledWith('pedido-1', 'linea-1', 'listo', 'entrantes'),
+    );
+  });
+
+  it('deshace la marca de un plato listo', async () => {
+    const pedidoConListo = {
+      ...pedido,
+      lineas: [{ ...pedido.lineas[0], estado: 'listo', listoEn: '2026-10-20T10:05:00.000Z' }],
+    };
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes.mockResolvedValue([pedidoConListo]);
+    marcarEstado.mockResolvedValue({ id: 'linea-1', estado: 'pendiente', listoEn: null });
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+
+    expect(screen.getByLabelText(/listo/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+
+    await waitFor(() =>
+      expect(marcarEstado).toHaveBeenCalledWith('pedido-1', 'linea-1', 'pendiente', 'entrantes'),
+    );
+  });
+
+  it('bloquea el marcado cuando no hay conexión', async () => {
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes.mockResolvedValue([pedido]);
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+    await waitFor(() => expect(suscribirAPartida).toHaveBeenCalled());
+
+    const opciones = suscribirAPartida.mock.calls.at(-1)[1];
+    act(() => {
+      opciones.onEstadoConexion('sin-conexion');
+    });
+
+    expect(await screen.findByText('Sin conexión')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Marcar listo' })).toBeDisabled();
+  });
+
+  it('ofrece Deshacer tras completar el pedido y revierte la última marca', async () => {
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes
+      .mockResolvedValueOnce([pedido])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([pedido]);
+    marcarEstado
+      .mockResolvedValueOnce({ id: 'linea-1', estado: 'listo', pedidoCompletado: true })
+      .mockResolvedValueOnce({ id: 'linea-1', estado: 'pendiente', pedidoReabierto: true });
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Marcar listo' }));
+
+    expect(await screen.findByText('Pedido completado')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+
+    await waitFor(() =>
+      expect(marcarEstado).toHaveBeenLastCalledWith(
+        'pedido-1',
+        'linea-1',
+        'pendiente',
+        'entrantes',
+      ),
+    );
   });
 });
