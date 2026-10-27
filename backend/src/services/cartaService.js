@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 export class CartaService {
   constructor(db) {
     this.db = db;
@@ -20,7 +22,7 @@ export class CartaService {
         return { ofrecible: false, motivo: 'ingrediente_agotado' };
       }
     }
-    return { ofrecible: true, motivo: null };
+    return { ofrecible: true, motivo: 'activo' };
   }
 
   obtenerCartaVigente() {
@@ -31,13 +33,33 @@ export class CartaService {
     });
   }
 
+  obtenerCartaAgrupada() {
+    const platos = this.db.prepare('SELECT * FROM platos ORDER BY partida_codigo, nombre').all();
+    const resultado = {
+      entrantes: [],
+      principales: [],
+      postres: [],
+    };
+    for (const plato of platos) {
+      const disp = this.calcularDisponibilidad(plato.id);
+      if (!disp.ofrecible) continue;
+      const partida = plato.partida_codigo || plato.partida;
+      if (!resultado[partida]) continue;
+      resultado[partida].push({
+        id: plato.id,
+        nombre: plato.nombre,
+        precio: Number((plato.precio_centimos || 0) / 100),
+      });
+    }
+    return resultado;
+  }
+
   crearPlato({ nombre, partida_codigo, precio_centimos, activo = 1, ingredienteIds = [] }) {
-    const { randomUUID } = awaitImport();
     const id = randomUUID();
     this.db
       .prepare('INSERT INTO platos (id, nombre, partida_codigo, precio_centimos, activo) VALUES (?, ?, ?, ?, ?)')
       .run(id, nombre, partida_codigo, precio_centimos, activo ? 1 : 0);
-    if (ingredienteIds && ingredienteIds.length > 0) {
+    if (Array.isArray(ingredienteIds) && ingredienteIds.length > 0) {
       const stmt = this.db.prepare('INSERT INTO plato_ingredientes (plato_id, ingrediente_id) VALUES (?, ?)');
       for (const iid of ingredienteIds) {
         const ing = this.db.prepare('SELECT id FROM ingredientes WHERE id = ?').get(iid);
@@ -73,6 +95,7 @@ export class CartaService {
     if (datos.ingredienteIds !== undefined) {
       const tx = this.db.transaction((ids) => {
         this.db.prepare('DELETE FROM plato_ingredientes WHERE plato_id = ?').run(id);
+        if (!Array.isArray(ids) || ids.length === 0) return;
         const stmt = this.db.prepare('INSERT INTO plato_ingredientes (plato_id, ingrediente_id) VALUES (?, ?)');
         for (const iid of ids) {
           const ing = this.db.prepare('SELECT id FROM ingredientes WHERE id = ?').get(iid);
@@ -81,6 +104,11 @@ export class CartaService {
       });
       tx(datos.ingredienteIds);
     }
+    return this.db.prepare('SELECT * FROM platos WHERE id = ?').get(id);
+  }
+
+  cambiarActivo(id, activo) {
+    this.db.prepare('UPDATE platos SET activo = ? WHERE id = ?').run(activo ? 1 : 0, id);
     return this.db.prepare('SELECT * FROM platos WHERE id = ?').get(id);
   }
 
@@ -96,31 +124,13 @@ export class CartaService {
         )
         .all(plato.id);
       const disp = this.calcularDisponibilidad(plato.id);
-      return { ...plato, ingredientes, ofrecible: disp.ofrecible, motivo: disp.motivo };
+      return {
+        ...plato,
+        ingredientes,
+        ofrecible: disp.ofrecible,
+        motivo: disp.motivo,
+        precio: Number((plato.precio_centimos || 0) / 100),
+      };
     });
   }
 }
-
-function awaitImport() {
-  const { randomUUID } = require('crypto');
-  return { randomUUID };
-}
-
-import { randomUUID } from 'crypto';
-CartaService.prototype._getUUID = function () {
-  return randomUUID();
-};
-CartaService.prototype.crearPlato = function ({ nombre, partida_codigo, precio_centimos, activo = 1, ingredienteIds = [] }) {
-  const id = randomUUID();
-  this.db
-    .prepare('INSERT INTO platos (id, nombre, partida_codigo, precio_centimos, activo) VALUES (?, ?, ?, ?, ?)')
-    .run(id, nombre, partida_codigo, precio_centimos, activo ? 1 : 0);
-  if (ingredienteIds && ingredienteIds.length > 0) {
-    const stmt = this.db.prepare('INSERT INTO plato_ingredientes (plato_id, ingrediente_id) VALUES (?, ?)');
-    for (const iid of ingredienteIds) {
-      const ing = this.db.prepare('SELECT id FROM ingredientes WHERE id = ?').get(iid);
-      if (ing) stmt.run(id, iid);
-    }
-  }
-  return this.db.prepare('SELECT * FROM platos WHERE id = ?').get(id);
-};
