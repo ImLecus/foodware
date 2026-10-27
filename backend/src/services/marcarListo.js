@@ -11,6 +11,7 @@ import {
   emitirPedidoReabierto,
   emitirPendientesCambiado,
 } from '../realtime/emit.js';
+import { sincronizarAvisoMesa } from './avisos.js';
 import { aISO } from '../utils/fechas.js';
 
 function respuestaLinea(linea, { pedidoCompletado = false, pedidoReabierto = false } = {}) {
@@ -74,6 +75,7 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
       estado: 'listo',
       listoEn: respuesta.listoEn,
     });
+    respuesta.mesa = sincronizarAvisoMesa(db, pedido.mesa_id, { nuevoPlatoListo: true });
     if (respuesta.pedidoCompletado) {
       emitirPendientesCambiado({ partida: linea.partida });
     }
@@ -97,6 +99,7 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
   );
 
   emitirLineaActualizada({ pedidoId, lineaId, estado: 'pendiente', listoEn: null });
+  respuesta.mesa = sincronizarAvisoMesa(db, pedido.mesa_id);
   if (respuesta.pedidoReabierto) {
     emitirPendientesCambiado({ partida: linea.partida });
     emitirPedidoReabierto({ pedidoId, partida: linea.partida });

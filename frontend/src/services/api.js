@@ -127,3 +127,17 @@ export function cerrarEdicion(pedidoId) {
 export function enviarCambios(pedidoId) {
   return apiEnviar(`/pedidos/${pedidoId}/enviar-cambios`, 'POST');
 }
+
+/* Sala: señales de platos listos (historia 005) */
+
+export function obtenerMesasSala() {
+  return apiGet('/sala/mesas');
+}
+
+export function cambiarEstadoLineaPedido(pedidoId, lineaId, estado) {
+  return apiEnviar(`/pedidos/${pedidoId}/lineas/${lineaId}/estado`, 'PUT', { estado });
+}
+
+export function descartarAvisoSala(avisoId) {
+  return apiEnviar(`/sala/avisos/${avisoId}/descartar`, 'POST');
+}

@@ -10,6 +10,7 @@ import { mesasRouter } from './routes/mesas.js';
 import { partidasRouter } from './routes/partidas.js';
 import { pedidosRouter } from './routes/pedidos.js';
 import { platosRouter } from './routes/platos.js';
+import { salaRouter } from './routes/sala.js';
 
 /**
  * Construye la aplicación Express. Recibe la conexión a la base de datos
@@ -29,6 +30,7 @@ export function createApp(db) {
   app.use('/api/platos', platosRouter(db));
   app.use('/api/pedidos', pedidosRouter(db));
   app.use('/api/reports', crearReportsRouter(db));
+  app.use('/api/sala', salaRouter(db));
 
   app.use(noEncontrado);
   app.use(manejadorErrores);

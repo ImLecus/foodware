@@ -8,6 +8,8 @@ const LINEA_CAMPOS = `l.id,
                       l.cantidad,
                       l.precio_centimos,
                       l.indicaciones,
+                      l.estado,
+                      l.listo_en,
                       p.partida_codigo AS partida`;
 
 const LINEA_JOIN = `FROM lineas_pedido l
@@ -44,6 +46,28 @@ export function obtenerPedidoEnCursoPorMesa(db, mesaId) {
     db.prepare("SELECT * FROM pedidos WHERE mesa_id = ? AND estado = 'en_curso'").get(mesaId) ??
     null
   );
+}
+
+/** Pedido enviado más reciente de la mesa (el que alimenta la vista de sala 005). */
+export function obtenerPedidoEnviadoPorMesa(db, mesaId) {
+  return (
+    db
+      .prepare(
+        `SELECT id, mesa_id, estado, enviado_en
+           FROM pedidos
+          WHERE mesa_id = ? AND estado = 'enviada'
+          ORDER BY enviado_en DESC, rowid DESC
+          LIMIT 1`,
+      )
+      .get(mesaId) ?? null
+  );
+}
+
+/** Estado de cada línea del pedido, suficiente para calcular la completitud. */
+export function listarEstadosDeLineas(db, pedidoId) {
+  return db
+    .prepare('SELECT id, estado FROM lineas_pedido WHERE pedido_id = ? ORDER BY rowid')
+    .all(pedidoId);
 }
 
 /** Crea el pedido en curso de la mesa y la marca ocupada en una transacción. */

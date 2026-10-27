@@ -7,11 +7,13 @@ import Mesas from './pages/Mesas.jsx';
 import ModuloPendiente from './pages/ModuloPendiente.jsx';
 import PaginaDashboard from './pages/PaginaDashboard.jsx';
 import RutaEncargado from './components/RutaEncargado.jsx';
+import SalaEstado from './pages/SalaEstado.jsx';
 import SalaPage from './pages/SalaPage.jsx';
 import { ROL } from './services/sesion.js';
 
 const modulos = [
   { ruta: '/sala', nombre: 'Sala' },
+  { ruta: '/sala/estado', nombre: 'Señales' },
   { ruta: '/cocina', nombre: 'Cocina' },
   { ruta: '/cuentas', nombre: 'Cuentas' },
   { ruta: '/dashboard', nombre: 'Dashboard', rol: 'encargado' },
@@ -42,6 +44,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/sala" element={<Mesas />} />
+          <Route path="/sala/estado" element={<SalaEstado />} />
           <Route path="/sala/platos" element={<SalaPage />} />
           <Route path="/cocina" element={<CocinaPage />} />
           <Route path="/cuentas" element={<ModuloPendiente nombre="Cuentas" />} />
