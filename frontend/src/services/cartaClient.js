@@ -1,13 +1,13 @@
 import { API_BASE } from './api.js';
 
 export async function obtenerCartaAdmin(cabeceras = {}) {
-  const res = await fetch(`${API_BASE}/api/admin/platos`, { headers: cabeceras });
+  const res = await fetch(`${API_BASE}/admin/platos`, { headers: cabeceras });
   if (!res.ok) throw new Error('Error al obtener carta');
   return res.json();
 }
 
 export async function crearPlato(datos, cabeceras = {}) {
-  const res = await fetch(`${API_BASE}/api/admin/platos`, {
+  const res = await fetch(`${API_BASE}/admin/platos`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...cabeceras },
     body: JSON.stringify(datos),
@@ -20,7 +20,7 @@ export async function crearPlato(datos, cabeceras = {}) {
 }
 
 export async function actualizarPlato(id, datos, cabeceras = {}) {
-  const res = await fetch(`${API_BASE}/api/admin/platos/${id}`, {
+  const res = await fetch(`${API_BASE}/admin/platos/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...cabeceras },
     body: JSON.stringify(datos),
