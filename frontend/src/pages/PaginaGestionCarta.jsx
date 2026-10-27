@@ -35,7 +35,15 @@ export default function PaginaGestionCarta() {
     cargar();
   };
 
-const cabecerasSesion = () => {
+  const handleActualizar = async (datos) => {
+    if (!platoEditando) return;
+    await actualizarPlato(platoEditando.id, datos, cabecerasSesion());
+    setPlatoEditando(null);
+    setMostrarFormulario(false);
+    cargar();
+  };
+
+  const cabecerasSesion = () => {
   const usuarioId = import.meta.env.VITE_USUARIO_ID || USUARIO_ID || 'admin-1';
   return { 'x-usuario-id': usuarioId };
 };
