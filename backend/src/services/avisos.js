@@ -1,6 +1,17 @@
-import { crearAviso, obtenerAvisoVigente, retirarAviso } from '../db/avisos.js';
+import {
+  crearAviso,
+  descartarAviso,
+  obtenerAviso,
+  obtenerAvisoVigente,
+  retirarAviso,
+} from '../db/avisos.js';
 import { listarEstadosDeLineas, obtenerPedidoEnviadoPorMesa } from '../db/pedidos.js';
-import { emitirAvisoActivo, emitirAvisoRetirado } from '../realtime/emit.js';
+import { ErrorHttp } from '../middleware/error.js';
+import {
+  emitirAvisoActivo,
+  emitirAvisoDescartado,
+  emitirAvisoRetirado,
+} from '../realtime/emit.js';
 import { aISO } from '../utils/fechas.js';
 
 function serializarAviso(aviso) {
@@ -70,4 +81,35 @@ export function sincronizarAvisoMesa(db, mesaId, { nuevoPlatoListo = false } = {
   }
 
   return { completa: true, aviso: null };
+}
+
+/**
+ * Descarta el aviso de una mesa atendida. El descarte es global: se difunde a
+ * todos los clientes del hub. Repetir el descarte es idempotente y no vuelve a
+ * emitir el evento.
+ */
+export function descartarAvisoMesa(db, avisoId) {
+  const aviso = obtenerAviso(db, avisoId);
+  if (!aviso) {
+    throw new ErrorHttp(404, 'Aviso no encontrado', 'aviso_no_encontrado');
+  }
+
+  const estabaActivo = aviso.estado === 'activo';
+  const actualizado = estabaActivo ? descartarAviso(db, avisoId) : aviso;
+  const descartadoEn = aISO(actualizado.descartado_en);
+
+  if (estabaActivo) {
+    emitirAvisoDescartado({
+      avisoId: actualizado.id,
+      mesaId: actualizado.mesa_id,
+      descartadoEn,
+    });
+  }
+
+  return {
+    aviso_id: actualizado.id,
+    mesa_id: actualizado.mesa_id,
+    estado: actualizado.estado,
+    descartado_en: descartadoEn,
+  };
 }

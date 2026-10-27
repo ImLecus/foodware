@@ -32,6 +32,7 @@ export default function SalaEstado() {
               silenciado={silenciado}
               onAlternarSonido={alternarSonido}
               onDescartar={() => descartarAviso?.(mesa.aviso.id)}
+              descartarDeshabilitado={sinConexion}
             />
           ))}
         </Stack>

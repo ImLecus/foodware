@@ -28,3 +28,14 @@ export function crearAviso(db, mesaId) {
 export function retirarAviso(db, avisoId) {
   db.prepare('DELETE FROM avisos WHERE id = ?').run(avisoId);
 }
+
+/**
+ * Marca el aviso como descartado. Es idempotente: si ya lo estaba, conserva
+ * `descartado_en` y no vuelve a sellarlo.
+ */
+export function descartarAviso(db, avisoId) {
+  db.prepare(
+    "UPDATE avisos SET estado = 'descartado', descartado_en = datetime('now') WHERE id = ? AND estado = 'activo'",
+  ).run(avisoId);
+  return obtenerAviso(db, avisoId);
+}

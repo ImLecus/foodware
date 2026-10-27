@@ -32,7 +32,7 @@ export function obtenerInstantaneaSala(db) {
       en_curso: Boolean(pedidoEnCurso),
       enviada: Boolean(pedidoEnviado),
       completa,
-      aviso: obtenerAvisoActivoDeMesa(db, mesa.id),
+      aviso: completa ? obtenerAvisoActivoDeMesa(db, mesa.id) : null,
       platos,
     };
   });

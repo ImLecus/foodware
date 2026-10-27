@@ -17,6 +17,7 @@ export default function AvisoMesa({
   silenciado = false,
   onAlternarSonido,
   onDescartar,
+  descartarDeshabilitado = false,
 }) {
   if (!mesa?.aviso) return null;
 
@@ -57,7 +58,12 @@ export default function AvisoMesa({
         >
           {silenciado ? 'Sonido desactivado' : 'Sonido activado'}
         </Button>
-        <Button size="sm" colorScheme="green" onClick={() => onDescartar?.()}>
+        <Button
+          size="sm"
+          colorScheme="green"
+          onClick={() => onDescartar?.()}
+          isDisabled={descartarDeshabilitado}
+        >
           Descartar aviso
         </Button>
       </HStack>

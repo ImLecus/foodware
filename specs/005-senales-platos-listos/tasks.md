@@ -135,19 +135,19 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T048 [P] [US3] Test de contrato de `POST /api/sala/avisos/{avisoId}/descartar` (200, idempotente, 404) en `backend/tests/contract/avisos-descartar.test.js`
-- [ ] T049 [P] [US3] Test de integración de descarte y regeneración del aviso en `backend/tests/integration/aviso-descarte.test.js`
-- [ ] T050 [P] [US3] Test de integración de la difusión de `aviso.descartado` a todos los clientes SSE y coherencia al reconectar en `backend/tests/integration/aviso-descarte-global.test.js`
-- [ ] T051 [P] [US3] Test de componente de la acción de descartar (una sola acción; deshabilitada sin conexión) en `frontend/tests/components/DescartarAviso.test.jsx`
-- [ ] T052 [P] [US3] Test de integración de descarte global en dos pantallas (una descarta y el aviso desaparece en ambas) en `frontend/tests/integration/descarte-global.test.jsx`
+- [x] T048 [P] [US3] Test de contrato de `POST /api/sala/avisos/{avisoId}/descartar` (200, idempotente, 404) en `backend/tests/contract/avisos-descartar.test.js`
+- [x] T049 [P] [US3] Test de integración de descarte y regeneración del aviso en `backend/tests/integration/aviso-descarte.test.js`
+- [x] T050 [P] [US3] Test de integración de la difusión de `aviso.descartado` a todos los clientes SSE y coherencia al reconectar en `backend/tests/integration/aviso-descarte-global.test.js`
+- [x] T051 [P] [US3] Test de componente de la acción de descartar (una sola acción; deshabilitada sin conexión) en `frontend/tests/components/DescartarAviso.test.jsx`
+- [x] T052 [P] [US3] Test de integración de descarte global en dos pantallas (una descarta y el aviso desaparece en ambas) en `frontend/tests/integration/descarte-global.test.jsx`
 
 ### Implementation for User Story 3
 
-- [ ] T053 [US3] Implementar la lógica de descarte del aviso (idempotente) en `backend/src/services/avisos.js`
-- [ ] T054 [US3] Implementar `POST /api/sala/avisos/{avisoId}/descartar` y difundir `aviso.descartado` (claves en `snake_case`: `aviso_id`, `mesa_id`, `descartado_en`) en `backend/src/routes/sala.js` y `backend/src/realtime/emit.js`
-- [ ] T055 [US3] Excluir los avisos descartados de la instantánea de sala y no mostrar avisos de mesas que dejan de estar abiertas por cierre de cuenta (coherencia al reconectar) en `backend/src/services/salaMesas.js`
-- [ ] T056 [US3] Implementar la acción de descartar en el aviso en `frontend/src/components/AvisoMesa.jsx`
-- [ ] T057 [US3] Gestionar los eventos `aviso.descartado` en el estado de sala (retirada en todas las pantallas y coherencia tras reconectar) en `frontend/src/hooks/useSala.js`
+- [x] T053 [US3] Implementar la lógica de descarte del aviso (idempotente) en `backend/src/services/avisos.js`
+- [x] T054 [US3] Implementar `POST /api/sala/avisos/{avisoId}/descartar` y difundir `aviso.descartado` (claves en `snake_case`: `aviso_id`, `mesa_id`, `descartado_en`) en `backend/src/routes/sala.js` y `backend/src/realtime/emit.js`
+- [x] T055 [US3] Excluir los avisos descartados de la instantánea de sala y no mostrar avisos de mesas que dejan de estar abiertas por cierre de cuenta (coherencia al reconectar) en `backend/src/services/salaMesas.js`
+- [x] T056 [US3] Implementar la acción de descartar en el aviso en `frontend/src/components/AvisoMesa.jsx`
+- [x] T057 [US3] Gestionar los eventos `aviso.descartado` en el estado de sala (retirada en todas las pantallas y coherencia tras reconectar) en `frontend/src/hooks/useSala.js`
 
 **Checkpoint**: Las tres historias funcionan de forma independiente
 

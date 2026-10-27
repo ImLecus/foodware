@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { obtenerMesasSala } from '../services/api.js';
+import { descartarAvisoSala, obtenerMesasSala } from '../services/api.js';
 import { suscribirASala } from '../services/realtime.js';
 import { guardarSilenciado, leerSilenciado, reproducirPitido } from '../utils/sonido.js';
 
@@ -30,6 +30,14 @@ export function useSala() {
       guardarSilenciado(siguiente);
       return siguiente;
     });
+  }, []);
+
+  /** Quita el aviso de su mesa sin esperar a la siguiente instantánea. */
+  const quitarAviso = useCallback((avisoId) => {
+    if (!avisoId) return;
+    setMesas((actual) =>
+      actual.map((mesa) => (mesa.aviso?.id === avisoId ? { ...mesa, aviso: null } : mesa)),
+    );
   }, []);
 
   const recargar = useCallback(async () => {
@@ -88,11 +96,17 @@ export function useSala() {
           return;
         }
 
-        if (nombre === 'aviso.retirado' || nombre === 'aviso.descartado') {
-          if (datos?.aviso_id) {
-            avisosSonados.current.delete(datos.aviso_id);
-          }
+        if (nombre === 'aviso.retirado') {
           recargar();
+          return;
+        }
+
+        if (nombre === 'aviso.descartado') {
+          const avisoId = datos?.aviso_id;
+          if (avisoId) {
+            avisosSonados.current.delete(avisoId);
+            quitarAviso(avisoId);
+          }
           return;
         }
 
@@ -109,11 +123,25 @@ export function useSala() {
     });
 
     return cerrar;
-  }, [recargar]);
+  }, [quitarAviso, recargar]);
 
-  const descartarAviso = useCallback(async (avisoId) => {
-    void avisoId;
-  }, []);
+  const descartarAviso = useCallback(
+    async (avisoId) => {
+      if (!avisoId) return;
+
+      try {
+        await descartarAvisoSala(avisoId);
+        quitarAviso(avisoId);
+      } catch (err) {
+        if (err?.status === 404) {
+          quitarAviso(avisoId);
+          return;
+        }
+        // Sin conexión se conserva el aviso; al resincronizar se reintenta.
+      }
+    },
+    [quitarAviso],
+  );
 
   return {
     mesas,
