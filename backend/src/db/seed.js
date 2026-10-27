@@ -133,18 +133,12 @@ const cargar = db.transaction(() => {
   }
 
   const insertarCuenta = db.prepare(
-    `INSERT OR REPLACE INTO cuentas (id, mesa_id, estado, total_centimos, abierta_en, cerrada_en)
-     VALUES (?, ?, 'cerrada', ?, ?, ?)`,
+    `INSERT OR REPLACE INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+     VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
   );
-  for (const cuenta of cuentas) {
-    insertarCuenta.run(
-      cuenta.id,
-      cuenta.mesa,
-      cuenta.total,
-      `${cuenta.dia} 10:00:00`,
-      `${cuenta.dia} 12:00:00`,
-    );
-  }
+  insertarCuenta.run('cuenta-ayer-1', 'mesa-1', 'camarero-1', 35500, `${ayer} 10:00:00`, `${ayer} 12:00:00`);
+  insertarCuenta.run('cuenta-ayer-2', 'mesa-2', 'camarero-2', 22000, `${ayer} 10:00:00`, `${ayer} 12:00:00`);
+  insertarCuenta.run('cuenta-anteayer-1', 'mesa-3', 'camarero-1', 18000, `${anteayer} 10:00:00`, `${anteayer} 12:00:00`);
 
   const insertarPedido = db.prepare(
     `INSERT OR IGNORE INTO pedidos (id, mesa_id, camarero_id, estado, creado_en, enviado_en)
