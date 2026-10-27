@@ -39,6 +39,9 @@ describe('eventos al deshacer la última marca', () => {
     const contenido = escrito.join('');
     expect(contenido).toContain('event: linea.actualizada');
     expect(contenido).toContain('event: pedido.reabierto');
+    expect(contenido).toContain('"tipo":"pedido.reabierto"');
     expect(contenido).toContain('"pedidoId":"pedido-1"');
+    expect(contenido).toContain('"mesaId":"mesa-1"');
+    expect(contenido).toContain('"lineaId":"linea-2"');
   });
 });

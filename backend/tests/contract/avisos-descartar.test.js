@@ -20,7 +20,7 @@ describe('POST /api/sala/avisos/:avisoId/descartar', () => {
     insertarLinea(db, { id: 'linea-1', pedidoId: 'pedido-1' });
 
     const marca = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 

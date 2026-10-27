@@ -1,5 +1,5 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CocinaPage from '../../src/pages/CocinaPage.jsx';
 import { marcarEstado, obtenerCocinero, obtenerPedidosPendientes } from '../../src/services/api.js';
@@ -150,6 +150,110 @@ describe('CocinaPage (US1)', () => {
 
     expect(await screen.findByText('Sin conexión')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Marcar listo' })).toBeDisabled();
+  });
+
+  it('muestra el aviso al completar la partida de un pedido mixto', async () => {
+    const pedidoMixto = {
+      ...pedido,
+      lineas: [
+        {
+          ...pedido.lineas[0],
+          id: 'linea-1',
+          nombrePlato: 'Croquetas',
+          partida: 'entrantes',
+        },
+        { ...pedido.lineas[0], id: 'linea-2', nombrePlato: 'Paella', partida: 'principales' },
+      ],
+    };
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes
+      .mockResolvedValueOnce([pedidoMixto])
+      .mockResolvedValueOnce([]);
+    marcarEstado.mockResolvedValue({
+      id: 'linea-1',
+      estado: 'listo',
+      pedidoCompletado: true,
+    });
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+
+    const botones = screen.getAllByRole('button', { name: 'Marcar listo' });
+    expect(botones).toHaveLength(1);
+    fireEvent.click(botones[0]);
+
+    expect(await screen.findByText('Pedido completado')).toBeInTheDocument();
+  });
+
+  it('no ofrece marcar ni deshacer líneas de otra partida', async () => {
+    const pedidoMixto = {
+      ...pedido,
+      partida: 'entrantes',
+      lineas: [
+        { ...pedido.lineas[0], id: 'linea-1', partida: 'entrantes' },
+        { ...pedido.lineas[0], id: 'linea-2', nombrePlato: 'Paella', partida: 'principales' },
+      ],
+    };
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes.mockResolvedValue([pedidoMixto]);
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+
+    const botones = screen.getAllByRole('button', { name: 'Marcar listo' });
+    expect(botones).toHaveLength(1);
+    fireEvent.click(botones[0]);
+
+    await waitFor(() =>
+      expect(marcarEstado).toHaveBeenCalledWith('pedido-1', 'linea-1', 'listo', 'entrantes'),
+    );
+  });
+
+  it('mantiene dos avisos de completado consecutivos sin cerrar el primero', async () => {
+    const segundoPedido = {
+      ...pedido,
+      id: 'pedido-2',
+      mesa: 2,
+      lineas: [{ ...pedido.lineas[0], id: 'linea-2' }],
+    };
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes
+      .mockResolvedValueOnce([pedido, segundoPedido])
+      .mockResolvedValueOnce([segundoPedido])
+      .mockResolvedValueOnce([]);
+    marcarEstado.mockResolvedValue({ pedidoCompletado: true });
+
+    renderizar();
+    await screen.findByTestId('pedido-pedido-1');
+
+    fireEvent.click(
+      within(screen.getByTestId('pedido-pedido-1')).getByRole('button', {
+        name: 'Marcar listo',
+      }),
+    );
+    await screen.findByText('Pedido completado');
+
+    fireEvent.click(
+      within(screen.getByTestId('pedido-pedido-2')).getByRole('button', {
+        name: 'Marcar listo',
+      }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getAllByText('Pedido completado')).toHaveLength(2),
+    );
   });
 
   it('ofrece Deshacer tras completar el pedido y revierte la última marca', async () => {

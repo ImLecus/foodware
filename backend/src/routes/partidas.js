@@ -16,7 +16,7 @@ export function partidasRouter(db) {
       });
     }
 
-    return suscribirAPartida(req, res);
+    return suscribirAPartida(req, res, partidaId);
   });
 
   router.get('/:partidaId/pedidos-pendientes', (req, res) => {

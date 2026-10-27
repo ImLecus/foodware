@@ -12,7 +12,7 @@ describe('Pedidos · anulación', () => {
     db?.close();
   });
 
-  it('borra el pedido y sus líneas, libera la mesa y no avisa a cocina', async () => {
+  it('borra el pedido y sus líneas, libera la mesa y avisa a cocina con pendientes-cambiado', async () => {
     ({ db, app } = crearAppDePrueba());
 
     const abierto = await request(app).post('/api/mesas/mesa-1/abrir').set(CABECERA_CAMARERO);
@@ -50,6 +50,7 @@ describe('Pedidos · anulación', () => {
 
     const contenido = escrito.join('');
     expect(contenido).toContain('event: pedido-anulado');
+    expect(contenido).toContain('event: pedido.pendientes-cambiado');
     expect(contenido).not.toContain('event: pedido-confirmado');
   });
 

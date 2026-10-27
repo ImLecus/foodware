@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { logger } from '../src/config/logger.js';
 import { numeroDeClientes, publicar, reiniciarHub, suscribir } from '../src/realtime/hub.js';
 
 function clienteFalso() {
@@ -14,6 +15,7 @@ function clienteFalso() {
 
 describe('hub SSE', () => {
   afterEach(() => {
+    vi.restoreAllMocks();
     reiniciarHub();
   });
 
@@ -30,9 +32,34 @@ describe('hub SSE', () => {
     expect(contenido).toContain('data: {"pedidoId":"pedido-1"}');
   });
 
-  it('cierra y limpia las suscripciones al reiniciar', () => {
+  it('solo entrega los eventos de una partida a su canal', () => {
+    const entrantes = clienteFalso();
+    const principales = clienteFalso();
+    suscribir(entrantes.peticion, entrantes.respuesta, 'entrantes');
+    suscribir(principales.peticion, principales.respuesta, 'principales');
+
+    publicar('pedido.nuevo', { tipo: 'pedido.nuevo', partida: 'entrantes', pedidoId: 'p-1' });
+
+    expect(entrantes.escrito.join('')).toContain('event: pedido.nuevo');
+    expect(principales.escrito.join('')).not.toContain('event: pedido.nuevo');
+  });
+
+  it('registra la emisión de cada evento', () => {
+    const espia = vi.spyOn(logger, 'info').mockImplementation(() => {});
     const { respuesta, peticion } = clienteFalso();
     suscribir(peticion, respuesta);
+
+    publicar('pedido.nuevo', { tipo: 'pedido.nuevo', partida: 'entrantes', pedidoId: 'p-1' });
+
+    expect(espia).toHaveBeenCalledWith(
+      'Evento SSE emitido',
+      expect.objectContaining({ evento: 'pedido.nuevo', partida: 'entrantes', pedidoId: 'p-1' }),
+    );
+  });
+
+  it('cierra y limpia las suscripciones al reiniciar', () => {
+    const { respuesta, peticion } = clienteFalso();
+    suscribir(peticion, respuesta, 'entrantes');
 
     reiniciarHub();
 

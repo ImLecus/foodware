@@ -12,13 +12,16 @@ function cabeceras(conCuerpo = false) {
   return cabecera;
 }
 
+const MENSAJE_SIN_CONEXION =
+  'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.';
+
 async function leerRespuesta(respuesta) {
   if (!respuesta.ok) {
-    let detalle = respuesta.statusText;
+    let detalle = 'No se pudo completar la solicitud';
     let codigo = null;
     try {
       const cuerpo = await respuesta.json();
-      detalle = cuerpo.error ?? detalle;
+      detalle = cuerpo.mensaje ?? cuerpo.error ?? detalle;
       codigo = cuerpo.codigo ?? null;
     } catch {
       // La respuesta no era JSON.
@@ -31,19 +34,30 @@ async function leerRespuesta(respuesta) {
   return respuesta.status === 204 ? null : respuesta.json();
 }
 
+async function peticion(url, opciones) {
+  let respuesta;
+  try {
+    respuesta = await fetch(url, opciones);
+  } catch (fallo) {
+    const error = new Error(MENSAJE_SIN_CONEXION);
+    error.codigo = 'sin_conexion';
+    error.causa = fallo;
+    throw error;
+  }
+  return leerRespuesta(respuesta);
+}
+
 export async function apiGet(ruta, cabecerasExtra) {
   const headers = cabecerasExtra ? { ...cabeceras(), ...cabecerasExtra } : cabeceras();
-  return leerRespuesta(await fetch(`${API_BASE}${ruta}`, { headers }));
+  return peticion(`${API_BASE}${ruta}`, { headers });
 }
 
 export async function apiEnviar(ruta, metodo, cuerpo) {
-  return leerRespuesta(
-    await fetch(`${API_BASE}${ruta}`, {
-      method: metodo,
-      headers: cabeceras(cuerpo !== undefined),
-      body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
-    }),
-  );
+  return peticion(`${API_BASE}${ruta}`, {
+    method: metodo,
+    headers: cabeceras(cuerpo !== undefined),
+    body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
+  });
 }
 
 /* Cocina: pedidos pendientes (historia 003) */

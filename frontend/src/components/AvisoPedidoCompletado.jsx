@@ -1,5 +1,5 @@
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, HStack } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function AvisoPedidoCompletado({
   pedidoId,
@@ -9,15 +9,24 @@ export default function AvisoPedidoCompletado({
   duracionMs = 10_000,
 }) {
   const [visible, setVisible] = useState(true);
+  const onCerrarRef = useRef(onCerrar);
+
+  useEffect(() => {
+    onCerrarRef.current = onCerrar;
+  }, [onCerrar]);
+
+  useEffect(() => {
+    setVisible(true);
+  }, [pedidoId, lineaId]);
 
   useEffect(() => {
     const temporizador = setTimeout(() => {
       setVisible(false);
-      onCerrar?.();
+      onCerrarRef.current?.();
     }, duracionMs);
 
     return () => clearTimeout(temporizador);
-  }, [duracionMs, onCerrar]);
+  }, [duracionMs]);
 
   if (!visible) return null;
 
@@ -36,6 +45,7 @@ export default function AvisoPedidoCompletado({
           onClick={() => {
             onDeshacer?.({ pedidoId, lineaId });
             setVisible(false);
+            onCerrar?.();
           }}
         >
           Deshacer
