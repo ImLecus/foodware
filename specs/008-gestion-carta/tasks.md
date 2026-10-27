@@ -153,15 +153,15 @@ comprobar que el plato desaparece de la carta de sala sin que el administrador l
 
 **Propósito**: mejoras que afectan a varias historias.
 
-- [ ] T055 [P] Crear el componente `EstadoConexion` (sin conexión, conserva lo escrito) en `frontend/src/components/EstadoConexion.jsx`
-- [ ] T056 [P] Añadir pruebas de estados de la página (cargando, vacío, error) en `frontend/tests/components/PaginaGestionCarta.test.jsx`
-- [ ] T057 [P] Añadir índices SQLite (`plato.partida`, `plato_ingrediente.ingredienteId`) en `backend/db/schema.sql`
-- [ ] T058 [P] Actualizar documentación de puesta en marcha en `docs/`
-- [ ] T059 Revisar accesibilidad (etiquetas, teclado) de `frontend/src/components/`
-- [ ] T060 Ejecutar los escenarios E1–E11 de `quickstart.md` y validar el contrato `contracts/carta-api.md`
-- [ ] T061 Ejecutar el escenario E12 de `specs/008-gestion-carta/quickstart.md` (alta de ingrediente, asociación y agotamiento) y validar SC-006
-- [ ] T062 Verificar rendimiento (<3 s) y reflejo inmediato en sala (SC-002) según `specs/008-gestion-carta/quickstart.md` (E11)
-- [ ] T063 [P] Añadir prueba de inmutabilidad del precio histórico (un cambio de precio no altera líneas ya pedidas ni cuentas pasadas, FR-014) en `backend/tests/integration/precio-historico.test.js`
+- [X] T055 [P] Crear el componente `EstadoConexion` (sin conexión, conserva lo escrito) en `frontend/src/components/EstadoConexion.jsx`
+- [X] T056 [P] Añadir pruebas de estados de la página (cargando, vacío, error) en `frontend/tests/components/PaginaGestionCarta.test.jsx`
+- [X] T057 [P] Añadir índices SQLite (`plato.partida`, `plato_ingrediente.ingredienteId`) en `backend/db/schema.sql`
+- [X] T058 [P] Actualizar documentación de puesta en marcha en `docs/`
+- [X] T059 Revisar accesibilidad (etiquetas, teclado) de `frontend/src/components/`
+- [X] T060 Ejecutar los escenarios E1–E11 de `quickstart.md` y validar el contrato `contracts/carta-api.md`
+- [X] T061 Ejecutar el escenario E12 de `specs/008-gestion-carta/quickstart.md` (alta de ingrediente, asociación y agotamiento) y validar SC-006
+- [X] T062 Verificar rendimiento (<3 s) y reflejo inmediato en sala (SC-002) según `specs/008-gestion-carta/quickstart.md` (E11)
+- [X] T063 [P] Añadir prueba de inmutabilidad del precio histórico (un cambio de precio no altera líneas ya pedidas ni cuentas pasadas, FR-014) en `backend/tests/integration/precio-historico.test.js`
 
 ---
 
