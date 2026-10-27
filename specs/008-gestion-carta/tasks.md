@@ -26,13 +26,13 @@ independientes.
 
 **Propósito**: inicialización del proyecto y estructura básica.
 
-- [ ] T001 Crear la estructura de carpetas `backend/` y `frontend/` según `plan.md`
-- [ ] T002 [P] Inicializar el backend (JavaScript, Express, better-sqlite3, zod) en `backend/package.json`
-- [ ] T003 [P] Inicializar el frontend (React 18, Vite, JavaScript, Chakra UI, React Router) en `frontend/package.json`
-- [ ] T004 [P] Configurar Vitest y Supertest en el backend en `backend/vitest.config.js`
-- [ ] T005 [P] Configurar Vitest y React Testing Library en el frontend en `frontend/vitest.config.js`
-- [ ] T006 [P] Configurar ESLint y Prettier en `backend/.eslintrc.cjs` y `frontend/.eslintrc.cjs`
-- [ ] T007 Crear `backend/Dockerfile`, `frontend/Dockerfile` y el `docker-compose.yml` raíz
+- [X] T001 Crear la estructura de carpetas `backend/` y `frontend/` según `plan.md`
+- [X] T002 [P] Inicializar el backend (JavaScript, Express, better-sqlite3, zod) en `backend/package.json`
+- [X] T003 [P] Inicializar el frontend (React 18, Vite, JavaScript, Chakra UI, React Router) en `frontend/package.json`
+- [X] T004 [P] Configurar Vitest y Supertest en el backend en `backend/vitest.config.js`
+- [X] T005 [P] Configurar Vitest y React Testing Library en el frontend en `frontend/vitest.config.js`
+- [X] T006 [P] Configurar ESLint y Prettier en `backend/.eslintrc.cjs` y `frontend/.eslintrc.cjs`
+- [X] T007 Crear `backend/Dockerfile`, `frontend/Dockerfile` y el `docker-compose.yml` raíz
 
 ---
 
