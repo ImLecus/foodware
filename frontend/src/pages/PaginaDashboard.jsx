@@ -32,6 +32,18 @@ function EstadoSinConexion() {
   );
 }
 
+function EstadoError({ mensaje }) {
+  return (
+    <Alert status="error">
+      <AlertIcon />
+      <Box>
+        <Text fontWeight="semibold">No se pudo cargar el dashboard</Text>
+        <Text fontSize="sm">{mensaje || 'El servidor devolvió un error.'}</Text>
+      </Box>
+    </Alert>
+  );
+}
+
 function EstadoSinVentas({ fecha }) {
   return (
     <Box>
@@ -85,8 +97,10 @@ function EstadoDatos({ informe }) {
           ) : (
             <>
               <Text mb={2}>
-                Día actual: {formatearEuros(Math.round((informe.comparacion.importeActual || 0) * 100))} ·
-                Día anterior: {formatearEuros(Math.round((informe.comparacion.importeAnterior || 0) * 100))}
+                Día actual:{' '}
+                {formatearEuros(Math.round((informe.comparacion.importeActual || 0) * 100))} · Día
+                anterior:{' '}
+                {formatearEuros(Math.round((informe.comparacion.importeAnterior || 0) * 100))}
               </Text>
               <Text mb={2}>
                 Diferencia:{' '}
@@ -99,6 +113,42 @@ function EstadoDatos({ informe }) {
                 diferenciaPorcentaje={informe.comparacion.diferenciaPorcentaje}
                 sinBaseComparacion={informe.comparacion.sinBaseComparacion}
               />
+
+              {Array.isArray(informe.comparacion.porCamarero) &&
+              informe.comparacion.porCamarero.length > 0 ? (
+                <TablaDesglose
+                  titulo="Diferencia por camarero"
+                  encabezados={['Camarero', 'Diferencia']}
+                  filas={informe.comparacion.porCamarero}
+                  renderFila={(fila) => (
+                    <>
+                      <Td>{fila.nombre || fila.camareroId}</Td>
+                      <Td isNumeric>
+                        {formatearEuros(Math.round((fila.diferenciaImporte || 0) * 100))} ·{' '}
+                        {fila.tendencia}
+                      </Td>
+                    </>
+                  )}
+                />
+              ) : null}
+
+              {Array.isArray(informe.comparacion.porPlato) &&
+              informe.comparacion.porPlato.length > 0 ? (
+                <TablaDesglose
+                  titulo="Diferencia por plato"
+                  encabezados={['Plato', 'Diferencia']}
+                  filas={informe.comparacion.porPlato}
+                  renderFila={(fila) => (
+                    <>
+                      <Td>{fila.nombre || fila.platoId}</Td>
+                      <Td isNumeric>
+                        {formatearEuros(Math.round((fila.diferenciaImporte || 0) * 100))} ·{' '}
+                        {fila.tendencia}
+                      </Td>
+                    </>
+                  )}
+                />
+              ) : null}
             </>
           )}
         </Box>
@@ -141,6 +191,7 @@ function EstadoDatos({ informe }) {
 export default function PaginaDashboard() {
   const [estado, setEstado] = useState('cargando');
   const [informe, setInforme] = useState(null);
+  const [mensajeError, setMensajeError] = useState(null);
 
   useEffect(() => {
     let activo = true;
@@ -156,7 +207,12 @@ export default function PaginaDashboard() {
           setEstado('sin-permiso');
           return;
         }
-        setEstado('sin-conexion');
+        if (error?.codigo === 'sin_conexion' || !error?.status) {
+          setEstado('sin-conexion');
+          return;
+        }
+        setMensajeError(error?.message || 'El servidor devolvió un error.');
+        setEstado('error');
       });
     return () => {
       activo = false;
@@ -171,6 +227,9 @@ export default function PaginaDashboard() {
   }
   if (estado === 'sin-conexion') {
     return <EstadoSinConexion />;
+  }
+  if (estado === 'error') {
+    return <EstadoError mensaje={mensajeError} />;
   }
   if (estado === 'datos' && informe && informe.totalVendido === 0 && informe.numeroCuentas === 0) {
     return <EstadoSinVentas fecha={informe.fecha} />;

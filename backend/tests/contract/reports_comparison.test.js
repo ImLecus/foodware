@@ -75,9 +75,31 @@ describe('GET /api/reports/daily - comparación US3', () => {
     expect(respuesta.body.comparacion.diaAnterior).toBe(anteayer);
     expect(respuesta.body.comparacion.tendencia).toBe('subida');
     expect(respuesta.body.comparacion.sinBaseComparacion).toBe(false);
+    expect(respuesta.body.comparacion.porCamarero).toHaveLength(1);
+    expect(respuesta.body.comparacion.porCamarero[0].diferenciaImporte).toBe(50);
+    expect(respuesta.body.comparacion.porPlato).toEqual([]);
+  });
+
+  it('devuelve diaAnterior null cuando no existe ningún día anterior registrado', async () => {
+    db.prepare(
+      `INSERT INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+       VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
+    ).run('c-ayer', 'mesa-1', 'camarero-1', 3500, `${ayer} 12:00:00`, `${ayer} 12:00:00`);
+
+    const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_ENCARGADO);
+
+    expect(respuesta.status).toBe(200);
+    expect(respuesta.body.comparacion.diaAnterior).toBeNull();
+    expect(respuesta.body.comparacion.diferenciaImporte).toBeNull();
+    expect(respuesta.body.comparacion.porCamarero).toEqual([]);
+    expect(respuesta.body.comparacion.porPlato).toEqual([]);
   });
 
   it('cuando día anterior no tiene ventas y día actual sí, diferencia en euros sin porcentaje y sinBaseComparacion true', async () => {
+    db.prepare(
+      `INSERT INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+       VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
+    ).run('c-ante', 'mesa-1', 'camarero-1', 0, `${anteayer} 12:00:00`, `${anteayer} 12:00:00`);
     db.prepare(
       `INSERT INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
        VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,

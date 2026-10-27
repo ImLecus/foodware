@@ -100,9 +100,31 @@ describe('GET /api/reports/daily', () => {
     expect(respuesta.body.fecha).toBe(ayer);
     expect(respuesta.body.totalVendido).toBe(25.5);
     expect(respuesta.body.numeroCuentas).toBe(2);
-    expect(respuesta.body.porCamarero).toEqual([]);
-    expect(respuesta.body.porPlato).toEqual([]);
+    expect(respuesta.body.porCamarero).toEqual([
+      { camareroId: 'camarero-1', nombre: 'Ana', importe: 0, numeroCuentas: 0 },
+    ]);
+    expect(respuesta.body.porPlato).toEqual([
+      { platoId: 'plato-1', nombre: 'Croquetas', partida: 'entrantes', cantidad: 0, importe: 0 },
+    ]);
     expect(respuesta.body.comparacion).toBeDefined();
+  });
+
+  it('ignora las cuentas cerradas hoy y devuelve el día anterior completado', async () => {
+    db.prepare(
+      `INSERT INTO cuentas (id, mesa_id, estado, total_centimos, abierta_en, cerrada_en)
+       VALUES (?, ?, 'cerrada', ?, ?, ?)`,
+    ).run('cuenta-ayer', 'mesa-1', 850, `${ayer} 10:00:00`, `${ayer} 12:00:00`);
+    db.prepare(
+      `INSERT INTO cuentas (id, mesa_id, estado, total_centimos, abierta_en, cerrada_en)
+       VALUES (?, ?, 'cerrada', ?, ?, ?)`,
+    ).run('cuenta-hoy', 'mesa-1', 1700, `${hoy} 10:00:00`, `${hoy} 12:00:00`);
+
+    const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_ENCARGADO);
+
+    expect(respuesta.status).toBe(200);
+    expect(respuesta.body.fecha).toBe(ayer);
+    expect(respuesta.body.totalVendido).toBe(8.5);
+    expect(respuesta.body.numeroCuentas).toBe(1);
   });
 
   it('devuelve 0,00 € cuando no hay cuentas cerradas para el día', async () => {
@@ -110,8 +132,12 @@ describe('GET /api/reports/daily', () => {
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.totalVendido).toBe(0);
     expect(respuesta.body.numeroCuentas).toBe(0);
-    expect(respuesta.body.porCamarero).toEqual([]);
-    expect(respuesta.body.porPlato).toEqual([]);
+    expect(respuesta.body.porCamarero).toEqual([
+      { camareroId: 'camarero-1', nombre: 'Ana', importe: 0, numeroCuentas: 0 },
+    ]);
+    expect(respuesta.body.porPlato).toEqual([
+      { platoId: 'plato-1', nombre: 'Croquetas', partida: 'entrantes', cantidad: 0, importe: 0 },
+    ]);
   });
 
   it('rechaza date con formato inválido con 400', async () => {

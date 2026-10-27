@@ -80,6 +80,20 @@ describe('PaginaDashboard - total', () => {
     expect(screen.getByText(/no hay ventas registradas/i)).toBeInTheDocument();
   });
 
+  it('muestra el error real del servidor y no lo confunde con falta de conexión', async () => {
+    const error = new Error('Solo se permiten días naturales completados');
+    error.status = 400;
+    error.codigo = 'solicitud_invalida';
+    obtenerInformeDiario.mockRejectedValue(error);
+
+    renderizarComponente();
+
+    expect(
+      await screen.findByText(/solo se permiten días naturales completados/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/sin conexión/i)).not.toBeInTheDocument();
+  });
+
   it('muestra mensaje de acceso restringido en 403', async () => {
     const error = new Error('403: Acceso restringido');
     error.status = 403;

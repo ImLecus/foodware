@@ -13,7 +13,7 @@ Con la base local recreada y el seed ejecutado:
 | `usuarios` | 8 |
 | `mesas` | 20 |
 | `platos` | 8 |
-| `pedidos` | 10 |
+| `pedidos` | 14 |
 | `cuentas` | 4 |
 
 La migración `backend/migrations/007_cuenta_pedido.sql` añade `cuentas.pedido_id`. El seed

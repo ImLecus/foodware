@@ -1,24 +1,31 @@
 import { diaAnterior, fechaEnMadrid, limitesDelDia } from './dayTime.js';
 
+function fechaMadridDeCierre(valor) {
+  if (!valor) return null;
+  const fecha = new Date(`${valor.replace(' ', 'T')}Z`);
+  return Number.isNaN(fecha.getTime()) ? null : fechaEnMadrid(fecha);
+}
+
+function existeCuentaAnteriorA(db, fecha) {
+  const { inicio } = limitesDelDia(fecha);
+  return Boolean(
+    db
+      .prepare(
+        `SELECT 1 FROM cuentas
+          WHERE estado = 'cerrada'
+            AND cerrada_en IS NOT NULL
+            AND cerrada_en < ?
+          LIMIT 1`,
+      )
+      .get(inicio),
+  );
+}
+
 function obtenerFechaConsulta(db, fechaParam) {
   if (fechaParam) {
     return fechaParam;
   }
-  const hoy = fechaEnMadrid();
-  const ultimoCierre = db
-    .prepare(
-      `SELECT DATE(cerrada_en, 'localtime') AS fecha, MAX(cerrada_en) AS ultima
-       FROM cuentas
-       WHERE estado = 'cerrada' AND cerrada_en IS NOT NULL
-       GROUP BY DATE(cerrada_en, 'localtime')
-       ORDER BY DATE(cerrada_en, 'localtime') DESC
-       LIMIT 1`,
-    )
-    .get();
-  if (ultimoCierre?.fecha) {
-    return ultimoCierre.fecha;
-  }
-  return diaAnterior(hoy);
+  return obtenerUltimoDiaCompletado(db);
 }
 
 function obtenerTotalParaFecha(db, fecha) {
@@ -52,17 +59,20 @@ export function obtenerDesglosePorCamarero(db, fecha) {
   const { inicio, fin } = limitesDelDia(fecha);
   const filas = db
     .prepare(
-      `SELECT c.camarero_id AS camareroId, u.nombre, 
-              COALESCE(SUM(c.total_centimos), 0) AS importeCentimos,
-              COUNT(c.id) AS numeroCuentas
-       FROM cuentas c
-       LEFT JOIN usuarios u ON u.id = c.camarero_id
-       WHERE c.estado = 'cerrada'
-         AND c.cerrada_en IS NOT NULL
-         AND c.cerrada_en >= ?
-         AND c.cerrada_en < ?
-       GROUP BY c.camarero_id
-       ORDER BY importeCentimos DESC`,
+      `SELECT u.id AS camareroId,
+              u.nombre,
+              COALESCE(SUM(CASE WHEN c.id IS NOT NULL THEN c.total_centimos ELSE 0 END), 0) AS importeCentimos,
+              COUNT(CASE WHEN c.id IS NOT NULL THEN 1 END) AS numeroCuentas
+         FROM usuarios u
+         LEFT JOIN cuentas c
+           ON c.camarero_id = u.id
+          AND c.estado = 'cerrada'
+          AND c.cerrada_en IS NOT NULL
+          AND c.cerrada_en >= ?
+          AND c.cerrada_en < ?
+        WHERE u.rol = 'camarero'
+        GROUP BY u.id, u.nombre
+        ORDER BY importeCentimos DESC, u.nombre`,
     )
     .all(inicio, fin);
   return filas.map((fila) => ({
@@ -77,17 +87,22 @@ export function obtenerDesglosePorPlato(db, fecha) {
   const { inicio, fin } = limitesDelDia(fecha);
   const filas = db
     .prepare(
-      `SELECT lp.plato_id AS platoId, p.nombre, p.partida_codigo AS partida,
-              COALESCE(SUM(lp.cantidad), 0) AS cantidad,
-              COALESCE(SUM(lp.cantidad * lp.precio_centimos), 0) AS importeCentimos
-       FROM lineas_pedido lp
-       JOIN pedidos pd ON pd.id = lp.pedido_id
-       JOIN cuentas c ON c.mesa_id = pd.mesa_id AND c.estado = 'cerrada' 
-         AND c.cerrada_en >= ? AND c.cerrada_en < ?
-       JOIN platos p ON p.id = lp.plato_id
-       WHERE pd.enviado_en IS NOT NULL
-       GROUP BY lp.plato_id
-       ORDER BY importeCentimos DESC`,
+      `SELECT p.id AS platoId,
+              p.nombre,
+              p.partida_codigo AS partida,
+              COALESCE(SUM(CASE WHEN c.id IS NOT NULL THEN lp.cantidad ELSE 0 END), 0) AS cantidad,
+              COALESCE(SUM(CASE WHEN c.id IS NOT NULL THEN lp.cantidad * lp.precio_centimos ELSE 0 END), 0) AS importeCentimos
+         FROM platos p
+         LEFT JOIN lineas_pedido lp ON lp.plato_id = p.id
+         LEFT JOIN pedidos pd ON pd.id = lp.pedido_id
+         LEFT JOIN cuentas c
+           ON c.pedido_id = pd.id
+          AND c.estado = 'cerrada'
+          AND c.cerrada_en IS NOT NULL
+          AND c.cerrada_en >= ?
+          AND c.cerrada_en < ?
+        GROUP BY p.id, p.nombre, p.partida_codigo
+        ORDER BY importeCentimos DESC, p.nombre`,
     )
     .all(inicio, fin);
   return filas.map((fila) => ({
@@ -103,67 +118,40 @@ export function obtenerComparacion(db, fecha) {
   const actual = obtenerTotalParaFecha(db, fecha);
   const diaAnteriorFecha = diaAnterior(fecha);
   const anterior = obtenerTotalParaFecha(db, diaAnteriorFecha);
-  
-  // Comprobar si existe algún día anterior con datos en el sistema
-  const hayDatosAnteriores = db
-    .prepare(
-      `SELECT 1 FROM cuentas 
-       WHERE estado = 'cerrada' AND cerrada_en IS NOT NULL 
-         AND DATE(cerrada_en, 'localtime') = ? LIMIT 1`,
-    )
-    .get(diaAnteriorFecha);
-  
-  if (hayDatosAnteriores || anterior.totalCentimos > 0 || actual.totalCentimos > 0) {
-    const existeCualquierAnterior = db
-      .prepare(
-        `SELECT 1 FROM cuentas 
-         WHERE estado = 'cerrada' AND cerrada_en IS NOT NULL 
-           AND DATE(cerrada_en, 'localtime') < ? LIMIT 1`,
-      )
-      .get(fecha);
-    if (existeCualquierAnterior || hayDatosAnteriores || anterior.totalCentimos > 0) {
-      const diferenciaImporte = actual.totalCentimos - anterior.totalCentimos;
-      if (anterior.totalCentimos === 0 && actual.totalCentimos > 0) {
-        return {
-          diaActual: fecha,
-          diaAnterior: diaAnteriorFecha,
-          importeActual: actual.totalCentimos / 100,
-          importeAnterior: 0,
-          diferenciaImporte: diferenciaImporte / 100,
-          diferenciaPorcentaje: null,
-          sinBaseComparacion: true,
-          tendencia: 'subida',
-          porCamarero: [],
-          porPlato: [],
-        };
-      }
-    }
+  const hayDiaAnterior = existeCuentaAnteriorA(db, fecha);
+
+  if (!hayDiaAnterior) {
+    return {
+      diaActual: fecha,
+      diaAnterior: null,
+      importeActual: actual.totalCentimos / 100,
+      importeAnterior: null,
+      diferenciaImporte: null,
+      diferenciaPorcentaje: null,
+      sinBaseComparacion: false,
+      tendencia: 'sin_variacion',
+      porCamarero: [],
+      porPlato: [],
+    };
   }
-  
+
   const diferenciaImporte = actual.totalCentimos - anterior.totalCentimos;
-  let diferenciaPorcentaje = null;
-  let sinBaseComparacion = false;
-  let tendencia = 'sin_variacion';
-  
-  if (anterior.totalCentimos === 0 && actual.totalCentimos > 0) {
-    sinBaseComparacion = true;
-    diferenciaPorcentaje = null;
-    tendencia = 'subida';
-  } else if (anterior.totalCentimos === 0 && actual.totalCentimos === 0) {
-    diferenciaPorcentaje = null;
-    sinBaseComparacion = false;
-    tendencia = 'sin_variacion';
-  } else if (diferenciaImporte === 0) {
-    tendencia = 'sin_variacion';
-    diferenciaPorcentaje = 0;
-  } else if (diferenciaImporte > 0) {
-    tendencia = 'subida';
-    diferenciaPorcentaje = Number(((diferenciaImporte / anterior.totalCentimos) * 100).toFixed(2));
-  } else {
-    tendencia = 'bajada';
-    diferenciaPorcentaje = Number(((diferenciaImporte / anterior.totalCentimos) * 100).toFixed(2));
-  }
-  
+  const sinBaseComparacion = anterior.totalCentimos === 0 && actual.totalCentimos > 0;
+  const diferenciaPorcentaje =
+    anterior.totalCentimos > 0
+      ? Number(((diferenciaImporte / anterior.totalCentimos) * 100).toFixed(2))
+      : null;
+  const tendencia =
+    diferenciaImporte > 0 ? 'subida' : diferenciaImporte < 0 ? 'bajada' : 'sin_variacion';
+
+  const actualPorCamarero = obtenerDesglosePorCamarero(db, fecha);
+  const anteriorPorCamarero = obtenerDesglosePorCamarero(db, diaAnteriorFecha);
+  const actualPorPlato = obtenerDesglosePorPlato(db, fecha);
+  const anteriorPorPlato = obtenerDesglosePorPlato(db, diaAnteriorFecha);
+
+  const compararCamareros = new Map(anteriorPorCamarero.map((fila) => [fila.camareroId, fila]));
+  const compararPlatos = new Map(anteriorPorPlato.map((fila) => [fila.platoId, fila]));
+
   return {
     diaActual: fecha,
     diaAnterior: diaAnteriorFecha,
@@ -173,27 +161,50 @@ export function obtenerComparacion(db, fecha) {
     diferenciaPorcentaje,
     sinBaseComparacion,
     tendencia,
-    porCamarero: [],
-    porPlato: [],
+    porCamarero: actualPorCamarero.map((fila) => {
+      const previa = compararCamareros.get(fila.camareroId);
+      const diferencia = fila.importe - (previa?.importe || 0);
+      return {
+        camareroId: fila.camareroId,
+        nombre: fila.nombre,
+        importeActual: fila.importe,
+        importeAnterior: previa?.importe || 0,
+        diferenciaImporte: diferencia,
+        tendencia: diferencia > 0 ? 'subida' : diferencia < 0 ? 'bajada' : 'sin_variacion',
+      };
+    }),
+    porPlato: actualPorPlato.map((fila) => {
+      const previa = compararPlatos.get(fila.platoId);
+      const diferencia = fila.importe - (previa?.importe || 0);
+      return {
+        platoId: fila.platoId,
+        nombre: fila.nombre,
+        partida: fila.partida,
+        importeActual: fila.importe,
+        importeAnterior: previa?.importe || 0,
+        diferenciaImporte: diferencia,
+        tendencia: diferencia > 0 ? 'subida' : diferencia < 0 ? 'bajada' : 'sin_variacion',
+      };
+    }),
   };
 }
 
 export function obtenerUltimoDiaCompletado(db) {
   const hoy = fechaEnMadrid();
-  const ultimoCierre = db
+  const ayer = diaAnterior(hoy);
+  const filas = db
     .prepare(
-      `SELECT DATE(cerrada_en, 'localtime') AS fecha
-       FROM cuentas
-       WHERE estado = 'cerrada' AND cerrada_en IS NOT NULL
-       GROUP BY DATE(cerrada_en, 'localtime')
-       ORDER BY DATE(cerrada_en, 'localtime') DESC
-       LIMIT 1`,
+      `SELECT cerrada_en
+         FROM cuentas
+        WHERE estado = 'cerrada'
+          AND cerrada_en IS NOT NULL`,
     )
-    .get();
-  if (ultimoCierre?.fecha) {
-    return ultimoCierre.fecha;
-  }
-  return diaAnterior(hoy);
+    .all();
+
+  const fechas = new Set(filas.map((fila) => fechaMadridDeCierre(fila.cerrada_en)).filter(Boolean));
+  const anteriores = [...fechas].filter((fecha) => fecha < hoy).sort();
+
+  return anteriores.at(-1) ?? ayer;
 }
 
 export function resolverFechaDiaria(db, fechaParam) {

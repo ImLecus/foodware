@@ -105,10 +105,49 @@ describe('GET /api/reports/daily - desgloses US2', () => {
       `INSERT INTO lineas_pedido (id, pedido_id, plato_id, cantidad, precio_centimos)
        VALUES (?, ?, ?, ?, ?)`,
     ).run('linea-2', 'pedido-2', 'plato-2', 1, 2200);
+    db.prepare("UPDATE cuentas SET pedido_id = 'pedido-1' WHERE id = 'cuenta-1'").run();
+    db.prepare("UPDATE cuentas SET pedido_id = 'pedido-2' WHERE id = 'cuenta-2'").run();
 
     const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_ENCARGADO);
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.porCamarero.length).toBe(2);
     expect(respuesta.body.porPlato.length).toBe(2);
+
+    const porPlato = new Map(respuesta.body.porPlato.map((fila) => [fila.platoId, fila]));
+    expect(porPlato.get('plato-1')).toMatchObject({ cantidad: 1, importe: 8.5 });
+    expect(porPlato.get('plato-2')).toMatchObject({ cantidad: 1, importe: 22 });
+  });
+
+  it('no duplica consumos cuando la misma mesa tiene dos cuentas cerradas', async () => {
+    db.prepare(
+      `INSERT INTO pedidos (id, mesa_id, camarero_id, estado, enviado_en)
+       VALUES ('pedido-reuso-1', 'mesa-1', 'camarero-1', 'enviada', ?)`,
+    ).run(`${ayer} 09:00:00`);
+    db.prepare(
+      `INSERT INTO pedidos (id, mesa_id, camarero_id, estado, enviado_en)
+       VALUES ('pedido-reuso-2', 'mesa-1', 'camarero-1', 'enviada', ?)`,
+    ).run(`${ayer} 09:30:00`);
+    db.prepare(
+      `INSERT INTO lineas_pedido (id, pedido_id, plato_id, cantidad, precio_centimos)
+       VALUES ('linea-reuso-1', 'pedido-reuso-1', 'plato-1', 1, 850)`,
+    ).run();
+    db.prepare(
+      `INSERT INTO lineas_pedido (id, pedido_id, plato_id, cantidad, precio_centimos)
+       VALUES ('linea-reuso-2', 'pedido-reuso-2', 'plato-2', 1, 2200)`,
+    ).run();
+    db.prepare(
+      `INSERT INTO cuentas (id, mesa_id, pedido_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+       VALUES ('cuenta-reuso-1', 'mesa-1', 'pedido-reuso-1', 'camarero-1', 'cerrada', 850, ?, ?)`,
+    ).run(`${ayer} 10:00:00`, `${ayer} 12:00:00`);
+    db.prepare(
+      `INSERT INTO cuentas (id, mesa_id, pedido_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+       VALUES ('cuenta-reuso-2', 'mesa-1', 'pedido-reuso-2', 'camarero-1', 'cerrada', 2200, ?, ?)`,
+    ).run(`${ayer} 10:30:00`, `${ayer} 12:30:00`);
+
+    const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_ENCARGADO);
+    const porPlato = new Map(respuesta.body.porPlato.map((fila) => [fila.platoId, fila]));
+
+    expect(porPlato.get('plato-1')).toMatchObject({ cantidad: 1, importe: 8.5 });
+    expect(porPlato.get('plato-2')).toMatchObject({ cantidad: 1, importe: 22 });
   });
 });

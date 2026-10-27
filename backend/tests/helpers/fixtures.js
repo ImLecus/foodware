@@ -69,3 +69,14 @@ export function insertarCuentaCerrada(
      VALUES (?, ?, ?, 'cerrada', ?, 'unico', datetime('now'))`,
   ).run(id, mesaId, pedidoId, totalCentimos);
 }
+
+/** Inserta una cuenta cerrada en una fecha concreta para pruebas de informes. */
+export function insertarCuentaCerradaEnFecha(
+  db,
+  { id = 'cuenta-fecha', mesaId = 'mesa-1', fecha, totalCentimos = 0, camareroId = null } = {},
+) {
+  db.prepare(
+    `INSERT INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+     VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
+  ).run(id, mesaId, camareroId, totalCentimos, `${fecha} 10:00:00`, `${fecha} 12:00:00`);
+}
