@@ -15,6 +15,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import EditorPedido from '../components/EditorPedido.jsx';
 import Pedido from '../components/Pedido.jsx';
 import SelectorPlatos from '../components/SelectorPlatos.jsx';
@@ -32,6 +33,7 @@ import {
 import { crearConexionEventos } from '../services/realtime.js';
 
 export default function Mesas() {
+  const navigate = useNavigate();
   const [mesas, setMesas] = useState([]);
   const [platos, setPlatos] = useState([]);
   const [pedido, setPedido] = useState(null);
@@ -335,6 +337,15 @@ export default function Mesas() {
               />
             ) : (
               <Stack spacing={3}>
+                <Button
+                  colorScheme="teal"
+                  variant="outline"
+                  onClick={() =>
+                    navigate(`/cuentas?mesa=${encodeURIComponent(mesaSeleccionadaId)}`)
+                  }
+                >
+                  Cobrar cuenta
+                </Button>
                 {pedido.estado === 'enviada' && (
                   <Button
                     colorScheme="purple"

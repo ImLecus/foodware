@@ -3,6 +3,7 @@ import express from 'express';
 import { config } from './config.js';
 import { manejadorErrores, noEncontrado } from './middleware/error.js';
 import { cocinerosRouter } from './routes/cocineros.js';
+import { cuentasRouter } from './routes/cuentas.js';
 import { eventsRouter } from './routes/events.js';
 import { healthRouter } from './routes/health.js';
 import { mesasRouter } from './routes/mesas.js';
@@ -29,6 +30,7 @@ export function createApp(db) {
   app.use('/api/platos', platosRouter(db));
   app.use('/api/pedidos', pedidosRouter(db));
   app.use('/api/sala', salaRouter(db));
+  app.use('/api/sala', cuentasRouter(db));
 
   app.use(noEncontrado);
   app.use(manejadorErrores);

@@ -140,3 +140,16 @@ export function cambiarEstadoLineaPedido(pedidoId, lineaId, estado) {
 export function descartarAvisoSala(avisoId) {
   return apiEnviar(`/sala/avisos/${avisoId}/descartar`, 'POST');
 }
+
+/* Cierre y división de cuenta (historia 006) */
+
+export function obtenerCuenta(mesaId) {
+  return apiGet(`/sala/mesas/${encodeURIComponent(mesaId)}/cuenta`);
+}
+
+export function cerrarCuentaUnica(mesaId, totalBaseCentimos) {
+  return apiEnviar(`/sala/mesas/${encodeURIComponent(mesaId)}/cuenta/cierre`, 'POST', {
+    modo: 'unico',
+    total_base_centimos: totalBaseCentimos,
+  });
+}

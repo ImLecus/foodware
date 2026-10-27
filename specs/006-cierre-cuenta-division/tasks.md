@@ -63,21 +63,21 @@ mesas y las líneas de pedido (consumos) de las historias 01–04.
 
 > **NOTE: Escribir estas pruebas PRIMERO y comprobar que fallan antes de implementar**
 
-- [ ] T012 [P] [US1] Test de contrato de `GET /api/sala/mesas/:mesaId/cuenta` (200, mesa sin consumos, 404, 409) en `backend/tests/contract/cuenta-get.test.js`
-- [ ] T013 [P] [US1] Test unitario de `cuentasService` (total en céntimos con precio fijado, mesa sin consumos) en `backend/tests/unit/cuentasService.test.js`
-- [ ] T014 [P] [US1] Test de componente de `ResumenCuenta` (total en € con formato español, estado de carga y vacío) en `frontend/tests/components/ResumenCuenta.test.jsx`
+- [x] T012 [P] [US1] Test de contrato de `GET /api/sala/mesas/:mesaId/cuenta` (200, mesa sin consumos, 404, 409) en `backend/tests/contract/cuenta-get.test.js`
+- [x] T013 [P] [US1] Test unitario de `cuentasService` (total en céntimos con precio fijado, mesa sin consumos) en `backend/tests/unit/cuentasService.test.js`
+- [x] T014 [P] [US1] Test de componente de `ResumenCuenta` (total en € con formato español, estado de carga y vacío) en `frontend/tests/components/ResumenCuenta.test.jsx`
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implementar `cuentasService` (cálculo del total en céntimos y cuenta abierta derivada) en `backend/src/services/cuentasService.js`
-- [ ] T016 [US1] Implementar `GET /api/sala/mesas/:mesaId/cuenta` en `backend/src/routes/cuentas.js`
-- [ ] T017 [US1] Implementar `POST /api/sala/mesas/:mesaId/cuenta/cierre` para `modo = "unico"` (cierre de la cuenta, rechazo `409` si ya está cerrada) en `backend/src/routes/cuentas.js`
-- [ ] T018 [P] [US1] Implementar el formateo de importes en € y números/fechas con convención española en `frontend/src/services/formato.js`
-- [ ] T019 [US1] Implementar las llamadas del frontend a la cuenta y al cierre único en `frontend/src/services/api.js`
-- [ ] T020 [US1] Implementar el hook `useCuenta` (carga de la cuenta, estado de carga/error y "sin conexión") en `frontend/src/hooks/useCuenta.js`
-- [ ] T021 [P] [US1] Implementar el componente `ResumenCuenta` (total y consumos) en `frontend/src/components/ResumenCuenta.jsx`
-- [ ] T022 [US1] Implementar la página `CierreCuenta` (abrir cuenta, mostrar total, cancelar el cierre) en `frontend/src/pages/CierreCuenta.jsx`
-- [ ] T023 [US1] Test de integración de US1 (calcular total, cancelar sin cambios y cerrar con pago único) en `backend/tests/integration/cierre-total.test.js`
+- [x] T015 [US1] Implementar `cuentasService` (cálculo del total en céntimos y cuenta abierta derivada) en `backend/src/services/cuentasService.js`
+- [x] T016 [US1] Implementar `GET /api/sala/mesas/:mesaId/cuenta` en `backend/src/routes/cuentas.js`
+- [x] T017 [US1] Implementar `POST /api/sala/mesas/:mesaId/cuenta/cierre` para `modo = "unico"` (cierre de la cuenta, rechazo `409` si ya está cerrada) en `backend/src/routes/cuentas.js`
+- [x] T018 [P] [US1] Reutilizar el formateo de importes en € y fechas con convención española de `frontend/src/utils/formato.js`
+- [x] T019 [US1] Implementar las llamadas del frontend a la cuenta y al cierre único en `frontend/src/services/api.js`
+- [x] T020 [US1] Implementar el hook `useCuenta` (carga de la cuenta, estado de carga/error y "sin conexión") en `frontend/src/hooks/useCuenta.js`
+- [x] T021 [P] [US1] Implementar el componente `ResumenCuenta` (total y consumos) en `frontend/src/components/ResumenCuenta.jsx`
+- [x] T022 [US1] Implementar la página `CierreCuenta` (abrir cuenta, mostrar total, cancelar el cierre) en `frontend/src/pages/CierreCuenta.jsx`
+- [x] T023 [US1] Test de integración de US1 (calcular total, cancelar sin cambios y cerrar con pago único) en `backend/tests/integration/cierre-total.test.js`
 
 **Checkpoint**: User Story 1 totalmente funcional y probable por separado
 
