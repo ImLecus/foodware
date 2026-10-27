@@ -3,6 +3,9 @@
 **Fecha**: 2026-10-20
 **Rama**: `feature-verPedidos`
 
+## Puesta en marcha (referencia HU08)
+Para gestión de carta: ver `specs/008-gestion-carta/quickstart.md`.
+
 ## Suites
 
 | Suite | Resultado |
