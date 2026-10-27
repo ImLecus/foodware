@@ -42,6 +42,7 @@ export default function CierreCuenta() {
     pagandoParteId,
     ticket: ticketPartes,
     ticketEstado,
+    recargar,
     cerrar,
     dividir,
     pagarParte,
@@ -87,7 +88,10 @@ export default function CierreCuenta() {
         )}.`,
       });
     } catch (err) {
-      setAviso({ tipo: 'error', texto: err.message || 'No se pudo cerrar la cuenta.' });
+      // Sin conexión ya se muestra el aviso específico; no se exponen mensajes del navegador.
+      if (err?.status) {
+        setAviso({ tipo: 'error', texto: err.message || 'No se pudo cerrar la cuenta.' });
+      }
     }
   }
 
@@ -198,6 +202,15 @@ export default function CierreCuenta() {
           <AlertDescription>
             Sin conexión. No se puede confirmar el cierre; la cuenta se conserva en pantalla
             hasta recuperar la conexión.
+            <Button
+              size="sm"
+              mt={2}
+              variant="outline"
+              onClick={recargar}
+              isLoading={cargando}
+            >
+              Reintentar
+            </Button>
           </AlertDescription>
         </Alert>
       )}
@@ -247,7 +260,7 @@ export default function CierreCuenta() {
 
             <ResumenCuenta cuenta={cuenta} cargando={cargando} />
 
-            {!cargando && cuenta && cuenta.estado !== 'cerrada' && !cuenta.division && (
+            {cuenta && cuenta.estado !== 'cerrada' && !cuenta.division && (
               <Box mt={4}>
                 <DivisionCuenta
                   cuenta={cuenta}

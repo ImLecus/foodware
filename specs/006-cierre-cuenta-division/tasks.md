@@ -298,3 +298,7 @@ ficheros (`routes/cuentas.js`, `cuentasService.js`, `useCuenta.js`, `CierreCuent
 - [x] T073 Recargar la cuenta tras `422 total_desactualizado` también al confirmar el cobro único y la división en `frontend/src/hooks/useCuenta.js`, conservando el aviso de error, con pruebas de página per T070/FR-017 (partial)
 - [x] T074 Suscribir `frontend/src/pages/Mesas.jsx` al evento `mesa-cerrada` para recargar la lista cuando la mesa se cierre desde otra pantalla, con prueba de componente per T071/FR-011 (partial)
 - [x] T075 Renderizar `TicketFinal` tras el cobro único y ocultar en las cuentas cerradas el formulario de división y el botón de cobro en `frontend/src/pages/CierreCuenta.jsx`, con prueba de página per FR-010/T058 (partial)
+
+## Phase 9: Convergence
+
+- [x] T076 Recuperar la pantalla de cierre tras un corte de conexión en `frontend/src/hooks/useCuenta.js` y `frontend/src/pages/CierreCuenta.jsx`: al reconectar (evento `open` del canal SSE compartido) o al pulsar «Reintentar», limpiar `sinConexion`, recargar la cuenta, mantener montada la composición de `DivisionCuenta` y no mostrar mensajes técnicos del navegador; con prueba de página de fallo → reconexión → división/cobro completado per plan: contracts §8 / T067 (partial)

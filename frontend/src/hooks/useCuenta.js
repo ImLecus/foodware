@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   cerrarCuentaUnica,
   deshacerPagoParte,
@@ -7,6 +7,7 @@ import {
   obtenerTicket,
   pagarParte as pagarParteApi,
 } from '../services/api.js';
+import { suscribirASala } from '../services/realtime.js';
 
 function esSinConexion(error) {
   return !error?.status;
@@ -44,6 +45,12 @@ export function useCuenta(mesaId) {
   const [pagandoParteId, setPagandoParteId] = useState(null);
   const [ticket, setTicket] = useState(null);
   const [ticketEstado, setTicketEstado] = useState('no_emitido');
+  const sinConexionRef = useRef(false);
+
+  const marcarSinConexion = useCallback((valor) => {
+    sinConexionRef.current = valor;
+    setSinConexion(valor);
+  }, []);
 
   const cargarTicket = useCallback(async () => {
     try {
@@ -52,15 +59,15 @@ export function useCuenta(mesaId) {
       setTicket(datos);
       setTicketEstado('emitido');
       setError(null);
-      setSinConexion(false);
+      marcarSinConexion(false);
     } catch (err) {
       if (esSinConexion(err)) {
-        setSinConexion(true);
+        marcarSinConexion(true);
       } else {
         setError(err);
       }
     }
-  }, [mesaId]);
+  }, [marcarSinConexion, mesaId]);
 
   const recargar = useCallback(async () => {
     if (!mesaId) {
@@ -78,10 +85,10 @@ export function useCuenta(mesaId) {
       setTicket(null);
       setTicketEstado(datos.ticket_estado ?? 'no_emitido');
       setError(null);
-      setSinConexion(false);
+      marcarSinConexion(false);
     } catch (err) {
       if (esSinConexion(err)) {
-        setSinConexion(true);
+        marcarSinConexion(true);
       } else if (esCuentaCerrada(err)) {
         await cargarTicket();
       } else {
@@ -90,11 +97,30 @@ export function useCuenta(mesaId) {
     } finally {
       setCargando(false);
     }
-  }, [cargarTicket, mesaId]);
+  }, [cargarTicket, marcarSinConexion, mesaId]);
 
   useEffect(() => {
     recargar();
   }, [recargar]);
+
+  useEffect(() => {
+    if (!mesaId) return undefined;
+
+    const cerrar = suscribirASala({
+      onEstadoConexion: (estado) => {
+        if (estado === 'sin-conexion') {
+          marcarSinConexion(true);
+          return;
+        }
+
+        const estabaSinConexion = sinConexionRef.current;
+        marcarSinConexion(false);
+        if (estabaSinConexion) recargar();
+      },
+    });
+
+    return cerrar;
+  }, [marcarSinConexion, mesaId, recargar]);
 
   const cerrar = useCallback(async () => {
     if (!cuenta) return null;
@@ -110,11 +136,11 @@ export function useCuenta(mesaId) {
       setTicket(resultado?.ticket ?? null);
       setTicketEstado('emitido');
       setError(null);
-      setSinConexion(false);
+      marcarSinConexion(false);
       return resultado;
     } catch (err) {
       if (esSinConexion(err)) {
-        setSinConexion(true);
+        marcarSinConexion(true);
       } else if (esTotalDesactualizado(err)) {
         await recargar();
         setError(err);
@@ -125,7 +151,7 @@ export function useCuenta(mesaId) {
     } finally {
       setCerrando(false);
     }
-  }, [cuenta, mesaId, recargar]);
+  }, [cuenta, marcarSinConexion, mesaId, recargar]);
 
   const dividir = useCallback(
     async (division) => {
@@ -141,11 +167,11 @@ export function useCuenta(mesaId) {
         setTicket(null);
         setTicketEstado('no_emitido');
         setError(null);
-        setSinConexion(false);
+        marcarSinConexion(false);
         return resultado;
       } catch (err) {
         if (esSinConexion(err)) {
-          setSinConexion(true);
+          marcarSinConexion(true);
         } else if (esTotalDesactualizado(err)) {
           await recargar();
           setError(err);
@@ -157,7 +183,7 @@ export function useCuenta(mesaId) {
         setConfirmandoDivision(false);
       }
     },
-    [mesaId, recargar],
+    [marcarSinConexion, mesaId, recargar],
   );
 
   const pagarParte = useCallback(
@@ -173,11 +199,11 @@ export function useCuenta(mesaId) {
         setTicket(resultado.ticket ?? null);
         setTicketEstado(resultado.ticket_estado);
         setError(null);
-        setSinConexion(false);
+        marcarSinConexion(false);
         return resultado;
       } catch (err) {
         if (esSinConexion(err)) {
-          setSinConexion(true);
+          marcarSinConexion(true);
         } else if (esTotalDesactualizado(err)) {
           await recargar();
           setError(err);
@@ -189,7 +215,7 @@ export function useCuenta(mesaId) {
         setPagandoParteId(null);
       }
     },
-    [mesaId, recargar],
+    [marcarSinConexion, mesaId, recargar],
   );
 
   const deshacerPago = useCallback(
@@ -204,11 +230,11 @@ export function useCuenta(mesaId) {
         setTicket(null);
         setTicketEstado('no_emitido');
         setError(null);
-        setSinConexion(false);
+        marcarSinConexion(false);
         return resultado;
       } catch (err) {
         if (esSinConexion(err)) {
-          setSinConexion(true);
+          marcarSinConexion(true);
         } else if (esTotalDesactualizado(err)) {
           await recargar();
           setError(err);
@@ -220,7 +246,7 @@ export function useCuenta(mesaId) {
         setPagandoParteId(null);
       }
     },
-    [mesaId, recargar],
+    [marcarSinConexion, mesaId, recargar],
   );
 
   return {

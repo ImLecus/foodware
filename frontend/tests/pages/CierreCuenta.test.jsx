@@ -1,5 +1,5 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CierreCuenta from '../../src/pages/CierreCuenta.jsx';
@@ -10,6 +10,7 @@ import {
   obtenerCuenta,
   obtenerTicket,
 } from '../../src/services/api.js';
+import { suscribirASala } from '../../src/services/realtime.js';
 
 vi.mock('../../src/services/api.js', () => ({
   cerrarCuentaUnica: vi.fn(),
@@ -17,6 +18,10 @@ vi.mock('../../src/services/api.js', () => ({
   listarMesas: vi.fn(),
   obtenerCuenta: vi.fn(),
   obtenerTicket: vi.fn(),
+}));
+
+vi.mock('../../src/services/realtime.js', () => ({
+  suscribirASala: vi.fn(() => () => {}),
 }));
 
 const cuenta = {
@@ -53,9 +58,20 @@ function renderizar() {
   );
 }
 
+/** Captura el manejador de estado que la cuenta registra en el canal de sala. */
+function capturarConexion() {
+  let manejador;
+  suscribirASala.mockImplementation(({ onEstadoConexion } = {}) => {
+    manejador = { onEstadoConexion };
+    return () => {};
+  });
+  return () => manejador;
+}
+
 describe('CierreCuenta (US2)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    suscribirASala.mockImplementation(() => () => {});
     listarMesas.mockResolvedValue([{ id: 'mesa-1', identificador: 'Mesa 1', estado: 'abierta' }]);
   });
 
@@ -237,5 +253,81 @@ describe('CierreCuenta (US2)', () => {
     expect(screen.getByRole('button', { name: 'Confirmar cobro único' })).toBeDisabled();
     expect(screen.queryByText('Failed to fetch')).not.toBeInTheDocument();
     expect(cerrarCuentaUnica).not.toHaveBeenCalled();
+  });
+
+  it('se recupera al reconectar y permite completar la división', async () => {
+    obtenerCuenta.mockRejectedValueOnce(new Error('Failed to fetch')).mockResolvedValue(cuenta);
+    dividirCuenta.mockResolvedValue({
+      cuenta: { ...cuenta, modo_division: 'iguales' },
+      division: {
+        modo: 'iguales',
+        partes: [
+          { orden: 1, comensal: 'Comensal 1', importe_centimos: 2125, estado: 'pendiente' },
+          { orden: 2, comensal: 'Comensal 2', importe_centimos: 2125, estado: 'pendiente' },
+        ],
+        asignaciones: [],
+      },
+    });
+    const getManejador = capturarConexion();
+
+    renderizar();
+
+    expect(await screen.findByText(/sin conexión\./i)).toBeInTheDocument();
+    expect(screen.queryByText('Failed to fetch')).not.toBeInTheDocument();
+
+    await act(async () => {
+      getManejador().onEstadoConexion('conectado');
+    });
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirmar división' }));
+
+    expect(
+      await screen.findByText(/división confirmada\. ya puedes cobrar cada parte/i),
+    ).toBeInTheDocument();
+    expect(dividirCuenta).toHaveBeenCalledWith(
+      'mesa-1',
+      expect.objectContaining({ modo: 'iguales', total_base_centimos: 4250 }),
+    );
+  });
+
+  it('conserva la división compuesta y permite reintentar el cobro tras un corte', async () => {
+    obtenerCuenta.mockResolvedValue(cuenta);
+    cerrarCuentaUnica
+      .mockRejectedValueOnce(new Error('Failed to fetch'))
+      .mockResolvedValueOnce({
+        cuenta: { ...cuenta, estado: 'cerrada' },
+        ticket_estado: 'emitido',
+        ticket: {
+          estado: 'emitido',
+          mesa_id: 'mesa-1',
+          identificador: 'Mesa 1',
+          total_centimos: 4250,
+          generado_en: '2026-10-27T21:00:00.000Z',
+          partes: [],
+        },
+      });
+
+    renderizar();
+
+    const comensal = await screen.findByLabelText('Comensal de la parte 1');
+    fireEvent.change(comensal, { target: { value: 'Ana' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar cobro único' }));
+
+    expect(await screen.findByText(/sin conexión\./i)).toBeInTheDocument();
+    expect(screen.queryByText('Failed to fetch')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Comensal de la parte 1')).toHaveValue('Ana');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+
+    await waitFor(() => expect(obtenerCuenta).toHaveBeenCalledTimes(2));
+    expect(
+      await screen.findByRole('button', { name: 'Confirmar cobro único' }),
+    ).toBeEnabled();
+    expect(screen.getByLabelText('Comensal de la parte 1')).toHaveValue('Ana');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar cobro único' }));
+
+    expect(await screen.findByTestId('ticket-final')).toBeInTheDocument();
+    expect(cerrarCuentaUnica).toHaveBeenCalledTimes(2);
   });
 });

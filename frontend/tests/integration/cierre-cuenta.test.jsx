@@ -15,6 +15,10 @@ vi.mock('../../src/services/api.js', () => ({
   deshacerPagoParte: vi.fn(),
 }));
 
+vi.mock('../../src/services/realtime.js', () => ({
+  suscribirASala: vi.fn(() => () => {}),
+}));
+
 const cuentaDividida = {
   mesa_id: 'mesa-1',
   identificador: 'Mesa 1',
