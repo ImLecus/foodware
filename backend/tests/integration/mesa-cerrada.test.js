@@ -1,7 +1,12 @@
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
-import { CABECERA_CAMARERO, crearBaseDePrueba, crearPedidoEnviado } from '../ayuda.js';
+import {
+  CABECERA_CAMARERO,
+  CABECERA_COCINERO,
+  crearBaseDePrueba,
+  crearPedidoEnviado,
+} from '../ayuda.js';
 
 describe('Mesa cerrada: rechazo de escrituras sobre sus pedidos (US3/FR-012)', () => {
   let db;
@@ -37,9 +42,7 @@ describe('Mesa cerrada: rechazo de escrituras sobre sus pedidos (US3/FR-012)', (
   }
 
   function estadoPedido() {
-    return db
-      .prepare('SELECT estado, modificado FROM pedidos WHERE id = ?')
-      .get(pedidoId);
+    return db.prepare('SELECT estado, modificado FROM pedidos WHERE id = ?').get(pedidoId);
   }
 
   it('rechaza con 409 añadir, modificar o retirar líneas y no altera el pedido', async () => {
@@ -110,14 +113,12 @@ describe('Mesa cerrada: rechazo de escrituras sobre sus pedidos (US3/FR-012)', (
 
     const marcar = await request(app)
       .put(`/api/pedidos/${pedidoId}/lineas/${lineaId}/estado?partida=entrantes`)
-      .set(CABECERA_CAMARERO)
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
     expect(marcar.status).toBe(409);
     expect(marcar.body.error).toMatch(/cerrada/i);
 
-    const linea = db
-      .prepare('SELECT estado FROM lineas_pedido WHERE id = ?')
-      .get(lineaId);
+    const linea = db.prepare('SELECT estado FROM lineas_pedido WHERE id = ?').get(lineaId);
     expect(linea.estado).not.toBe('listo');
   });
 
@@ -125,9 +126,7 @@ describe('Mesa cerrada: rechazo de escrituras sobre sus pedidos (US3/FR-012)', (
     db = crearBaseDePrueba();
     app = createApp(db);
 
-    const abrir = await request(app)
-      .post('/api/mesas/mesa-2/abrir')
-      .set(CABECERA_CAMARERO);
+    const abrir = await request(app).post('/api/mesas/mesa-2/abrir').set(CABECERA_CAMARERO);
     expect(abrir.status).toBe(201);
     pedidoId = abrir.body.id;
 

@@ -2,6 +2,11 @@ import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
+import {
+  CABECERA_COCINERO,
+  CABECERA_COCINERO_POSTRES,
+  CABECERA_COCINERO_SIN_PARTIDA,
+} from '../ayuda.js';
 
 describe('GET /api/partidas/:partidaId/pedidos-pendientes', () => {
   let db;
@@ -48,7 +53,9 @@ describe('GET /api/partidas/:partidaId/pedidos-pendientes', () => {
   it('filtra por partida, ordena por envío y desempata por id', async () => {
     const app = montarEscenario();
 
-    const respuesta = await request(app).get('/api/partidas/entrantes/pedidos-pendientes');
+    const respuesta = await request(app)
+      .get('/api/partidas/entrantes/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
 
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.map((pedido) => pedido.id)).toEqual([
@@ -61,7 +68,9 @@ describe('GET /api/partidas/:partidaId/pedidos-pendientes', () => {
   it('devuelve la forma del contrato: mesa, envío, modificado y todas las líneas', async () => {
     const app = montarEscenario();
 
-    const respuesta = await request(app).get('/api/partidas/entrantes/pedidos-pendientes');
+    const respuesta = await request(app)
+      .get('/api/partidas/entrantes/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
     const primero = respuesta.body[0];
 
     expect(primero).toMatchObject({
@@ -85,7 +94,9 @@ describe('GET /api/partidas/:partidaId/pedidos-pendientes', () => {
     db = crearBase();
     const app = createApp(db);
 
-    const respuesta = await request(app).get('/api/partidas/bar/pedidos-pendientes');
+    const respuesta = await request(app)
+      .get('/api/partidas/bar/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
 
     expect(respuesta.status).toBe(404);
     expect(respuesta.body.codigo).toBe('partida_no_encontrada');
@@ -95,7 +106,9 @@ describe('GET /api/partidas/:partidaId/pedidos-pendientes', () => {
     db = crearBase();
     const app = createApp(db);
 
-    const respuesta = await request(app).get('/api/partidas/postres/pedidos-pendientes');
+    const respuesta = await request(app)
+      .get('/api/partidas/postres/pedidos-pendientes')
+      .set(CABECERA_COCINERO_POSTRES);
 
     expect(respuesta.status).toBe(200);
     expect(respuesta.body).toEqual([]);
@@ -112,7 +125,9 @@ describe('GET /api/cocineros/:cocineroId', () => {
   it('devuelve la partida asignada', async () => {
     db = crearBase();
 
-    const respuesta = await request(createApp(db)).get('/api/cocineros/cocinero-entrantes');
+    const respuesta = await request(createApp(db))
+      .get('/api/cocineros/cocinero-entrantes')
+      .set(CABECERA_COCINERO);
 
     expect(respuesta.status).toBe(200);
     expect(respuesta.body).toEqual({
@@ -125,7 +140,9 @@ describe('GET /api/cocineros/:cocineroId', () => {
   it('devuelve partida null si el cocinero no tiene asignación', async () => {
     db = crearBase();
 
-    const respuesta = await request(createApp(db)).get('/api/cocineros/cocinero-sin-partida');
+    const respuesta = await request(createApp(db))
+      .get('/api/cocineros/cocinero-sin-partida')
+      .set(CABECERA_COCINERO_SIN_PARTIDA);
 
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.partida).toBeNull();
@@ -134,7 +151,9 @@ describe('GET /api/cocineros/:cocineroId', () => {
   it('devuelve 404 si el cocinero no existe', async () => {
     db = crearBase();
 
-    const respuesta = await request(createApp(db)).get('/api/cocineros/desconocido');
+    const respuesta = await request(createApp(db))
+      .get('/api/cocineros/desconocido')
+      .set(CABECERA_COCINERO);
 
     expect(respuesta.status).toBe(404);
   });

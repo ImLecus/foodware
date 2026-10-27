@@ -2,6 +2,7 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { marcarLinea } from '../../src/services/marcarListo.js';
+import { CABECERA_CAMARERO, CABECERA_COCINERO } from '../ayuda.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
 
 describe('listoEn en las respuestas de la API', () => {
@@ -23,11 +24,13 @@ describe('listoEn en las respuestas de la API', () => {
   it('incluye listoEn en la lista de pendientes y en el estado de sala', async () => {
     marcarLinea(db, { pedidoId: 'pedido-1', lineaId: 'linea-1', estado: 'listo' });
 
-    const pendientes = await request(app).get('/api/partidas/entrantes/pedidos-pendientes');
+    const pendientes = await request(app)
+      .get('/api/partidas/entrantes/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
     const lineaPendientes = pendientes.body[0].lineas.find((linea) => linea.id === 'linea-1');
     expect(lineaPendientes.listoEn).not.toBeNull();
 
-    const sala = await request(app).get('/api/mesas/mesa-1/estado-platos');
+    const sala = await request(app).get('/api/mesas/mesa-1/estado-platos').set(CABECERA_CAMARERO);
     const lineaSala = sala.body.find((linea) => linea.id === 'linea-1');
     expect(lineaSala.listoEn).toBe(lineaPendientes.listoEn);
   });
@@ -35,6 +38,7 @@ describe('listoEn en las respuestas de la API', () => {
   it('devuelve listoEn en la respuesta del PUT', async () => {
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(200);
@@ -46,6 +50,7 @@ describe('listoEn en las respuestas de la API', () => {
 
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'pendiente' });
 
     expect(respuesta.body.listoEn).toBeNull();

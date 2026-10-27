@@ -39,5 +39,5 @@
 - Repetir la marca mantiene el mismo `listoEn`; con `pendiente` se limpia.
 - Al completar todas las líneas, el pedido desaparece de `pedidos-pendientes`.
 - `GET /api/mesas/{mesaId}/estado-platos` refleja el estado de cada plato.
-- La pantalla `/cocina?cocinero=cocinero-entrantes` permite marcar/deshacer y muestra el aviso.
+- La pantalla `/cocina` con sesión de `cocinero-entrantes` permite marcar/deshacer y muestra el aviso.
 - La pantalla `/sala/platos?mesa=mesa-1` refleja los cambios sin recargar.

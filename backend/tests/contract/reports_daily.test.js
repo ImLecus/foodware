@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { diaAnterior, fechaEnMadrid } from '../../src/services/dayTime.js';
 import { createDb } from '../../src/db/index.js';
+import { CABECERA_CAMARERO, CABECERA_ENCARGADO, insertarSesionesPrueba } from '../helpers/auth.js';
 
 function limpiarTablas(db) {
   db.exec(`
@@ -63,6 +64,7 @@ describe('GET /api/reports/daily', () => {
     db = createDb(':memory:');
     limpiarTablas(db);
     sembrarBase(db);
+    insertarSesionesPrueba(db);
     app = createApp(db);
   });
 
@@ -80,9 +82,7 @@ describe('GET /api/reports/daily', () => {
       `INSERT INTO cuentas (id, mesa_id, estado, total_centimos, abierta_en, cerrada_en)
        VALUES (?, ?, 'cerrada', ?, ?, ?)`,
     ).run('cuenta-1', 'mesa-1', 850, `${ayer} 10:00:00`, `${ayer} 12:00:00`);
-    const respuesta = await request(app)
-      .get('/api/reports/daily')
-      .set('x-usuario-id', 'camarero-1');
+    const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_CAMARERO);
     expect(respuesta.status).toBe(403);
   });
 
@@ -95,9 +95,7 @@ describe('GET /api/reports/daily', () => {
       `INSERT INTO cuentas (id, mesa_id, estado, total_centimos, abierta_en, cerrada_en)
        VALUES (?, ?, 'cerrada', ?, ?, ?)`,
     ).run('cuenta-2', 'mesa-1', 1700, `${ayer} 11:00:00`, `${ayer} 13:00:00`);
-    const respuesta = await request(app)
-      .get('/api/reports/daily')
-      .set('x-usuario-id', 'encargado-1');
+    const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_ENCARGADO);
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.fecha).toBe(ayer);
     expect(respuesta.body.totalVendido).toBe(25.5);
@@ -108,9 +106,7 @@ describe('GET /api/reports/daily', () => {
   });
 
   it('devuelve 0,00 € cuando no hay cuentas cerradas para el día', async () => {
-    const respuesta = await request(app)
-      .get('/api/reports/daily')
-      .set('x-usuario-id', 'encargado-1');
+    const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_ENCARGADO);
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.totalVendido).toBe(0);
     expect(respuesta.body.numeroCuentas).toBe(0);
@@ -121,21 +117,21 @@ describe('GET /api/reports/daily', () => {
   it('rechaza date con formato inválido con 400', async () => {
     const respuesta = await request(app)
       .get('/api/reports/daily?date=13-10-2026')
-      .set('x-usuario-id', 'encargado-1');
+      .set(CABECERA_ENCARGADO);
     expect(respuesta.status).toBe(400);
   });
 
   it('rechaza fecha futura con 400', async () => {
     const respuesta = await request(app)
       .get('/api/reports/daily?date=2099-12-31')
-      .set('x-usuario-id', 'encargado-1');
+      .set(CABECERA_ENCARGADO);
     expect(respuesta.status).toBe(400);
   });
 
   it('rechaza el día en curso con 400', async () => {
     const respuesta = await request(app)
       .get(`/api/reports/daily?date=${hoy}`)
-      .set('x-usuario-id', 'encargado-1');
+      .set(CABECERA_ENCARGADO);
     expect(respuesta.status).toBe(400);
   });
 });

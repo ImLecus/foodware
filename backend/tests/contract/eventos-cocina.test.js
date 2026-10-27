@@ -7,6 +7,7 @@ import {
   emitirPendientesCambiado,
 } from '../../src/realtime/emit.js';
 import { reiniciarHub, suscribir } from '../../src/realtime/hub.js';
+import { CABECERA_COCINERO } from '../ayuda.js';
 import { crearBase } from '../helpers/fixtures.js';
 
 function clienteFalso() {
@@ -27,6 +28,7 @@ async function abrirEventos(app, ruta) {
   const controlador = new AbortController();
   const respuesta = await fetch(`http://127.0.0.1:${port}${ruta}`, {
     signal: controlador.signal,
+    headers: CABECERA_COCINERO,
   });
   return {
     respuesta,

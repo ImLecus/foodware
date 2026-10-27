@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { reiniciarHub } from '../../src/realtime/hub.js';
 import {
   CABECERA_CAMARERO,
+  CABECERA_COCINERO,
+  cookieCocinero,
   crearAppDePrueba,
   crearPedidoEnviado,
 } from '../ayuda.js';
@@ -29,16 +31,14 @@ describe('descarte y regeneración del aviso de mesa', () => {
     for (const linea of lineas) {
       await request(app)
         .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado?partida=${linea.partida}`)
-        .set(CABECERA_CAMARERO)
+        .set(cookieCocinero(linea.partida))
         .send({ estado: 'listo' });
     }
     return lineas;
   }
 
   async function descartar(avisoId) {
-    return request(app)
-      .post(`/api/sala/avisos/${avisoId}/descartar`)
-      .set(CABECERA_CAMARERO);
+    return request(app).post(`/api/sala/avisos/${avisoId}/descartar`).set(CABECERA_CAMARERO);
   }
 
   it('no vuelve a mostrarse tras recargar la vista (coherencia al reconectar)', async () => {
@@ -86,7 +86,7 @@ describe('descarte y regeneración del aviso de mesa', () => {
 
     const marca = await request(app)
       .put(`/api/pedidos/${pedidoId}/lineas/${nueva.body.id}/estado?partida=entrantes`)
-      .set(CABECERA_CAMARERO)
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(marca.status).toBe(200);

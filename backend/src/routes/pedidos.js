@@ -33,7 +33,8 @@ import {
   serializarPedido,
   serializarPedidoConfirmado,
 } from '../domain/pedidos.js';
-import { identificarCamarero } from '../middleware/camarero.js';
+import { autenticar } from '../middleware/autenticar.js';
+import { requireRole } from '../middleware/authorize.js';
 import { comprobarEdicion } from '../middleware/bloqueo.js';
 import { ErrorHttp } from '../middleware/error.js';
 import {
@@ -78,10 +79,12 @@ function emitirNuevoPorPartida(pedido, mesa) {
 
 export function pedidosRouter(db) {
   const router = express.Router();
+  const soloCamarero = requireRole('camarero');
+  const soloCocinero = requireRole('cocinero');
 
-  router.use(identificarCamarero(db));
+  router.use(autenticar(db));
 
-  router.get('/:pedidoId', (req, res, next) => {
+  router.get('/:pedidoId', soloCamarero, (req, res, next) => {
     try {
       const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
       res.json(serializarPedido(pedido));
@@ -90,14 +93,14 @@ export function pedidosRouter(db) {
     }
   });
 
-  router.put('/:pedidoId/lineas/:lineaId/estado', (req, res, next) => {
+  router.put('/:pedidoId/lineas/:lineaId/estado', soloCocinero, (req, res, next) => {
     try {
-      const partida = req.query.partida;
+      const partida = req.usuario.partida;
       if (!partida) {
         throw new ErrorHttp(
-          400,
-          'La partida del cocinero es obligatoria',
-          'partida_requerida',
+          403,
+          'El cocinero no tiene una partida asignada',
+          'cocinero_sin_partida',
         );
       }
 
@@ -113,7 +116,7 @@ export function pedidosRouter(db) {
     }
   });
 
-  router.get('/:pedidoId/editar', (req, res, next) => {
+  router.get('/:pedidoId/editar', soloCamarero, (req, res, next) => {
     try {
       const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
       res.json(estadoBloqueo(pedido));
@@ -122,7 +125,7 @@ export function pedidosRouter(db) {
     }
   });
 
-  router.post('/:pedidoId/editar', (req, res, next) => {
+  router.post('/:pedidoId/editar', soloCamarero, (req, res, next) => {
     try {
       const pedido = exigirMesaAbiertaDelPedido(
         db,
@@ -135,7 +138,7 @@ export function pedidosRouter(db) {
     }
   });
 
-  router.delete('/:pedidoId/editar', (req, res, next) => {
+  router.delete('/:pedidoId/editar', soloCamarero, (req, res, next) => {
     try {
       const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
       liberarBloqueoEdicion(db, pedido, req.camarero.id);
@@ -145,7 +148,7 @@ export function pedidosRouter(db) {
     }
   });
 
-  router.post('/:pedidoId/lineas', comprobarEdicion(db), (req, res, next) => {
+  router.post('/:pedidoId/lineas', soloCamarero, comprobarEdicion(db), (req, res, next) => {
     try {
       const datos = validarNuevaLineaEdicion(req.body);
       const pedido = req.pedido;
@@ -182,63 +185,73 @@ export function pedidosRouter(db) {
     }
   });
 
-  router.patch('/:pedidoId/lineas/:lineaId', comprobarEdicion(db), (req, res, next) => {
-    try {
-      const datos = validarLineaPatchEdicion(req.body);
-      const pedido = req.pedido;
-      const linea = buscarLinea(pedido, req.params.lineaId);
-      descartarDivision(db, pedido.mesa_id);
-      const actualizada = modificarLinea(db, linea.id, datos);
+  router.patch(
+    '/:pedidoId/lineas/:lineaId',
+    soloCamarero,
+    comprobarEdicion(db),
+    (req, res, next) => {
+      try {
+        const datos = validarLineaPatchEdicion(req.body);
+        const pedido = req.pedido;
+        const linea = buscarLinea(pedido, req.params.lineaId);
+        descartarDivision(db, pedido.mesa_id);
+        const actualizada = modificarLinea(db, linea.id, datos);
 
-      if (pedido.estado === 'enviada') {
-        if (datos.cantidad !== undefined) {
+        if (pedido.estado === 'enviada') {
+          if (datos.cantidad !== undefined) {
+            registrarCambio(db, pedido, req.camarero.id, {
+              tipo: 'ajustar_cantidad',
+              lineaId: linea.id,
+              detalle: { anterior: linea.cantidad, nueva: datos.cantidad },
+            });
+          }
+          if (datos.indicaciones !== undefined) {
+            registrarCambio(db, pedido, req.camarero.id, {
+              tipo: 'corregir',
+              lineaId: linea.id,
+              detalle: { anterior: linea.indicaciones, nueva: datos.indicaciones },
+            });
+          }
+        }
+
+        res.json(actualizada);
+      } catch (error) {
+        next(error);
+      }
+    },
+  );
+
+  router.delete(
+    '/:pedidoId/lineas/:lineaId',
+    soloCamarero,
+    comprobarEdicion(db),
+    (req, res, next) => {
+      try {
+        const pedido = req.pedido;
+        const linea = buscarLinea(pedido, req.params.lineaId);
+        exigirNoQuedaVacio(pedido.lineas.length - 1);
+        descartarDivision(db, pedido.mesa_id);
+        retirarLinea(db, linea.id);
+
+        if (pedido.estado === 'enviada') {
           registrarCambio(db, pedido, req.camarero.id, {
-            tipo: 'ajustar_cantidad',
-            lineaId: linea.id,
-            detalle: { anterior: linea.cantidad, nueva: datos.cantidad },
+            tipo: 'retirar',
+            detalle: {
+              linea_id: linea.id,
+              plato_id: linea.plato_id,
+              cantidad: linea.cantidad,
+            },
           });
         }
-        if (datos.indicaciones !== undefined) {
-          registrarCambio(db, pedido, req.camarero.id, {
-            tipo: 'corregir',
-            lineaId: linea.id,
-            detalle: { anterior: linea.indicaciones, nueva: datos.indicaciones },
-          });
-        }
+
+        res.status(204).end();
+      } catch (error) {
+        next(error);
       }
+    },
+  );
 
-      res.json(actualizada);
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  router.delete('/:pedidoId/lineas/:lineaId', comprobarEdicion(db), (req, res, next) => {
-    try {
-      const pedido = req.pedido;
-      const linea = buscarLinea(pedido, req.params.lineaId);
-      exigirNoQuedaVacio(pedido.lineas.length - 1);
-      descartarDivision(db, pedido.mesa_id);
-      retirarLinea(db, linea.id);
-
-      if (pedido.estado === 'enviada') {
-        registrarCambio(db, pedido, req.camarero.id, {
-          tipo: 'retirar',
-          detalle: {
-            linea_id: linea.id,
-            plato_id: linea.plato_id,
-            cantidad: linea.cantidad,
-          },
-        });
-      }
-
-      res.status(204).end();
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  router.post('/:pedidoId/enviar-cambios', (req, res, next) => {
+  router.post('/:pedidoId/enviar-cambios', soloCamarero, (req, res, next) => {
     try {
       const pedido = exigirMesaAbiertaDelPedido(
         db,
@@ -293,13 +306,10 @@ export function pedidosRouter(db) {
     }
   });
 
-  router.post('/:pedidoId/confirmar', (req, res, next) => {
+  router.post('/:pedidoId/confirmar', soloCamarero, (req, res, next) => {
     try {
       const pedido = exigirConfirmable(
-        exigirMesaAbiertaDelPedido(
-          db,
-          exigirPedido(obtenerPedido(db, req.params.pedidoId)),
-        ),
+        exigirMesaAbiertaDelPedido(db, exigirPedido(obtenerPedido(db, req.params.pedidoId))),
       );
       const confirmado = confirmarPedido(db, pedido.id);
       const mesa = obtenerMesa(db, confirmado.mesa_id);
@@ -318,13 +328,10 @@ export function pedidosRouter(db) {
     }
   });
 
-  router.post('/:pedidoId/anular', (req, res, next) => {
+  router.post('/:pedidoId/anular', soloCamarero, (req, res, next) => {
     try {
       const pedido = exigirAnulable(
-        exigirMesaAbiertaDelPedido(
-          db,
-          exigirPedido(obtenerPedido(db, req.params.pedidoId)),
-        ),
+        exigirMesaAbiertaDelPedido(db, exigirPedido(obtenerPedido(db, req.params.pedidoId))),
       );
       descartarDivision(db, pedido.mesa_id);
       anularPedido(db, pedido.id);

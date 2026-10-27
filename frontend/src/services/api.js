@@ -1,19 +1,11 @@
 export const API_BASE = import.meta.env.VITE_API_URL ?? '/api';
 
-// La autenticación queda fuera del alcance de la historia 001: se reutiliza la
-// sesión existente y el camarero se identifica con esta cabecera.
-export const CAMARERO_ID = import.meta.env.VITE_CAMARERO_ID ?? 'camarero-1';
-
-function cabeceras(conCuerpo = false) {
-  const cabecera = { 'X-Camarero-Id': CAMARERO_ID };
-  if (conCuerpo) {
-    cabecera['Content-Type'] = 'application/json';
-  }
-  return cabecera;
-}
-
 const MENSAJE_SIN_CONEXION =
   'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.';
+
+function cabeceras(conCuerpo = false) {
+  return conCuerpo ? { 'Content-Type': 'application/json' } : {};
+}
 
 async function leerRespuesta(respuesta) {
   if (!respuesta.ok) {
@@ -34,15 +26,18 @@ async function leerRespuesta(respuesta) {
   return respuesta.status === 204 ? null : respuesta.json();
 }
 
-async function peticion(url, opciones) {
+async function peticion(url, opciones = {}) {
   let respuesta;
   try {
-    respuesta = await fetch(url, opciones);
+    respuesta = await fetch(url, { credentials: 'include', ...opciones });
   } catch (fallo) {
     const error = new Error(MENSAJE_SIN_CONEXION);
     error.codigo = 'sin_conexion';
     error.causa = fallo;
     throw error;
+  }
+  if (respuesta.status === 401 && !url.endsWith('/auth/login')) {
+    window.dispatchEvent(new CustomEvent('foodware:sesion-expirada'));
   }
   return leerRespuesta(respuesta);
 }
@@ -60,20 +55,29 @@ export async function apiEnviar(ruta, metodo, cuerpo) {
   });
 }
 
-/* Cocina: pedidos pendientes (historia 003) */
+/* Autenticación (historia 000) */
 
-export function obtenerCocinero(cocineroId) {
-  return apiGet(`/cocineros/${encodeURIComponent(cocineroId)}`);
+export function iniciarSesion(usuario, password) {
+  return apiEnviar('/auth/login', 'POST', { usuario, password });
 }
+
+export function obtenerSesion() {
+  return apiGet('/auth/me');
+}
+
+export function cerrarSesion() {
+  return apiEnviar('/auth/logout', 'POST');
+}
+
+/* Cocina: pedidos pendientes (historia 003) */
 
 export function obtenerPedidosPendientes(partidaId) {
   return apiGet(`/partidas/${encodeURIComponent(partidaId)}/pedidos-pendientes`);
 }
 
-export function marcarEstado(pedidoId, lineaId, estado, partidaId) {
-  const consulta = partidaId ? `?partida=${encodeURIComponent(partidaId)}` : '';
+export function marcarEstado(pedidoId, lineaId, estado) {
   return apiEnviar(
-    `/pedidos/${encodeURIComponent(pedidoId)}/lineas/${encodeURIComponent(lineaId)}/estado${consulta}`,
+    `/pedidos/${encodeURIComponent(pedidoId)}/lineas/${encodeURIComponent(lineaId)}/estado`,
     'PUT',
     { estado },
   );
@@ -156,7 +160,7 @@ export function descartarAvisoSala(avisoId) {
   return apiEnviar(`/sala/avisos/${avisoId}/descartar`, 'POST');
 }
 
-/* Cierre y división de cuenta (historia 006) */
+/* Cuentas (historia 006) */
 
 export function obtenerCuenta(mesaId) {
   return apiGet(`/sala/mesas/${encodeURIComponent(mesaId)}/cuenta`);

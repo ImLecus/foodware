@@ -1,7 +1,9 @@
+import { hashPassword } from '../auth/password.js';
 import { diaAnterior, fechaEnMadrid } from '../services/dayTime.js';
 import { createDb } from './index.js';
 
 const db = createDb();
+const hashDemo = hashPassword('demo1234');
 
 const partidas = [
   { codigo: 'entrantes', nombre: 'Entrantes', orden: 1 },
@@ -113,10 +115,16 @@ const cargar = db.transaction(() => {
   }
 
   const insertarUsuario = db.prepare(
-    'INSERT OR IGNORE INTO usuarios (id, nombre, rol, partida_codigo) VALUES (?, ?, ?, ?)',
+    `INSERT INTO usuarios (id, nombre, rol, partida_codigo, password_hash)
+     VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       nombre = excluded.nombre,
+       rol = excluded.rol,
+       partida_codigo = excluded.partida_codigo,
+       password_hash = excluded.password_hash`,
   );
   for (const usuario of usuarios) {
-    insertarUsuario.run(usuario.id, usuario.nombre, usuario.rol, usuario.partida);
+    insertarUsuario.run(usuario.id, usuario.nombre, usuario.rol, usuario.partida, hashDemo);
   }
 
   const insertarMesa = db.prepare(

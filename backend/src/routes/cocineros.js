@@ -1,20 +1,29 @@
 import express from 'express';
 import { buscarCocinero } from '../models/usuario.js';
+import { autenticar } from '../middleware/autenticar.js';
+import { requireRole } from '../middleware/authorize.js';
+import { ErrorHttp } from '../middleware/error.js';
 
 export function cocinerosRouter(db) {
   const router = express.Router();
 
-  router.get('/:cocineroId', (req, res) => {
-    const cocinero = buscarCocinero(db, req.params.cocineroId);
+  router.use(autenticar(db), requireRole('cocinero'));
 
-    if (!cocinero) {
-      return res.status(404).json({
-        codigo: 'cocinero_no_encontrado',
-        mensaje: 'El cocinero indicado no existe',
-      });
+  router.get('/:cocineroId', (req, res, next) => {
+    try {
+      const cocinero = buscarCocinero(db, req.params.cocineroId);
+      if (!cocinero) {
+        throw new ErrorHttp(404, 'El cocinero indicado no existe', 'cocinero_no_encontrado');
+      }
+
+      if (req.params.cocineroId !== req.usuario.id) {
+        throw new ErrorHttp(403, 'Solo puedes consultar tu propio perfil', 'cocinero_ajeno');
+      }
+
+      return res.json(cocinero);
+    } catch (error) {
+      return next(error);
     }
-
-    return res.json(cocinero);
   });
 
   return router;

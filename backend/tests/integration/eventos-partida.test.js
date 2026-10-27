@@ -4,6 +4,7 @@ import { emitirPedidoNuevo } from '../../src/realtime/emit.js';
 import { reiniciarHub, suscribir } from '../../src/realtime/hub.js';
 import {
   CABECERA_CAMARERO,
+  CABECERA_COCINERO,
   clienteSseFalso,
   crearAppDePrueba,
   crearPedidoEnviado,
@@ -81,7 +82,7 @@ describe('eventos SSE por partida', () => {
 
     const respuesta = await request(app)
       .put(`/api/pedidos/${pedidoId}/lineas/${lineaEntrante.id}/estado?partida=entrantes`)
-      .set(CABECERA_CAMARERO)
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(200);

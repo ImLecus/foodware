@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { emitirLineaActualizada } from '../../src/realtime/emit.js';
 import { reiniciarHub, suscribir } from '../../src/realtime/hub.js';
+import { CABECERA_CAMARERO } from '../ayuda.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
 
 function clienteFalso() {
@@ -23,6 +24,7 @@ async function abrirEventos(app, ruta) {
   const controlador = new AbortController();
   const respuesta = await fetch(`http://127.0.0.1:${port}${ruta}`, {
     signal: controlador.signal,
+    headers: CABECERA_CAMARERO,
   });
   return {
     respuesta,
@@ -51,7 +53,9 @@ describe('GET /api/mesas/:mesaId/estado-platos', () => {
   });
 
   it('devuelve los platos de la mesa con su estado y listoEn', async () => {
-    const respuesta = await request(app).get('/api/mesas/mesa-1/estado-platos');
+    const respuesta = await request(app)
+      .get('/api/mesas/mesa-1/estado-platos')
+      .set(CABECERA_CAMARERO);
 
     expect(respuesta.status).toBe(200);
     expect(respuesta.body).toEqual([
@@ -75,7 +79,9 @@ describe('GET /api/mesas/:mesaId/estado-platos', () => {
   });
 
   it('devuelve 404 si la mesa no existe', async () => {
-    const respuesta = await request(app).get('/api/mesas/inexistente/estado-platos');
+    const respuesta = await request(app)
+      .get('/api/mesas/inexistente/estado-platos')
+      .set(CABECERA_CAMARERO);
     expect(respuesta.status).toBe(404);
   });
 

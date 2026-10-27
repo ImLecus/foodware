@@ -2,6 +2,7 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { marcarLinea } from '../../src/services/marcarListo.js';
+import { CABECERA_CAMARERO } from '../ayuda.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
 
 describe('reflejo de la marca en sala', () => {
@@ -23,7 +24,9 @@ describe('reflejo de la marca en sala', () => {
   it('muestra en sala la línea marcada como lista desde cocina', async () => {
     marcarLinea(db, { pedidoId: 'pedido-1', lineaId: 'linea-1', estado: 'listo' });
 
-    const respuesta = await request(app).get('/api/mesas/mesa-1/estado-platos');
+    const respuesta = await request(app)
+      .get('/api/mesas/mesa-1/estado-platos')
+      .set(CABECERA_CAMARERO);
 
     const linea = respuesta.body.find((item) => item.id === 'linea-1');
     expect(linea.estado).toBe('listo');
@@ -34,7 +37,9 @@ describe('reflejo de la marca en sala', () => {
     marcarLinea(db, { pedidoId: 'pedido-1', lineaId: 'linea-1', estado: 'listo' });
     marcarLinea(db, { pedidoId: 'pedido-1', lineaId: 'linea-1', estado: 'pendiente' });
 
-    const respuesta = await request(app).get('/api/mesas/mesa-1/estado-platos');
+    const respuesta = await request(app)
+      .get('/api/mesas/mesa-1/estado-platos')
+      .set(CABECERA_CAMARERO);
     const linea = respuesta.body.find((item) => item.id === 'linea-1');
 
     expect(linea.estado).toBe('pendiente');

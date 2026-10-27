@@ -1,5 +1,6 @@
 import express from 'express';
-import { identificarCamarero } from '../middleware/camarero.js';
+import { autenticar } from '../middleware/autenticar.js';
+import { requireRole } from '../middleware/authorize.js';
 import { validarCierreUnico, validarDivision } from '../schemas/cuentas.js';
 import {
   cerrarCuentaUnica,
@@ -13,7 +14,7 @@ import {
 export function cuentasRouter(db) {
   const router = express.Router();
 
-  router.use(identificarCamarero(db));
+  router.use(autenticar(db), requireRole('camarero'));
 
   router.get('/mesas/:mesaId/cuenta', (req, res, next) => {
     try {
