@@ -2,6 +2,7 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
+import { CABECERA_COCINERO, CABECERA_COCINERO_PRINCIPALES } from '../ayuda.js';
 
 describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
   let db;
@@ -27,6 +28,7 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
   it('marca una línea como lista y devuelve su detalle', async () => {
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(200);
@@ -50,18 +52,31 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
   it('es idempotente: volver a marcar no cambia el momento', async () => {
     const primera = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
     const segunda = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(segunda.status).toBe(200);
     expect(segunda.body.listoEn).toBe(primera.body.listoEn);
   });
 
+  it('usa la partida asignada en la sesión', async () => {
+    const respuesta = await request(app)
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .set(CABECERA_COCINERO)
+      .send({ estado: 'listo' });
+
+    expect(respuesta.status).toBe(200);
+    expect(respuesta.body.estado).toBe('listo');
+  });
+
   it('rechaza un estado no válido', async () => {
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'en_preparacion' });
 
     expect(respuesta.status).toBe(400);
@@ -70,6 +85,7 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
   it('devuelve 404 si la línea no pertenece al pedido', async () => {
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/inexistente/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(404);
@@ -78,9 +94,14 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
   it('devuelve 403 si la línea no es de la partida indicada', async () => {
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=principales')
+      .set(CABECERA_COCINERO_PRINCIPALES)
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(403);
+    expect(respuesta.body).toMatchObject({
+      codigo: 'partida_ajena',
+      mensaje: 'La línea no pertenece a tu partida',
+    });
   });
 
   it('devuelve 409 al marcar listo un pedido ya completado', async () => {
@@ -88,8 +109,13 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
 
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(409);
+    expect(respuesta.body).toMatchObject({
+      codigo: 'pedido_completado',
+      mensaje: 'El pedido ya está completado',
+    });
   });
 });

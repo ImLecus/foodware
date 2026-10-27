@@ -3,7 +3,7 @@ import request from 'supertest';
 import { createApp } from '../../src/app.js';
 import { reiniciarHub, suscribir } from '../../src/realtime/hub.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
-import { CABECERA_CAMARERO } from '../ayuda.js';
+import { CABECERA_CAMARERO, CABECERA_COCINERO } from '../ayuda.js';
 
 function clienteFalso() {
   const escrito = [];
@@ -35,8 +35,8 @@ describe('eventos SSE de aviso de mesa completa', () => {
 
   function marcar(lineaId, estado = 'listo') {
     return request(app)
-      .put(`/api/pedidos/pedido-1/lineas/${lineaId}/estado`)
-      .set(CABECERA_CAMARERO)
+      .put(`/api/pedidos/pedido-1/lineas/${lineaId}/estado?partida=entrantes`)
+      .set(CABECERA_COCINERO)
       .send({ estado });
   }
 

@@ -54,4 +54,28 @@ describe('AvisoPedidoCompletado', () => {
 
     expect(onDeshacer).toHaveBeenCalledWith({ pedidoId: 'pedido-1', lineaId: 'linea-1' });
   });
+
+  it('cierra el aviso al deshacer y permite mostrar uno nuevo después', () => {
+    const onCerrar = vi.fn();
+    const { rerender } = renderizar({ onCerrar });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+
+    expect(onCerrar).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Pedido completado')).not.toBeInTheDocument();
+
+    rerender(
+      <ChakraProvider>
+        <AvisoPedidoCompletado
+          pedidoId="pedido-2"
+          lineaId="linea-2"
+          onDeshacer={() => {}}
+          onCerrar={onCerrar}
+        />
+      </ChakraProvider>,
+    );
+
+    expect(screen.getByText('Pedido completado')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Deshacer' })).toBeInTheDocument();
+  });
 });

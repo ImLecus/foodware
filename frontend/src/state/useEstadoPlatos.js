@@ -7,6 +7,7 @@ export function useEstadoPlatos(mesaId) {
   const [lineas, setLineas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [sinConexion, setSinConexion] = useState(false);
 
   useEffect(() => {
     let cancelado = false;
@@ -31,19 +32,35 @@ export function useEstadoPlatos(mesaId) {
     };
   }, [mesaId]);
 
-  useEffect(
-    () =>
-      suscribirSala({
-        onEvento: () => {
-          obtenerEstadoPlatos(mesaId)
-            .then((datos) => setLineas(datos))
-            .catch(() => {
-              // Se conserva la última información conocida.
-            });
-        },
-      }),
-    [mesaId],
-  );
+  useEffect(() => {
+    let cancelado = false;
 
-  return { lineas, cargando, error };
+    function refrescar() {
+      obtenerEstadoPlatos(mesaId)
+        .then((datos) => {
+          if (!cancelado) setLineas(datos);
+        })
+        .catch(() => {
+          // Se conserva la última información conocida.
+        });
+    }
+
+    const cerrar = suscribirSala({
+      mesaId,
+      onEvento: refrescar,
+      onEstadoConexion: (estado) => {
+        if (cancelado) return;
+        const desconectado = estado === 'sin-conexion';
+        setSinConexion(desconectado);
+        if (!desconectado) refrescar();
+      },
+    });
+
+    return () => {
+      cancelado = true;
+      cerrar();
+    };
+  }, [mesaId]);
+
+  return { lineas, cargando, error, sinConexion };
 }

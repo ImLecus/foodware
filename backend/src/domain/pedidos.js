@@ -21,6 +21,14 @@ export function exigirMesa(mesa) {
   return mesa;
 }
 
+/** Una mesa cerrada no admite nuevas operaciones (FR-012). */
+export function exigirMesaAbierta(mesa) {
+  if (mesa.estado === 'cerrada') {
+    throw new ErrorHttp(409, 'La mesa está cerrada');
+  }
+  return mesa;
+}
+
 export function exigirPedido(pedido) {
   if (!pedido) {
     throw new ErrorHttp(404, 'Pedido no encontrado');

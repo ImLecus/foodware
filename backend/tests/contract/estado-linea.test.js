@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../src/app.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
-import { CABECERA_CAMARERO } from '../ayuda.js';
+import { CABECERA_CAMARERO, CABECERA_COCINERO } from '../ayuda.js';
 
 /**
  * El marcado de líneas es el mecanismo que la historia 004 ya expone; la 005
@@ -33,8 +33,8 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', ()
     preparar();
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
-      .set(CABECERA_CAMARERO)
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(200);
@@ -53,13 +53,13 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', ()
     preparar();
 
     await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
-      .set(CABECERA_CAMARERO)
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
-      .set(CABECERA_CAMARERO)
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'pendiente' });
 
     expect(respuesta.status).toBe(200);
@@ -70,30 +70,28 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', ()
     expect(mesa.platos.find((plato) => plato.id === 'linea-1').estado).toBe('pendiente');
   });
 
-  it('es idempotente al marcar dos veces como listo', async () => {
+  it('rechaza re-marcar una línea de una partida ya completada', async () => {
     preparar();
 
     const primero = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
-      .set(CABECERA_CAMARERO)
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
     const segundo = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
-      .set(CABECERA_CAMARERO)
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(primero.status).toBe(200);
-    expect(segundo.status).toBe(200);
-    expect(segundo.body.estado).toBe('listo');
-    expect(segundo.body.listoEn).toBe(primero.body.listoEn);
+    expect(segundo.status).toBe(409);
   });
 
   it('rechaza un estado no válido con 400', async () => {
     preparar();
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
-      .set(CABECERA_CAMARERO)
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'servido' });
 
     expect(respuesta.status).toBe(400);
@@ -108,8 +106,8 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', ()
     insertarLinea(db, { id: 'linea-curso', pedidoId: 'pedido-curso' });
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-curso/lineas/linea-curso/estado')
-      .set(CABECERA_CAMARERO)
+      .put('/api/pedidos/pedido-curso/lineas/linea-curso/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(409);
@@ -119,8 +117,8 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', ()
     preparar();
 
     const respuesta = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/inexistente/estado')
-      .set(CABECERA_CAMARERO)
+      .put('/api/pedidos/pedido-1/lineas/inexistente/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(404);

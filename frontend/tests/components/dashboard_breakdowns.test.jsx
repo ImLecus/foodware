@@ -29,10 +29,30 @@ describe('PaginaDashboard - desgloses US2', () => {
       porCamarero: [
         { camareroId: 'camarero-1', nombre: 'Ana', importe: 8.5, numeroCuentas: 1 },
         { camareroId: 'camarero-2', nombre: 'Luis', importe: 22.0, numeroCuentas: 1 },
+        { camareroId: 'camarero-3', nombre: 'Sin ventas', importe: 0, numeroCuentas: 0 },
       ],
       porPlato: [
-        { platoId: 'plato-1', nombre: 'Croquetas', partida: 'entrantes', cantidad: 1, importe: 8.5 },
-        { platoId: 'plato-2', nombre: 'Entrecot', partida: 'principales', cantidad: 1, importe: 22.0 },
+        {
+          platoId: 'plato-1',
+          nombre: 'Croquetas',
+          partida: 'entrantes',
+          cantidad: 1,
+          importe: 8.5,
+        },
+        {
+          platoId: 'plato-2',
+          nombre: 'Entrecot',
+          partida: 'principales',
+          cantidad: 1,
+          importe: 22.0,
+        },
+        {
+          platoId: 'plato-3',
+          nombre: 'Plato sin ventas',
+          partida: 'postres',
+          cantidad: 0,
+          importe: 0,
+        },
       ],
       comparacion: {
         diaActual: '2026-10-19',
@@ -54,5 +74,8 @@ describe('PaginaDashboard - desgloses US2', () => {
     expect(screen.getByText('Ventas por plato')).toBeInTheDocument();
     expect(screen.getByText('Ana')).toBeInTheDocument();
     expect(screen.getByText('Croquetas')).toBeInTheDocument();
+    expect(screen.getByText('Sin ventas')).toBeInTheDocument();
+    expect(screen.getByText('Plato sin ventas')).toBeInTheDocument();
+    expect(screen.getAllByText('0,00 €').length).toBeGreaterThanOrEqual(2);
   });
 });

@@ -3,7 +3,7 @@ import request from 'supertest';
 import { createApp } from '../../src/app.js';
 import { obtenerAviso } from '../../src/db/avisos.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
-import { CABECERA_CAMARERO } from '../ayuda.js';
+import { CABECERA_CAMARERO, CABECERA_COCINERO } from '../ayuda.js';
 
 describe('POST /api/sala/avisos/:avisoId/descartar', () => {
   let db;
@@ -20,8 +20,8 @@ describe('POST /api/sala/avisos/:avisoId/descartar', () => {
     insertarLinea(db, { id: 'linea-1', pedidoId: 'pedido-1' });
 
     const marca = await request(app)
-      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
-      .set(CABECERA_CAMARERO)
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado?partida=entrantes')
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(marca.status).toBe(200);
@@ -29,9 +29,7 @@ describe('POST /api/sala/avisos/:avisoId/descartar', () => {
   }
 
   function descartar(avisoId, cabecera = CABECERA_CAMARERO) {
-    return request(app)
-      .post(`/api/sala/avisos/${avisoId}/descartar`)
-      .set(cabecera);
+    return request(app).post(`/api/sala/avisos/${avisoId}/descartar`).set(cabecera);
   }
 
   it('descarta el aviso y devuelve su estado actualizado', async () => {

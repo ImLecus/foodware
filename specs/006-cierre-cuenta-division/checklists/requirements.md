@@ -32,3 +32,4 @@
 ## Notes
 
 - Items marked incomplete require spec updates before `/speckit.clarify` or `/speckit.plan`
+- Revalidada el 2026-10-27 con `/speckit.specify`: 16/16 ítems en PASS; no se crea una especificación nueva porque `specs/006-cierre-cuenta-division/spec.md` ya existe y está completa.

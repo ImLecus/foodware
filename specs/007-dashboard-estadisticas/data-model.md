@@ -44,7 +44,8 @@ líneas de una cuenta coincide con su `importeTotal`.
 
 ### InformeDiario
 Resultado completo que devuelve el endpoint para un día natural.
-- `fecha`: día consultado (`YYYY-MM-DD`, Europe/Madrid).
+- `fecha`: día consultado (`YYYY-MM-DD`, Europe/Madrid). Si no se indica una fecha, es el último día
+  natural completado anterior a hoy; el día en curso no se incluye aunque tenga cuentas cerradas.
 - `totalVendido`: suma de `importeTotal` de las cuentas cerradas del día (≥ 0).
 - `numeroCuentas`: número de cuentas cerradas del día.
 - `porCamarero`: lista de `DesgloseCamarero`.

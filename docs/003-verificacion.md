@@ -45,5 +45,5 @@ Para gestión de carta: ver `specs/008-gestion-carta/quickstart.md`.
 - `GET /api/partidas/entrantes/pedidos-pendientes` devuelve pedidos ordenados; excluye los que
   solo tienen líneas listas en esa partida.
 - `GET /api/partidas/entrantes/eventos` abre el stream SSE con `text/event-stream`.
-- La vista `/cocina?cocinero=cocinero-entrantes` muestra la lista, los estados de carga, vacío y
+- La vista `/cocina` con sesión de `cocinero-entrantes` muestra la lista, los estados de carga, vacío y
   error, el aviso «Modificado» y el indicador de sin conexión.

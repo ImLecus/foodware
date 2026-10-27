@@ -1,5 +1,6 @@
 import express from 'express';
 import { z } from 'zod';
+import { autenticar } from '../middleware/autenticar.js';
 import { requireRole } from '../middleware/authorize.js';
 import { fechaEnMadrid } from '../services/dayTime.js';
 import {
@@ -29,7 +30,8 @@ function centimosAEuros(centimos) {
 
 export function crearReportsRouter(db) {
   const router = express.Router();
-  const autorizarEncargado = requireRole(db, 'encargado');
+  router.use(autenticar(db));
+  const autorizarEncargado = requireRole('encargado');
 
   router.get('/daily', autorizarEncargado, (req, res, next) => {
     try {

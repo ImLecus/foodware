@@ -100,6 +100,34 @@ describe('useSala', () => {
     await waitFor(() => expect(result.current.mesas).toHaveLength(1));
   });
 
+  it('retira de la vista la mesa cerrada al recibir mesa-cerrada', async () => {
+    obtenerMesasSala.mockResolvedValue(
+      instantanea([
+        { id: 'mesa-1', identificador: 'Mesa 1', completa: true, aviso: null, platos: [] },
+        { id: 'mesa-2', identificador: 'Mesa 2', completa: false, aviso: null, platos: [] },
+      ]),
+    );
+    const getManejador = capturarSuscripcion();
+
+    const { result } = renderHook(() => useSala());
+    await waitFor(() => expect(result.current.cargando).toBe(false));
+    expect(result.current.mesas).toHaveLength(2);
+
+    obtenerMesasSala.mockResolvedValue(
+      instantanea([
+        { id: 'mesa-2', identificador: 'Mesa 2', completa: false, aviso: null, platos: [] },
+      ]),
+    );
+
+    await act(async () => {
+      getManejador().onEvento('mesa-cerrada', { mesa_id: 'mesa-1', cuenta_id: 'cuenta-1' });
+    });
+
+    await waitFor(() => expect(result.current.mesas).toHaveLength(1));
+    expect(result.current.mesas.map((mesa) => mesa.id)).toEqual(['mesa-2']);
+    expect(obtenerMesasSala).toHaveBeenCalledTimes(2);
+  });
+
   it('marca sin conexión cuando el canal SSE informa de error', async () => {
     obtenerMesasSala.mockResolvedValue(instantanea([]));
     const getManejador = capturarSuscripcion();

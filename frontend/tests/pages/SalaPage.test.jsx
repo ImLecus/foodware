@@ -43,6 +43,48 @@ describe('SalaPage (US2)', () => {
     expect(await screen.findByText('Mesa 1')).toBeInTheDocument();
     expect(screen.getByText(/Croquetas/)).toBeInTheDocument();
     expect(screen.getByText('pendiente')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(suscribirSala).toHaveBeenCalledWith(expect.objectContaining({ mesaId: 'mesa-1' })),
+    );
+  });
+
+  it('muestra el error de carga en español', async () => {
+    obtenerEstadoPlatos.mockRejectedValue(
+      new Error('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.'),
+    );
+
+    renderizar();
+
+    expect(
+      await screen.findByText(
+        'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('muestra «sin conexión» y resincroniza al reconectar', async () => {
+    obtenerEstadoPlatos.mockResolvedValueOnce([lineaPendiente]);
+    renderizar();
+    await screen.findByText(/Croquetas/);
+    await waitFor(() => expect(suscribirSala).toHaveBeenCalled());
+
+    const opciones = suscribirSala.mock.calls.at(-1)[0];
+    act(() => {
+      opciones.onEstadoConexion('sin-conexion');
+    });
+
+    expect(await screen.findByText('Sin conexión')).toBeInTheDocument();
+
+    obtenerEstadoPlatos.mockResolvedValueOnce([
+      { ...lineaPendiente, estado: 'listo', listoEn: '2026-10-20T10:05:00.000Z' },
+    ]);
+
+    await act(async () => {
+      opciones.onEstadoConexion('conectado');
+    });
+
+    expect(await screen.findByText('listo')).toBeInTheDocument();
+    expect(screen.queryByText('Sin conexión')).not.toBeInTheDocument();
   });
 
   it('actualiza el estado al recibir un evento sin recargar', async () => {

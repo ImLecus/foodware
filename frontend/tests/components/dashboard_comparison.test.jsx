@@ -37,15 +37,59 @@ describe('PaginaDashboard - comparación US3', () => {
         diferenciaPorcentaje: 50,
         sinBaseComparacion: false,
         tendencia: 'subida',
-        porCamarero: [],
-        porPlato: [],
+        porCamarero: [
+          {
+            camareroId: 'camarero-1',
+            nombre: 'Ana',
+            diferenciaImporte: 50,
+            tendencia: 'subida',
+          },
+        ],
+        porPlato: [
+          {
+            platoId: 'plato-1',
+            nombre: 'Croquetas',
+            diferenciaImporte: 50,
+            tendencia: 'subida',
+          },
+        ],
       },
     });
     renderizarComponente();
     await waitFor(() => {
       expect(screen.getByText(/Comparación con el día anterior/i)).toBeInTheDocument();
     });
-    expect(screen.getByText(/subida/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/subida/i).length).toBeGreaterThan(0);
+    expect(screen.getByText('Diferencia por camarero')).toBeInTheDocument();
+    expect(screen.getByText('Diferencia por plato')).toBeInTheDocument();
+    expect(screen.getByText('Ana')).toBeInTheDocument();
+    expect(screen.getByText('Croquetas')).toBeInTheDocument();
+  });
+
+  it('muestra sin datos anteriores cuando no existe día anterior', async () => {
+    obtenerInformeDiario.mockResolvedValue({
+      fecha: '2026-10-19',
+      totalVendido: 35,
+      numeroCuentas: 1,
+      porCamarero: [],
+      porPlato: [],
+      comparacion: {
+        diaActual: '2026-10-19',
+        diaAnterior: null,
+        importeActual: 35,
+        importeAnterior: null,
+        diferenciaImporte: null,
+        diferenciaPorcentaje: null,
+        sinBaseComparacion: false,
+        tendencia: 'sin_variacion',
+        porCamarero: [],
+        porPlato: [],
+      },
+    });
+
+    renderizarComponente();
+
+    expect(await screen.findByText(/sin datos anteriores/i)).toBeInTheDocument();
   });
 
   it('muestra sin base de comparación cuando día anterior sin ventas', async () => {

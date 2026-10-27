@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import AvisoModificado from '../../src/components/AvisoModificado.jsx';
 import AvisoSinConexion from '../../src/components/AvisoSinConexion.jsx';
 import EstadoCarga from '../../src/components/EstadoCarga.jsx';
+import EstadoError from '../../src/components/EstadoError.jsx';
 import EstadoSinPartida from '../../src/components/EstadoSinPartida.jsx';
 import EstadoVacio from '../../src/components/EstadoVacio.jsx';
 import LineaPlato from '../../src/components/LineaPlato.jsx';
@@ -32,6 +33,22 @@ describe('textos visibles en español de España', () => {
 
     renderizar(<AvisoModificado />);
     expect(screen.getByText('Modificado')).toBeInTheDocument();
+  });
+
+  it('muestra el mensaje de error en español', () => {
+    const { unmount } = renderizar(
+      <EstadoError
+        mensaje="No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo."
+        onReintentar={() => {}}
+      />,
+    );
+    expect(screen.getByText('No se pudieron cargar los pedidos')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
+      ),
+    ).toBeInTheDocument();
+    unmount();
   });
 
   it('usa las etiquetas listo y pendiente en las líneas de plato', () => {

@@ -1,3 +1,7 @@
+[Israel Izquierdo]
+
+0. Crear el esqueleto del proyecto y la autenticación por roles
+
 [Marcos González]
 
 1. El camarero debe poder abrir una mesa y tomar la comanda plato a plato, agrupada por partidas (entrantes, principales, postres)

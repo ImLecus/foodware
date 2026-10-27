@@ -17,7 +17,7 @@ comparación con el día natural anterior).
 
 | Nombre | Tipo | Obligatorio | Descripción |
 |--------|------|-------------|-------------|
-| `date` | `YYYY-MM-DD` | No | Día natural **completado** (Europe/Madrid) a consultar. Si se omite, se usa el último día natural completado. No se admite el día en curso ni fechas futuras. |
+| `date` | `YYYY-MM-DD` | No | Día natural **completado** (Europe/Madrid) a consultar. Si se omite, se usa el último día natural completado **anterior a hoy**, aunque existan cuentas cerradas hoy. No se admite el día en curso ni fechas futuras. |
 
 Validación: si `date` no tiene formato `YYYY-MM-DD`, no es una fecha válida, es el día en curso o una fecha futura → `400`.
 

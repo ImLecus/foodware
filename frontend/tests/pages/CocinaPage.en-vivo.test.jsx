@@ -2,11 +2,11 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CocinaPage from '../../src/pages/CocinaPage.jsx';
-import { obtenerCocinero, obtenerPedidosPendientes } from '../../src/services/api.js';
+import { obtenerPedidosPendientes } from '../../src/services/api.js';
+import { ProveedorSesion, USUARIO_COCINERO } from '../helpers/auth.jsx';
 import { suscribirAPartida } from '../../src/services/events.js';
 
 vi.mock('../../src/services/api.js', () => ({
-  obtenerCocinero: vi.fn(),
   obtenerPedidosPendientes: vi.fn(),
 }));
 
@@ -41,7 +41,9 @@ const pedido = (id, mesa) => ({
 function renderizar() {
   return render(
     <ChakraProvider>
-      <CocinaPage cocineroId="cocinero-entrantes" />
+      <ProveedorSesion usuario={USUARIO_COCINERO}>
+        <CocinaPage />
+      </ProveedorSesion>
     </ChakraProvider>,
   );
 }
@@ -49,11 +51,6 @@ function renderizar() {
 describe('CocinaPage en vivo', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    obtenerCocinero.mockResolvedValue({
-      id: 'cocinero-entrantes',
-      nombre: 'Marta',
-      partida: 'entrantes',
-    });
   });
 
   it('refresca la lista al recibir un evento sin recargar', async () => {

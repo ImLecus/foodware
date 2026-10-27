@@ -61,6 +61,7 @@ describe('Edición · enviar cambios', () => {
 
     const contenido = escrito.join('');
     expect(contenido).toContain('event: pedido-modificado');
+    expect(contenido).toContain('event: pedido.modificado');
     expect(contenido).toContain(pedidoId);
   });
 

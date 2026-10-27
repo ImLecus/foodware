@@ -63,6 +63,44 @@ export function obtenerPedidoEnviadoPorMesa(db, mesaId) {
   );
 }
 
+/** Comanda activa de la mesa: primero la que está en curso; si no, la última enviada. */
+export function obtenerPedidoActual(db, mesaId) {
+  return (
+    db
+      .prepare(
+        `SELECT *
+           FROM pedidos
+          WHERE mesa_id = ?
+            AND estado IN ('en_curso', 'enviada')
+          ORDER BY CASE estado WHEN 'en_curso' THEN 0 ELSE 1 END,
+                   COALESCE(enviado_en, creado_en) DESC,
+                   rowid DESC
+          LIMIT 1`,
+      )
+      .get(mesaId) ?? null
+  );
+}
+
+/** Líneas pendientes de un pedido enviado, con los datos que muestra el camarero. */
+export function listarLineasPendientesDePedido(db, pedidoId) {
+  return db
+    .prepare(
+      `SELECT l.id AS linea_id,
+              l.pedido_id,
+              p.nombre,
+              p.partida_codigo AS partida,
+              l.estado,
+              l.listo_en
+         FROM lineas_pedido l
+         JOIN pedidos pe ON pe.id = l.pedido_id AND pe.estado = 'enviada'
+         JOIN platos p ON p.id = l.plato_id
+        WHERE l.pedido_id = ?
+          AND l.estado = 'pendiente'
+        ORDER BY l.rowid`,
+    )
+    .all(pedidoId);
+}
+
 /** Estado de cada línea del pedido, suficiente para calcular la completitud. */
 export function listarEstadosDeLineas(db, pedidoId) {
   return db

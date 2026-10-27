@@ -22,6 +22,10 @@
 
 - Q: Cuando el día anterior no registró ninguna venta y el día actual sí, ¿cómo debe expresarse la comparación para no dividir entre cero? (FR-005, FR-006) → A: Mostrar la diferencia en euros y la indicación "sin base de comparación", sin porcentaje.
 
+### Session 2026-10-27
+
+- Q: Cuando se cierra una cuenta del día en curso y el día todavía no ha terminado, ¿qué día debe mostrar el dashboard? → A: Mantener el último día natural completado anterior a hoy; el día en curso no aparece hasta que termine, aunque ya existan cuentas cerradas hoy.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Visión global de las ventas del servicio (Priority: P1)
@@ -44,6 +48,9 @@ servicio.
    abre el dashboard, **Then** ve el importe total en euros de lo vendido durante ese servicio.
 2. **Given** un servicio sin ninguna cuenta cerrada, **When** el encargado abre el dashboard,
    **Then** ve que el total de ventas es 0,00 €.
+3. **Given** cuentas cerradas durante el día en curso y el día aún no ha terminado, **When** el
+   encargado abre el dashboard, **Then** ve el último día natural completado anterior a hoy y no
+   los datos parciales del día en curso.
 
 ---
 
@@ -119,16 +126,18 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
   se muestra la diferencia en euros con la indicación «sin base de comparación» y sin porcentaje.
 - Dos servicios con idénticas ventas, incluido el caso de 0,00 € en ambos: la comparación se
   indica como «sin variación», con diferencia 0,00 € y sin porcentaje.
-- El encargado consulta el dashboard antes de terminar el día en curso: se muestra el
-  día anterior completado; el día en curso no aparece hasta su cierre.
+- El encargado consulta el dashboard antes de terminar el día en curso, incluso si ya se han
+  cerrado cuentas hoy: se muestra el último día natural completado anterior; el día en curso no
+  aparece hasta su cierre.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
 - **FR-001**: El sistema MUST ofrecer al encargado un dashboard con los datos del servicio una
-  vez este ha terminado; durante el servicio en curso no se muestran datos parciales (aclarado
-  en la sesión de clarificación).
+  vez este ha terminado; durante el servicio en curso no se muestran datos parciales. Mientras el
+  día en curso no haya terminado, MUST mostrar el último día natural completado anterior, aunque
+  ya existan cuentas cerradas hoy (aclarado en la sesión de clarificación).
 - **FR-002**: El sistema MUST mostrar el importe total en euros vendido durante el servicio.
 - **FR-003**: El sistema MUST desglosar las ventas por camarero, mostrando el importe de cada
   camarero.
@@ -180,7 +189,9 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
 ## Assumptions
 
 - El dashboard se consulta al terminar el servicio, tal y como indica el enunciado; no se
-  muestran datos parciales del servicio en curso (aclarado en la sesión de clarificación).
+  muestran datos parciales del servicio en curso. Mientras hoy no haya terminado, se muestra el
+  último día natural completado anterior, aunque ya haya cuentas cerradas hoy (aclarado en la
+  sesión de clarificación).
 - Los datos de ventas provienen de las cuentas cerradas en el sistema; el dashboard únicamente
   los agrega y presenta, sin generar ni modificar las ventas (dependencia con la funcionalidad de
   cierre de cuenta, fuera del alcance de esta spec).

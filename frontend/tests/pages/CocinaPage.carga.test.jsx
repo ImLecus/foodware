@@ -2,10 +2,10 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CocinaPage from '../../src/pages/CocinaPage.jsx';
-import { obtenerCocinero, obtenerPedidosPendientes } from '../../src/services/api.js';
+import { obtenerPedidosPendientes } from '../../src/services/api.js';
+import { ProveedorSesion, USUARIO_COCINERO } from '../helpers/auth.jsx';
 
 vi.mock('../../src/services/api.js', () => ({
-  obtenerCocinero: vi.fn(),
   obtenerPedidosPendientes: vi.fn(),
 }));
 
@@ -22,7 +22,9 @@ vi.mock('../../src/services/events.js', () => ({
 function renderizar() {
   return render(
     <ChakraProvider>
-      <CocinaPage cocineroId="cocinero-entrantes" />
+      <ProveedorSesion usuario={USUARIO_COCINERO}>
+        <CocinaPage />
+      </ProveedorSesion>
     </ChakraProvider>,
   );
 }
@@ -33,7 +35,7 @@ describe('CocinaPage: carga inicial y error', () => {
   });
 
   it('muestra el indicador de carga y nunca el estado vacío antes de tener datos', () => {
-    obtenerCocinero.mockReturnValue(new Promise(() => {}));
+    obtenerPedidosPendientes.mockReturnValue(new Promise(() => {}));
 
     renderizar();
 
@@ -42,7 +44,7 @@ describe('CocinaPage: carga inicial y error', () => {
   });
 
   it('muestra el error con Reintentar y no el estado vacío', async () => {
-    obtenerCocinero.mockRejectedValue(new Error('fallo de red'));
+    obtenerPedidosPendientes.mockRejectedValue(new Error('fallo de red'));
 
     renderizar();
 
@@ -51,14 +53,13 @@ describe('CocinaPage: carga inicial y error', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
 
-    await waitFor(() => expect(obtenerCocinero).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(obtenerPedidosPendientes).toHaveBeenCalledTimes(2));
   });
 
   it('reintenta la carga correctamente tras un error', async () => {
-    obtenerCocinero
+    obtenerPedidosPendientes
       .mockRejectedValueOnce(new Error('fallo de red'))
-      .mockResolvedValueOnce({ id: 'cocinero-entrantes', nombre: 'Marta', partida: 'entrantes' });
-    obtenerPedidosPendientes.mockResolvedValue([]);
+      .mockResolvedValueOnce([]);
 
     renderizar();
 

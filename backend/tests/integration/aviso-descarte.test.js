@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { reiniciarHub } from '../../src/realtime/hub.js';
 import {
   CABECERA_CAMARERO,
+  CABECERA_COCINERO,
+  cookieCocinero,
   crearAppDePrueba,
   crearPedidoEnviado,
 } from '../ayuda.js';
@@ -23,20 +25,20 @@ describe('descarte y regeneración del aviso de mesa', () => {
 
   async function marcarTodasListas(pedidoId) {
     const pedido = await request(app).get(`/api/pedidos/${pedidoId}`).set(CABECERA_CAMARERO);
-    const lineas = Object.values(pedido.body.por_partida ?? {}).flatMap((partida) => partida);
+    const lineas = Object.entries(pedido.body.por_partida ?? {}).flatMap(([partida, grupo]) =>
+      grupo.map((linea) => ({ ...linea, partida })),
+    );
     for (const linea of lineas) {
       await request(app)
-        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado`)
-        .set(CABECERA_CAMARERO)
+        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado?partida=${linea.partida}`)
+        .set(cookieCocinero(linea.partida))
         .send({ estado: 'listo' });
     }
     return lineas;
   }
 
   async function descartar(avisoId) {
-    return request(app)
-      .post(`/api/sala/avisos/${avisoId}/descartar`)
-      .set(CABECERA_CAMARERO);
+    return request(app).post(`/api/sala/avisos/${avisoId}/descartar`).set(CABECERA_CAMARERO);
   }
 
   it('no vuelve a mostrarse tras recargar la vista (coherencia al reconectar)', async () => {
@@ -83,8 +85,8 @@ describe('descarte y regeneración del aviso de mesa', () => {
     expect(incompleta.aviso).toBeNull();
 
     const marca = await request(app)
-      .put(`/api/pedidos/${pedidoId}/lineas/${nueva.body.id}/estado`)
-      .set(CABECERA_CAMARERO)
+      .put(`/api/pedidos/${pedidoId}/lineas/${nueva.body.id}/estado?partida=entrantes`)
+      .set(CABECERA_COCINERO)
       .send({ estado: 'listo' });
 
     expect(marca.status).toBe(200);

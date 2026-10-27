@@ -2,6 +2,7 @@ import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
+import { CABECERA_COCINERO } from '../ayuda.js';
 
 describe('Contrato de detalle del pedido de cocina', () => {
   let db;
@@ -25,9 +26,9 @@ describe('Contrato de detalle del pedido de cocina', () => {
       cantidad: 3,
     });
 
-    const respuesta = await request(createApp(db)).get(
-      '/api/partidas/entrantes/pedidos-pendientes',
-    );
+    const respuesta = await request(createApp(db))
+      .get('/api/partidas/entrantes/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
 
     expect(respuesta.status).toBe(200);
     expect(respuesta.body).toHaveLength(1);
@@ -39,6 +40,7 @@ describe('Contrato de detalle del pedido de cocina', () => {
       {
         id: 'linea-lista',
         nombrePlato: 'Croquetas',
+        partida: 'entrantes',
         cantidad: 1,
         estado: 'listo',
         listoEn: '2026-10-20T10:05:00.000Z',
@@ -46,6 +48,7 @@ describe('Contrato de detalle del pedido de cocina', () => {
       {
         id: 'linea-pendiente',
         nombrePlato: 'Ensalada',
+        partida: 'entrantes',
         cantidad: 3,
         estado: 'pendiente',
         listoEn: null,
@@ -65,9 +68,9 @@ describe('Contrato de detalle del pedido de cocina', () => {
     );
     insertarLinea(db, { id: 'linea-editada', pedidoId: 'pedido-editado' });
 
-    const respuesta = await request(createApp(db)).get(
-      '/api/partidas/entrantes/pedidos-pendientes',
-    );
+    const respuesta = await request(createApp(db))
+      .get('/api/partidas/entrantes/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
 
     expect(respuesta.body[0]).toMatchObject({
       id: 'pedido-editado',
@@ -82,9 +85,9 @@ describe('Contrato de detalle del pedido de cocina', () => {
     insertarPedido(db, { id: 'pedido-normal' });
     insertarLinea(db, { id: 'linea-normal', pedidoId: 'pedido-normal' });
 
-    const respuesta = await request(createApp(db)).get(
-      '/api/partidas/entrantes/pedidos-pendientes',
-    );
+    const respuesta = await request(createApp(db))
+      .get('/api/partidas/entrantes/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
 
     expect(respuesta.body[0]).toMatchObject({ modificado: false, modificadoEn: null });
   });

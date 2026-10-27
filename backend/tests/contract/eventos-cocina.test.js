@@ -7,6 +7,7 @@ import {
   emitirPendientesCambiado,
 } from '../../src/realtime/emit.js';
 import { reiniciarHub, suscribir } from '../../src/realtime/hub.js';
+import { CABECERA_COCINERO } from '../ayuda.js';
 import { crearBase } from '../helpers/fixtures.js';
 
 function clienteFalso() {
@@ -27,6 +28,7 @@ async function abrirEventos(app, ruta) {
   const controlador = new AbortController();
   const respuesta = await fetch(`http://127.0.0.1:${port}${ruta}`, {
     signal: controlador.signal,
+    headers: CABECERA_COCINERO,
   });
   return {
     respuesta,
@@ -73,6 +75,7 @@ describe('SSE de cocina', () => {
 
     const contenido = escrito.join('');
     expect(contenido).toContain('event: pedido.nuevo');
+    expect(contenido).toContain('"tipo":"pedido.nuevo"');
     expect(contenido).toContain('"pedidoId":"pedido-1"');
     expect(contenido).toContain('"mesa":3');
   });
@@ -86,7 +89,9 @@ describe('SSE de cocina', () => {
 
     const contenido = escrito.join('');
     expect(contenido).toContain('event: pedido.pendientes-cambiado');
+    expect(contenido).toContain('"tipo":"pedido.pendientes-cambiado"');
     expect(contenido).toContain('event: linea.actualizada');
+    expect(contenido).toContain('"tipo":"linea.actualizada"');
     expect(contenido).toContain('"estado":"listo"');
   });
 });

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { reiniciarHub, suscribir } from '../../src/realtime/hub.js';
 import {
   CABECERA_CAMARERO,
+  cookieCocinero,
   clienteSseFalso,
   crearAppDePrueba,
   crearPedidoEnviado,
@@ -19,11 +20,13 @@ describe('difusión global del descarte de avisos', () => {
 
   async function completarMesa(pedidoId) {
     const pedido = await request(app).get(`/api/pedidos/${pedidoId}`).set(CABECERA_CAMARERO);
-    const lineas = Object.values(pedido.body.por_partida ?? {}).flatMap((partida) => partida);
+    const lineas = Object.entries(pedido.body.por_partida ?? {}).flatMap(([partida, grupo]) =>
+      grupo.map((linea) => ({ ...linea, partida })),
+    );
     for (const linea of lineas) {
       await request(app)
-        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado`)
-        .set(CABECERA_CAMARERO)
+        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado?partida=${linea.partida}`)
+        .set(cookieCocinero(linea.partida))
         .send({ estado: 'listo' });
     }
 
@@ -61,9 +64,7 @@ describe('difusión global del descarte de avisos', () => {
     const pedidoId = await crearPedidoEnviado(app);
     const aviso = await completarMesa(pedidoId);
 
-    await request(app)
-      .post(`/api/sala/avisos/${aviso.id}/descartar`)
-      .set(CABECERA_CAMARERO);
+    await request(app).post(`/api/sala/avisos/${aviso.id}/descartar`).set(CABECERA_CAMARERO);
 
     const cliente = clienteSseFalso();
     suscribir(cliente.peticion, cliente.respuesta);
@@ -81,9 +82,7 @@ describe('difusión global del descarte de avisos', () => {
     const pedidoId = await crearPedidoEnviado(app);
     const aviso = await completarMesa(pedidoId);
 
-    await request(app)
-      .post(`/api/sala/avisos/${aviso.id}/descartar`)
-      .set(CABECERA_CAMARERO);
+    await request(app).post(`/api/sala/avisos/${aviso.id}/descartar`).set(CABECERA_CAMARERO);
 
     const sala = await request(app).get('/api/sala/mesas').set(CABECERA_CAMARERO);
     const [mesa] = sala.body.mesas;

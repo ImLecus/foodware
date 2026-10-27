@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { reiniciarHub, suscribir } from '../../src/realtime/hub.js';
 import {
   CABECERA_CAMARERO,
+  cookieCocinero,
   clienteSseFalso,
   crearAppDePrueba,
   crearPedidoEnviado,
@@ -24,11 +25,13 @@ describe('recálculo de la mesa completa al editar una comanda enviada', () => {
 
   async function marcarTodasListas(pedidoId) {
     const pedido = await request(app).get(`/api/pedidos/${pedidoId}`).set(CABECERA_CAMARERO);
-    const lineas = Object.values(pedido.body.por_partida ?? {}).flatMap((partida) => partida);
+    const lineas = Object.entries(pedido.body.por_partida ?? {}).flatMap(([partida, grupo]) =>
+      grupo.map((linea) => ({ ...linea, partida })),
+    );
     for (const linea of lineas) {
       await request(app)
-        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado`)
-        .set(CABECERA_CAMARERO)
+        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado?partida=${linea.partida}`)
+        .set(cookieCocinero(linea.partida))
         .send({ estado: 'listo' });
     }
     return lineas;
@@ -71,8 +74,8 @@ describe('recálculo de la mesa completa al editar una comanda enviada', () => {
     const nuevaLinea = editada.platos.find((plato) => plato.id === nueva.body.id);
     expect(nuevaLinea.estado).toBe('pendiente');
     await request(app)
-      .put(`/api/pedidos/${pedidoId}/lineas/${nuevaLinea.id}/estado`)
-      .set(CABECERA_CAMARERO)
+      .put(`/api/pedidos/${pedidoId}/lineas/${nuevaLinea.id}/estado?partida=${nuevaLinea.partida}`)
+      .set(cookieCocinero(nuevaLinea.partida))
       .send({ estado: 'listo' });
 
     const reCompleta = await leerMesa();

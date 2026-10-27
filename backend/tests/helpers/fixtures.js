@@ -1,4 +1,5 @@
 import { createDb } from '../../src/db/index.js';
+import { insertarSesionesPrueba } from './auth.js';
 
 /** Base en memoria con el catálogo mínimo para las pruebas de la vista de cocina. */
 export function crearBase() {
@@ -12,8 +13,13 @@ export function crearBase() {
 
     INSERT INTO usuarios (id, nombre, rol, partida_codigo) VALUES
       ('cocinero-entrantes', 'Marta', 'cocinero', 'entrantes'),
+      ('cocinero-principales', 'Pablo', 'cocinero', 'principales'),
+      ('cocinero-postres', 'Lucía', 'cocinero', 'postres'),
       ('cocinero-sin-partida', 'Sin partida', 'cocinero', NULL),
-      ('camarero-1', 'Ana', 'camarero', NULL);
+      ('camarero-1', 'Ana', 'camarero', NULL),
+      ('camarero-2', 'Luis', 'camarero', NULL),
+      ('encargado-1', 'Carmen', 'encargado', NULL),
+      ('admin-1', 'Administración', 'administrador', NULL);
 
     INSERT INTO mesas (id, identificador, estado) VALUES
       ('mesa-1', 'Mesa 1', 'ocupada'),
@@ -28,6 +34,7 @@ export function crearBase() {
       ('plato-postre', 'Tarta', 'postres', 600);
   `);
 
+  insertarSesionesPrueba(db);
   return db;
 }
 
@@ -50,4 +57,26 @@ export function insertarLinea(
        (id, pedido_id, plato_id, cantidad, precio_centimos, estado, listo_en)
      VALUES (?, ?, ?, ?, 100, ?, ?)`,
   ).run(id, pedidoId, platoId, cantidad, estado, estado === 'listo' ? '2026-10-20 10:05:00' : null);
+}
+
+/** Inserta una cuenta cerrada histórica para probar la reutilización de una mesa. */
+export function insertarCuentaCerrada(
+  db,
+  { id = 'cuenta-cerrada', mesaId = 'mesa-1', pedidoId = null, totalCentimos = 0 } = {},
+) {
+  db.prepare(
+    `INSERT INTO cuentas (id, mesa_id, pedido_id, estado, total_centimos, modo_division, cerrada_en)
+     VALUES (?, ?, ?, 'cerrada', ?, 'unico', datetime('now'))`,
+  ).run(id, mesaId, pedidoId, totalCentimos);
+}
+
+/** Inserta una cuenta cerrada en una fecha concreta para pruebas de informes. */
+export function insertarCuentaCerradaEnFecha(
+  db,
+  { id = 'cuenta-fecha', mesaId = 'mesa-1', fecha, totalCentimos = 0, camareroId = null } = {},
+) {
+  db.prepare(
+    `INSERT INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+     VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
+  ).run(id, mesaId, camareroId, totalCentimos, `${fecha} 10:00:00`, `${fecha} 12:00:00`);
 }

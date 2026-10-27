@@ -2,12 +2,13 @@ import express from 'express';
 import { listarMesasAbiertasParaSala } from '../db/mesas.js';
 import { descartarAvisoMesa } from '../services/avisos.js';
 import { obtenerInstantaneaSala } from '../services/salaMesas.js';
-import { identificarCamarero } from '../middleware/camarero.js';
+import { autenticar } from '../middleware/autenticar.js';
+import { requireRole } from '../middleware/authorize.js';
 
 export function salaRouter(db) {
   const router = express.Router();
 
-  router.use(identificarCamarero(db));
+  router.use(autenticar(db), requireRole('camarero'));
 
   router.get('/mesas', (req, res, next) => {
     try {

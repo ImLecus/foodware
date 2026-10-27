@@ -18,8 +18,9 @@ código. No incluye código de implementación: los detalles están en
    docker compose up --build
    ```
 
-2. Abrir la **vista de sala** (camarero) y, si se quiere comprobar la integración, la vista de
-   cocina en otra pestaña (p. ej. `http://localhost:<puerto-frontend>`).
+2. Abrir el frontend e iniciar sesión con `camarero-1` / `demo1234`. Abrir la **vista de sala**
+   y, si se quiere comprobar la integración, la vista de cocina en otra pestaña con un usuario
+   `cocinero-*`.
 
 3. Disponer de datos de ejemplo: una mesa abierta con al menos dos consumos de distinto
    importe (si la base está vacía, usar el script de datos de ejemplo del proyecto).
@@ -38,10 +39,11 @@ código. No incluye código de implementación: los detalles están en
 ### B. Cerrar con un único pago (US1 + US3, P1)
 
 1. Abrir la cuenta y confirmar el cobro **sin dividir** (un solo pago).
-2. **Esperado**: se genera el ticket con el total, la mesa queda **cerrada** y desaparece de la
-   vista de sala (FR-011, FR-012).
-3. Volver a intentar cerrar esa misma mesa.
-4. **Esperado**: el sistema lo **rechaza** por estar ya cerrada (FR-014, SC-005).
+2. **Esperado**: se genera el ticket con el total, la cuenta queda cerrada y la mesa vuelve a
+   estar **libre** en sala (FR-011, FR-012).
+3. Volver a intentar cerrar esa misma cuenta.
+4. **Esperado**: el sistema rechaza el cierre de la cuenta ya cerrada (FR-014, SC-005), pero la
+   mesa puede abrir una nueva comanda.
 
 ### C. División en partes iguales con redondeo (US2, P2)
 
@@ -66,8 +68,8 @@ código. No incluye código de implementación: los detalles están en
 2. **Esperado**: mientras quede alguna parte pendiente, la mesa **no** se cierra y no se emite
    ningún ticket (FR-016, SC-007, SC-008).
 3. Marcar la **última** parte pendiente.
-4. **Esperado**: la mesa se cierra automáticamente, se muestra el ticket y la mesa deja de
-   aparecer en sala (FR-011).
+4. **Esperado**: la cuenta se cierra automáticamente, se muestra el ticket y la mesa vuelve a
+   estar libre en sala (FR-011).
 
 ### F. Ticket final único (US3, P3)
 
@@ -115,23 +117,41 @@ código. No incluye código de implementación: los detalles están en
 
 1. Con la cuenta dividida y dos de tres partes pagadas, marcar la **última** parte pendiente.
 2. **Esperado**: se emite **un único ticket** con el total y el desglose completo de las tres
-   partes; la mesa queda cerrada (FR-010, FR-011, SC-004, SC-008).
+   partes; la cuenta queda cerrada y la mesa vuelve a estar libre (FR-010, FR-011, SC-004, SC-008).
 3. Volver a consultar el ticket y repetir la operación de pago.
 4. **Esperado**: el ticket consultado es el mismo y el sistema rechaza cualquier nuevo pago o
-   cierre por estar la mesa cerrada; no se generan tickets duplicados (FR-012, FR-014,
-   SC-008).
+   cierre de esa cuenta; no se generan tickets duplicados (FR-012, FR-014, SC-008).
 
-### L. Reversión de una parte pagada con la mesa abierta (FR-016, SC-009)
+### L. Reversión de una parte pagada con la cuenta abierta (FR-016, SC-009)
 
-1. Con la cuenta dividida y la mesa abierta, pagar una parte y después **deshacer su pago**.
-2. **Esperado**: la parte vuelve a **pendiente**, la mesa sigue abierta y no se ha emitido
+1. Con la cuenta dividida y la mesa ocupada, pagar una parte y después **deshacer su pago**.
+2. **Esperado**: la parte vuelve a **pendiente**, la cuenta sigue abierta y no se ha emitido
    ningún ticket (FR-016, SC-009).
-3. Intentar cerrar la mesa dejando esa parte pendiente.
+3. Intentar cerrar la cuenta dejando esa parte pendiente.
 4. **Esperado**: el sistema no cierra la mesa hasta que la parte vuelva a estar pagada
    (SC-007, SC-009).
 5. Pagar de nuevo la parte y, si es la última, comprobar que se emite el ticket único.
-6. Con la mesa ya cerrada, intentar deshacer el pago de una parte.
-7. **Esperado**: el sistema lo rechaza porque la mesa ya no está abierta (FR-016, SC-009).
+6. Con la cuenta ya cerrada, intentar deshacer el pago de una parte.
+7. **Esperado**: el sistema lo rechaza porque la cuenta ya está cerrada (FR-016, SC-009).
+
+### M. Cierre bloqueado por platos pendientes de cocina (FR-019)
+
+1. Crear una mesa con un pedido enviado y al menos un plato que cocina aún no haya marcado como
+   listo.
+2. Intentar cerrar la cuenta desde cuentas.
+3. **Esperado**: el cierre se bloquea, la mesa sigue abierta y la interfaz muestra los platos
+   pendientes.
+4. Pedir a cocina que marque esos platos como listos y reintentar el cierre.
+5. **Esperado**: el cierre se permite y la mesa vuelve a estar libre.
+
+### N. Reutilización de la mesa y conservación del histórico (FR-011, FR-012)
+
+1. Cerrar la cuenta de una mesa y comprobar que vuelve a aparecer como **libre** en sala.
+2. Abrir una nueva comanda sobre la misma mesa y añadir un plato.
+3. **Esperado**: se crea un pedido y una cuenta nuevos; la cuenta anterior no se reabre y sigue
+   disponible como histórico en la base.
+4. Consultar el ticket de la cuenta cerrada antes de abrir la nueva comanda; debe seguir siendo
+   consultable.
 
 ## Criterios de éxito a comprobar
 
@@ -139,11 +159,11 @@ código. No incluye código de implementación: los detalles están en
 - [ ] SC-002: cerrar la cuenta de una mesa se hace en menos de 2 minutos.
 - [ ] SC-003: en el 100 % de las cuentas divididas, la suma de las partes coincide exactamente con el total, incluso con redondeo.
 - [ ] SC-004: el ticket incluye el total y el desglose de cada parte con su importe en el 100 % de los cierres.
-- [ ] SC-005: una mesa cerrada rechaza el 100 % de las nuevas operaciones.
+- [ ] SC-005: una cuenta cerrada rechaza el 100 % de las nuevas operaciones; la mesa liberada permite abrir una nueva comanda. El cierre con platos pendientes se bloquea.
 - [ ] SC-006: completar la división entre varios comensales se hace en menos de 3 minutos.
-- [ ] SC-007: una cuenta dividida mantiene la mesa abierta hasta que el 100 % de sus partes están pagadas.
+- [ ] SC-007: una cuenta dividida mantiene la mesa ocupada hasta que el 100 % de sus partes están pagadas.
 - [ ] SC-008: en el 100 % de las cuentas divididas se genera un único ticket final al pagarse la última parte, y ninguno antes.
-- [ ] SC-009: el 100 % de las partes marcadas como pagadas puede volver a pendiente mientras la mesa esté abierta; ninguna mesa se cierra con partes pendientes.
+- [ ] SC-009: el 100 % de las partes marcadas como pagadas puede volver a pendiente mientras la cuenta esté abierta; ninguna cuenta se cierra con partes pendientes.
 
 ## Referencias
 

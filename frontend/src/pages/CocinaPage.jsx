@@ -7,7 +7,8 @@ import EstadoError from '../components/EstadoError.jsx';
 import EstadoSinPartida from '../components/EstadoSinPartida.jsx';
 import EstadoVacio from '../components/EstadoVacio.jsx';
 import PedidoCard from '../components/PedidoCard.jsx';
-import { obtenerCocinero, obtenerPedidosPendientes, marcarEstado } from '../services/api.js';
+import { useAuth } from '../auth/AuthContext.jsx';
+import { obtenerPedidosPendientes, marcarEstado } from '../services/api.js';
 import { suscribirAPartida, EVENTOS_COCINA } from '../services/events.js';
 
 const NOMBRES_PARTIDA = {
@@ -16,42 +17,32 @@ const NOMBRES_PARTIDA = {
   postres: 'Postres',
 };
 
-function resolverCocineroId(cocineroId) {
-  if (cocineroId) return cocineroId;
-  const parametro = new URLSearchParams(window.location.search).get('cocinero');
-  return parametro ?? 'cocinero-entrantes';
-}
-
-export default function CocinaPage({ cocineroId }) {
-  const id = resolverCocineroId(cocineroId);
-  const [cocinero, setCocinero] = useState(null);
+export default function CocinaPage() {
+  const { usuario } = useAuth();
+  const partida = usuario?.partida ?? null;
   const [pedidos, setPedidos] = useState([]);
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(Boolean(partida));
   const [error, setError] = useState(null);
   const [intento, setIntento] = useState(0);
   const [sinConexion, setSinConexion] = useState(false);
   const [errorAccion, setErrorAccion] = useState(null);
-  const [avisoCompletado, setAvisoCompletado] = useState(null);
+  const [avisosCompletados, setAvisosCompletados] = useState([]);
 
   useEffect(() => {
     let cancelado = false;
+
+    if (!partida) {
+      setPedidos([]);
+      setCargando(false);
+      return undefined;
+    }
 
     async function cargar() {
       setCargando(true);
       setError(null);
 
       try {
-        const datosCocinero = await obtenerCocinero(id);
-        if (cancelado) return;
-        setCocinero(datosCocinero);
-
-        if (!datosCocinero.partida) {
-          setPedidos([]);
-          setCargando(false);
-          return;
-        }
-
-        const datosPedidos = await obtenerPedidosPendientes(datosCocinero.partida);
+        const datosPedidos = await obtenerPedidosPendientes(partida);
         if (cancelado) return;
         setPedidos(datosPedidos);
         setCargando(false);
@@ -67,9 +58,7 @@ export default function CocinaPage({ cocineroId }) {
     return () => {
       cancelado = true;
     };
-  }, [id, intento]);
-
-  const partida = cocinero?.partida ?? null;
+  }, [partida, intento]);
 
   useEffect(() => {
     if (!partida) return undefined;
@@ -106,11 +95,21 @@ export default function CocinaPage({ cocineroId }) {
     setErrorAccion(null);
 
     try {
-      const resultado = await marcarEstado(pedido.id, linea.id, estado, partida);
-      const datosPedidos = await obtenerPedidosPendientes(partida);
-      setPedidos(datosPedidos);
+      const resultado = await marcarEstado(pedido.id, linea.id, estado);
       if (resultado?.pedidoCompletado) {
-        setAvisoCompletado({ pedidoId: pedido.id, lineaId: linea.id });
+        setAvisosCompletados((actuales) => {
+          const yaExiste = actuales.some(
+            (aviso) => aviso.pedidoId === pedido.id && aviso.lineaId === linea.id,
+          );
+          if (yaExiste) return actuales;
+          return [...actuales, { pedidoId: pedido.id, lineaId: linea.id }];
+        });
+      }
+      try {
+        const datosPedidos = await obtenerPedidosPendientes(partida);
+        setPedidos(datosPedidos);
+      } catch {
+        // El aviso ya está disponible aunque falle la recarga de la lista.
       }
     } catch (fallo) {
       setErrorAccion(fallo.message ?? 'No se pudo cambiar el estado del plato');
@@ -128,16 +127,23 @@ export default function CocinaPage({ cocineroId }) {
 
       {sinConexion && <AvisoSinConexion />}
 
-      {avisoCompletado && (
+      {avisosCompletados.map((aviso) => (
         <AvisoPedidoCompletado
-          pedidoId={avisoCompletado.pedidoId}
-          lineaId={avisoCompletado.lineaId}
+          key={`${aviso.pedidoId}-${aviso.lineaId}`}
+          pedidoId={aviso.pedidoId}
+          lineaId={aviso.lineaId}
           onDeshacer={({ pedidoId, lineaId }) =>
             cambiarEstado({ id: pedidoId }, { id: lineaId }, 'pendiente')
           }
-          onCerrar={() => setAvisoCompletado(null)}
+          onCerrar={() =>
+            setAvisosCompletados((actuales) =>
+              actuales.filter(
+                (item) => item.pedidoId !== aviso.pedidoId || item.lineaId !== aviso.lineaId,
+              ),
+            )
+          }
         />
-      )}
+      ))}
 
       {errorAccion && (
         <Alert status="error" borderRadius="md" mb={4}>

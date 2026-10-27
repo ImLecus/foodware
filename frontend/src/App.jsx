@@ -1,29 +1,43 @@
-import { Box, Flex, Heading, Link as ChakraLink, Spacer } from '@chakra-ui/react';
-import { Link, Route, Routes } from 'react-router-dom';
+import { Box, Center, Flex, Heading, Link as ChakraLink, Spacer, Spinner } from '@chakra-ui/react';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { useAuth } from './auth/AuthContext.jsx';
+import { inicioPorRol, modulosVisibles } from './auth/rutas.js';
 import Conexion from './components/Conexion.jsx';
+import RutaProtegida from './components/RutaProtegida.jsx';
+import UsuarioMenu from './components/UsuarioMenu.jsx';
+import CierreCuenta from './pages/CierreCuenta.jsx';
 import CocinaPage from './pages/CocinaPage.jsx';
-import Home from './pages/Home.jsx';
+import LoginPage from './pages/LoginPage.jsx';
 import Mesas from './pages/Mesas.jsx';
 import ModuloPendiente from './pages/ModuloPendiente.jsx';
 import PaginaDashboard from './pages/PaginaDashboard.jsx';
 import PaginaGestionCarta from './pages/PaginaGestionCarta.jsx';
-import RutaEncargado from './components/RutaEncargado.jsx';
+//import RutaEncargado from './components/RutaEncargado.jsx';
 import SalaEstado from './pages/SalaEstado.jsx';
 import SalaPage from './pages/SalaPage.jsx';
-import { ROL } from './services/sesion.js';
-
-const modulos = [
-  { ruta: '/sala', nombre: 'Sala' },
-  { ruta: '/sala/estado', nombre: 'Señales' },
-  { ruta: '/cocina', nombre: 'Cocina' },
-  { ruta: '/cuentas', nombre: 'Cuentas' },
-  { ruta: '/dashboard', nombre: 'Dashboard', rol: 'encargado' },
-  { ruta: '/admin', nombre: 'Carta' },
-];
-
-const modulosVisibles = modulos.filter((modulo) => !modulo.rol || modulo.rol === ROL);
 
 export default function App() {
+  const { usuario, cargando } = useAuth();
+
+  if (cargando) {
+    return (
+      <Center minH="100vh">
+        <Spinner size="xl" color="teal.500" />
+      </Center>
+    );
+  }
+
+  if (!usuario) {
+    return (
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
+  const modulos = modulosVisibles(usuario.rol);
+
   return (
     <Box minH="100vh">
       <Flex as="header" bg="white" borderBottomWidth="1px" px={6} py={3} align="center" gap={6}>
@@ -31,7 +45,7 @@ export default function App() {
           Foodware
         </Heading>
         <Flex as="nav" gap={4} fontSize="sm" fontWeight="medium">
-          {modulosVisibles.map((modulo) => (
+          {modulos.map((modulo) => (
             <ChakraLink as={Link} key={modulo.ruta} to={modulo.ruta} color="gray.700">
               {modulo.nombre}
             </ChakraLink>
@@ -39,22 +53,67 @@ export default function App() {
         </Flex>
         <Spacer />
         <Conexion />
+        <UsuarioMenu />
       </Flex>
 
       <Box as="main" px={6} py={8} maxW="6xl" mx="auto">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/sala" element={<Mesas />} />
-          <Route path="/sala/estado" element={<SalaEstado />} />
-          <Route path="/sala/platos" element={<SalaPage />} />
-          <Route path="/cocina" element={<CocinaPage />} />
-          <Route path="/cuentas" element={<ModuloPendiente nombre="Cuentas" />} />
+          <Route path="/" element={<Navigate to={inicioPorRol(usuario.rol)} replace />} />
+          <Route path="/login" element={<Navigate to={inicioPorRol(usuario.rol)} replace />} />
+          <Route
+            path="/sala"
+            element={
+              <RutaProtegida roles={['camarero']}>
+                <Mesas />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/sala/estado"
+            element={
+              <RutaProtegida roles={['camarero']}>
+                <SalaEstado />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/sala/platos"
+            element={
+              <RutaProtegida roles={['camarero']}>
+                <SalaPage />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/cuentas"
+            element={
+              <RutaProtegida roles={['camarero']}>
+                <CierreCuenta />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/cocina"
+            element={
+              <RutaProtegida roles={['cocinero']}>
+                <CocinaPage />
+              </RutaProtegida>
+            }
+          />
           <Route
             path="/dashboard"
             element={
-              <RutaEncargado>
+              <RutaProtegida roles={['encargado']}>
                 <PaginaDashboard />
-              </RutaEncargado>
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RutaProtegida roles={['administrador']}>
+                <ModuloPendiente nombre="Carta y administración" />
+              </RutaProtegida>
             }
           />
           <Route path="/admin" element={<PaginaGestionCarta />} />

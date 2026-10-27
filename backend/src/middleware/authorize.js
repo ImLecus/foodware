@@ -1,34 +1,21 @@
-export function requireRole(dbOrRole, ...rolesRest) {
-  // Soporte para ambas firmas:
-  // 1) requireRole(db, 'encargado') - estilo antiguo usado en tests
-  // 2) requireRole('administrador') - estilo nuevo HU08 (lee db de req.app.locals)
-  let db;
-  let rolesPermitidos = [];
+import { ErrorHttp } from './error.js';
 
-  if (dbOrRole && typeof dbOrRole.prepare === 'function') {
-    db = dbOrRole;
-    rolesPermitidos = rolesRest.filter(Boolean);
-  } else {
-    rolesPermitidos = [dbOrRole, ...rolesRest].filter(Boolean);
-  }
+/**
+ * Autoriza una petición ya autenticada según su rol de sesión.
+ * Sin usuario -> 401; rol no incluido -> 403.
+ */
+export function requireRole(...roles) {
+  return function autorizar(req, res, next) {
+    if (!req.usuario) {
+      next(new ErrorHttp(401, 'No autenticado', 'no_autenticado'));
+      return;
+    }
 
-  return (req, res, next) => {
-    const usuarioId = req.headers['x-usuario-id'];
-    if (!usuarioId) {
-      return res.status(401).json({ error: 'No autorizado' });
+    if (!roles.includes(req.usuario.rol)) {
+      next(new ErrorHttp(403, 'No tienes permisos para acceder a esta sección', 'sin_permiso'));
+      return;
     }
-    const dbActual = db || req.app?.locals?.db;
-    if (!dbActual) {
-      return res.status(500).json({ error: 'Error interno' });
-    }
-    const usuario = dbActual.prepare('SELECT id, rol FROM usuarios WHERE id = ?').get(usuarioId);
-    if (!usuario) {
-      return res.status(401).json({ error: 'No autorizado' });
-    }
-    if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(usuario.rol)) {
-      return res.status(403).json({ error: 'Prohibido' });
-    }
-    req.usuario = usuario;
+
     next();
   };
 }

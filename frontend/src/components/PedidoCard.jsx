@@ -13,6 +13,9 @@ import LineaPlato from './LineaPlato.jsx';
 import TiempoEspera from './TiempoEspera.jsx';
 
 export default function PedidoCard({ pedido, onMarcarListo, onDeshacer, deshabilitado = false }) {
+  const accionable = (linea) =>
+    !pedido.partida || !linea.partida || linea.partida === pedido.partida;
+
   return (
     <Card data-testid={`pedido-${pedido.id}`}>
       <CardBody>
@@ -28,8 +31,8 @@ export default function PedidoCard({ pedido, onMarcarListo, onDeshacer, deshabil
             <ListItem key={linea.id}>
               <LineaPlato
                 linea={linea}
-                onMarcarListo={onMarcarListo}
-                onDeshacer={onDeshacer}
+                onMarcarListo={accionable(linea) ? onMarcarListo : undefined}
+                onDeshacer={accionable(linea) ? onDeshacer : undefined}
                 deshabilitado={deshabilitado}
               />
             </ListItem>

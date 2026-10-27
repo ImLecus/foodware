@@ -1,12 +1,16 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CocinaPage from '../../src/pages/CocinaPage.jsx';
-import { marcarEstado, obtenerCocinero, obtenerPedidosPendientes } from '../../src/services/api.js';
+import { marcarEstado, obtenerPedidosPendientes } from '../../src/services/api.js';
+import {
+  ProveedorSesion,
+  USUARIO_COCINERO,
+  USUARIO_COCINERO_SIN_PARTIDA,
+} from '../helpers/auth.jsx';
 import { suscribirAPartida } from '../../src/services/events.js';
 
 vi.mock('../../src/services/api.js', () => ({
-  obtenerCocinero: vi.fn(),
   obtenerPedidosPendientes: vi.fn(),
   marcarEstado: vi.fn(),
 }));
@@ -21,10 +25,12 @@ vi.mock('../../src/services/events.js', () => ({
   suscribirAPartida: vi.fn(() => () => {}),
 }));
 
-function renderizar() {
+function renderizar(usuario = USUARIO_COCINERO) {
   return render(
     <ChakraProvider>
-      <CocinaPage cocineroId="cocinero-entrantes" />
+      <ProveedorSesion usuario={usuario}>
+        <CocinaPage />
+      </ProveedorSesion>
     </ChakraProvider>,
   );
 }
@@ -47,11 +53,6 @@ describe('CocinaPage (US1)', () => {
   });
 
   it('muestra solo los pedidos pendientes devueltos para la partida', async () => {
-    obtenerCocinero.mockResolvedValue({
-      id: 'cocinero-entrantes',
-      nombre: 'Marta',
-      partida: 'entrantes',
-    });
     obtenerPedidosPendientes.mockResolvedValue([pedido]);
 
     renderizar();
@@ -63,11 +64,6 @@ describe('CocinaPage (US1)', () => {
   });
 
   it('muestra el estado vacío cuando la partida no tiene pedidos', async () => {
-    obtenerCocinero.mockResolvedValue({
-      id: 'cocinero-entrantes',
-      nombre: 'Marta',
-      partida: 'entrantes',
-    });
     obtenerPedidosPendientes.mockResolvedValue([]);
 
     renderizar();
@@ -76,24 +72,13 @@ describe('CocinaPage (US1)', () => {
   });
 
   it('muestra el estado sin partida y no pide pedidos', async () => {
-    obtenerCocinero.mockResolvedValue({
-      id: 'cocinero-sin-partida',
-      nombre: 'Sin partida',
-      partida: null,
-    });
-
-    renderizar();
+    renderizar(USUARIO_COCINERO_SIN_PARTIDA);
 
     expect(await screen.findByText('No tienes una partida asignada')).toBeInTheDocument();
     expect(obtenerPedidosPendientes).not.toHaveBeenCalled();
   });
 
   it('marca un plato como listo desde la cocina', async () => {
-    obtenerCocinero.mockResolvedValue({
-      id: 'cocinero-entrantes',
-      nombre: 'Marta',
-      partida: 'entrantes',
-    });
     obtenerPedidosPendientes.mockResolvedValue([pedido]);
     marcarEstado.mockResolvedValue({ id: 'linea-1', estado: 'listo', pedidoCompletado: false });
 
@@ -102,9 +87,7 @@ describe('CocinaPage (US1)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Marcar listo' }));
 
-    await waitFor(() =>
-      expect(marcarEstado).toHaveBeenCalledWith('pedido-1', 'linea-1', 'listo', 'entrantes'),
-    );
+    await waitFor(() => expect(marcarEstado).toHaveBeenCalledWith('pedido-1', 'linea-1', 'listo'));
   });
 
   it('deshace la marca de un plato listo', async () => {
@@ -112,11 +95,6 @@ describe('CocinaPage (US1)', () => {
       ...pedido,
       lineas: [{ ...pedido.lineas[0], estado: 'listo', listoEn: '2026-10-20T10:05:00.000Z' }],
     };
-    obtenerCocinero.mockResolvedValue({
-      id: 'cocinero-entrantes',
-      nombre: 'Marta',
-      partida: 'entrantes',
-    });
     obtenerPedidosPendientes.mockResolvedValue([pedidoConListo]);
     marcarEstado.mockResolvedValue({ id: 'linea-1', estado: 'pendiente', listoEn: null });
 
@@ -127,16 +105,11 @@ describe('CocinaPage (US1)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
 
     await waitFor(() =>
-      expect(marcarEstado).toHaveBeenCalledWith('pedido-1', 'linea-1', 'pendiente', 'entrantes'),
+      expect(marcarEstado).toHaveBeenCalledWith('pedido-1', 'linea-1', 'pendiente'),
     );
   });
 
   it('bloquea el marcado cuando no hay conexión', async () => {
-    obtenerCocinero.mockResolvedValue({
-      id: 'cocinero-entrantes',
-      nombre: 'Marta',
-      partida: 'entrantes',
-    });
     obtenerPedidosPendientes.mockResolvedValue([pedido]);
 
     renderizar();
@@ -152,12 +125,90 @@ describe('CocinaPage (US1)', () => {
     expect(screen.getByRole('button', { name: 'Marcar listo' })).toBeDisabled();
   });
 
-  it('ofrece Deshacer tras completar el pedido y revierte la última marca', async () => {
-    obtenerCocinero.mockResolvedValue({
-      id: 'cocinero-entrantes',
-      nombre: 'Marta',
-      partida: 'entrantes',
+  it('muestra el aviso al completar la partida de un pedido mixto', async () => {
+    const pedidoMixto = {
+      ...pedido,
+      lineas: [
+        {
+          ...pedido.lineas[0],
+          id: 'linea-1',
+          nombrePlato: 'Croquetas',
+          partida: 'entrantes',
+        },
+        { ...pedido.lineas[0], id: 'linea-2', nombrePlato: 'Paella', partida: 'principales' },
+      ],
+    };
+    obtenerPedidosPendientes.mockResolvedValueOnce([pedidoMixto]).mockResolvedValueOnce([]);
+    marcarEstado.mockResolvedValue({
+      id: 'linea-1',
+      estado: 'listo',
+      pedidoCompletado: true,
     });
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+
+    const botones = screen.getAllByRole('button', { name: 'Marcar listo' });
+    expect(botones).toHaveLength(1);
+    fireEvent.click(botones[0]);
+
+    expect(await screen.findByText('Pedido completado')).toBeInTheDocument();
+  });
+
+  it('no ofrece marcar ni deshacer líneas de otra partida', async () => {
+    const pedidoMixto = {
+      ...pedido,
+      partida: 'entrantes',
+      lineas: [
+        { ...pedido.lineas[0], id: 'linea-1', partida: 'entrantes' },
+        { ...pedido.lineas[0], id: 'linea-2', nombrePlato: 'Paella', partida: 'principales' },
+      ],
+    };
+    obtenerPedidosPendientes.mockResolvedValue([pedidoMixto]);
+
+    renderizar();
+    await screen.findByText('Mesa 1');
+
+    const botones = screen.getAllByRole('button', { name: 'Marcar listo' });
+    expect(botones).toHaveLength(1);
+    fireEvent.click(botones[0]);
+
+    await waitFor(() => expect(marcarEstado).toHaveBeenCalledWith('pedido-1', 'linea-1', 'listo'));
+  });
+
+  it('mantiene dos avisos de completado consecutivos sin cerrar el primero', async () => {
+    const segundoPedido = {
+      ...pedido,
+      id: 'pedido-2',
+      mesa: 2,
+      lineas: [{ ...pedido.lineas[0], id: 'linea-2' }],
+    };
+    obtenerPedidosPendientes
+      .mockResolvedValueOnce([pedido, segundoPedido])
+      .mockResolvedValueOnce([segundoPedido])
+      .mockResolvedValueOnce([]);
+    marcarEstado.mockResolvedValue({ pedidoCompletado: true });
+
+    renderizar();
+    await screen.findByTestId('pedido-pedido-1');
+
+    fireEvent.click(
+      within(screen.getByTestId('pedido-pedido-1')).getByRole('button', {
+        name: 'Marcar listo',
+      }),
+    );
+    await screen.findByText('Pedido completado');
+
+    fireEvent.click(
+      within(screen.getByTestId('pedido-pedido-2')).getByRole('button', {
+        name: 'Marcar listo',
+      }),
+    );
+
+    await waitFor(() => expect(screen.getAllByText('Pedido completado')).toHaveLength(2));
+  });
+
+  it('ofrece Deshacer tras completar el pedido y revierte la última marca', async () => {
     obtenerPedidosPendientes
       .mockResolvedValueOnce([pedido])
       .mockResolvedValueOnce([])
@@ -175,12 +226,7 @@ describe('CocinaPage (US1)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
 
     await waitFor(() =>
-      expect(marcarEstado).toHaveBeenLastCalledWith(
-        'pedido-1',
-        'linea-1',
-        'pendiente',
-        'entrantes',
-      ),
+      expect(marcarEstado).toHaveBeenLastCalledWith('pedido-1', 'linea-1', 'pendiente'),
     );
   });
 });
