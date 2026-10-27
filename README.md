@@ -255,6 +255,10 @@ actualizándose por SSE sin recargar.
 | `GET`  | `/api/mesas/{mesaId}/estado-platos`               | Platos de la mesa con estado y `listoEn`           |
 | `GET`  | `/api/mesas/{mesaId}/eventos`                      | Canal SSE de la mesa para la pantalla de sala      |
 
+La guía de validación y el mapa de requisitos están en
+[`specs/004-marcar_listos/quickstart.md`](specs/004-marcar_listos/quickstart.md) y
+[`specs/004-marcar_listos/verification.md`](specs/004-marcar_listos/verification.md).
+
 ## Sala: señales de platos listos (historia 005)
 
 La vista `/sala/estado` muestra todas las mesas abiertas con los platos de su comanda **ya

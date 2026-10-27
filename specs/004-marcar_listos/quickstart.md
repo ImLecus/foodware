@@ -63,7 +63,8 @@ cd frontend && npm test
 
 Las pruebas cubren la regla de negocio de marcar/deshacer (idempotencia y momento único), el aviso
 temporal con «Deshacer» (duración mínima y reversión del pedido completado), los contratos REST
-(`contracts/openapi.yaml`) y los flujos de la pantalla de cocina y de sala.
+(`contracts/openapi.yaml`) y los flujos de la pantalla de cocina y de sala. El mapa de requisitos a
+pruebas está en [`verification.md`](./verification.md).
 
 ## Fuera de alcance de esta guía
 
