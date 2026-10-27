@@ -60,8 +60,9 @@ export class CartaService {
       .prepare('INSERT INTO platos (id, nombre, partida_codigo, precio_centimos, activo) VALUES (?, ?, ?, ?, ?)')
       .run(id, nombre, partida_codigo, precio_centimos, activo ? 1 : 0);
     if (Array.isArray(ingredienteIds) && ingredienteIds.length > 0) {
+      const unicos = [...new Set(ingredienteIds)];
       const stmt = this.db.prepare('INSERT INTO plato_ingredientes (plato_id, ingrediente_id) VALUES (?, ?)');
-      for (const iid of ingredienteIds) {
+      for (const iid of unicos) {
         const ing = this.db.prepare('SELECT id FROM ingredientes WHERE id = ?').get(iid);
         if (ing) stmt.run(id, iid);
       }
@@ -96,8 +97,9 @@ export class CartaService {
       const tx = this.db.transaction((ids) => {
         this.db.prepare('DELETE FROM plato_ingredientes WHERE plato_id = ?').run(id);
         if (!Array.isArray(ids) || ids.length === 0) return;
+        const unicos = [...new Set(ids)];
         const stmt = this.db.prepare('INSERT INTO plato_ingredientes (plato_id, ingrediente_id) VALUES (?, ?)');
-        for (const iid of ids) {
+        for (const iid of unicos) {
           const ing = this.db.prepare('SELECT id FROM ingredientes WHERE id = ?').get(iid);
           if (ing) stmt.run(id, iid);
         }
@@ -132,5 +134,37 @@ export class CartaService {
         precio: Number((plato.precio_centimos || 0) / 100),
       };
     });
+  }
+
+  crearIngrediente({ nombre, estado = 'disponible' }) {
+    const id = randomUUID();
+    this.db.prepare('INSERT INTO ingredientes (id, nombre, estado) VALUES (?, ?, ?)').run(id, nombre, estado);
+    return this.db.prepare('SELECT * FROM ingredientes WHERE id = ?').get(id);
+  }
+
+  actualizarIngrediente(id, datos) {
+    const campos = [];
+    const valores = [];
+    if (datos.nombre !== undefined) {
+      campos.push('nombre = ?');
+      valores.push(datos.nombre);
+    }
+    if (datos.estado !== undefined) {
+      campos.push('estado = ?');
+      valores.push(datos.estado);
+    }
+    if (campos.length > 0) {
+      valores.push(id);
+      this.db.prepare(`UPDATE ingredientes SET ${campos.join(', ')} WHERE id = ?`).run(...valores);
+    }
+    return this.db.prepare('SELECT * FROM ingredientes WHERE id = ?').get(id);
+  }
+
+  listarIngredientes() {
+    return this.db.prepare('SELECT * FROM ingredientes ORDER BY nombre').all();
+  }
+
+  obtenerIngrediente(id) {
+    return this.db.prepare('SELECT * FROM ingredientes WHERE id = ?').get(id);
   }
 }

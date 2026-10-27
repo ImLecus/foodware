@@ -34,6 +34,12 @@ export const crearPlatoSchema = z
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'El precio debe ser mayor que 0' });
       return;
     }
+    if (Array.isArray(data.ingredienteIds)) {
+      if (new Set(data.ingredienteIds).size !== data.ingredienteIds.length) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Datos inválidos' });
+        return;
+      }
+    }
   })
   .transform((data) => {
     const partida_codigo = data.partida || data.partida_codigo;
@@ -45,7 +51,7 @@ export const crearPlatoSchema = z
       partida_codigo,
       precio_centimos,
       activo: data.activo,
-      ingredienteIds: data.ingredienteIds || [],
+      ingredienteIds: Array.isArray(data.ingredienteIds) ? [...new Set(data.ingredienteIds)] : [],
     };
   });
 
@@ -76,13 +82,19 @@ export const actualizarPlatoSchema = z
         return;
       }
     }
+    if (Array.isArray(data.ingredienteIds)) {
+      if (new Set(data.ingredienteIds).size !== data.ingredienteIds.length) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Datos inválidos' });
+        return;
+      }
+    }
   })
   .transform((data) => {
     const res = {};
     if (data.nombre !== undefined) res.nombre = data.nombre;
     if (data.partida || data.partida_codigo) res.partida_codigo = data.partida || data.partida_codigo;
     if (data.activo !== undefined) res.activo = data.activo;
-    if (data.ingredienteIds !== undefined) res.ingredienteIds = data.ingredienteIds;
+    if (data.ingredienteIds !== undefined) res.ingredienteIds = Array.isArray(data.ingredienteIds) ? [...new Set(data.ingredienteIds)] : [];
     const p = data.precio_centimos !== undefined ? data.precio_centimos : data.precio;
     if (p !== undefined) {
       let pn = typeof p === 'string' ? Number(String(p).replace(',', '.')) : p;
