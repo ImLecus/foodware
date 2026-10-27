@@ -127,9 +127,119 @@ Cada historia tiene su especificación, plan y tareas en `specs/00X-.../`. Para 
   revisión y commit antes de continuar.
 - Toda funcionalidad debe incluir pruebas automatizadas.
 
+## Sala: abrir mesa y tomar pedido (historia 001)
+
+La pantalla de sala (`/sala`) implementa el flujo completo de la historia 001:
+
+1. **Abrir mesa**: al seleccionar una mesa libre aparece el botón «Abrir Mesa N». La mesa pasa a
+   `ocupada` y se crea su pedido `en_curso`.
+2. **Añadir platos**: desde la carta se añade cada plato con su cantidad; se permiten repeticiones.
+3. **Agrupación automática**: el pedido se muestra agrupado en entrantes, principales y postres.
+4. **Ajustar antes de confirmar**: se puede cambiar la cantidad o retirar cualquier línea.
+5. **Confirmar**: el pedido pasa a `enviada`, queda vinculado a su mesa y se publica el evento SSE
+   `pedido-confirmado` con el pedido agrupado por partidas.
+6. **Anular**: con el pedido en curso, «Anular pedido» pide confirmación, elimina el pedido y sus
+   líneas, deja la mesa `libre` y publica `pedido-anulado`. No se envía nada a cocina.
+7. **Sin conexión**: si se pierde el SSE, la pantalla lo avisa y bloquea la edición y la
+   confirmación, conservando lo anotado.
+
+### API de la historia 001
+
+| Método   | Ruta                                 | Descripción                                         |
+| -------- | ------------------------------------ | --------------------------------------------------- |
+| `GET`    | `/api/mesas`                         | Mesas con su estado y `pedido_en_curso_id`          |
+| `POST`   | `/api/mesas/{mesaId}/abrir`          | Abre la mesa y crea el pedido (`409` si ya hay uno) |
+| `GET`    | `/api/platos`                        | Carta vigente (platos disponibles)                  |
+| `GET`    | `/api/pedidos/{id}`                  | Pedido con líneas y `por_partida`                   |
+| `POST`   | `/api/pedidos/{id}/lineas`           | Añade un plato con cantidad                         |
+| `PATCH`  | `/api/pedidos/{id}/lineas/{lineaId}` | Ajusta la cantidad                                  |
+| `DELETE` | `/api/pedidos/{id}/lineas/{lineaId}` | Retira el plato                                     |
+| `POST`   | `/api/pedidos/{id}/confirmar`        | Confirma y devuelve el pedido agrupado              |
+| `POST`   | `/api/pedidos/{id}/anular`           | Anula el pedido en curso y libera la mesa           |
+
+La identidad del camarero se toma de la cabecera `X-Camarero-Id` (por defecto `camarero-1`, que
+existe en los datos de ejemplo); el inicio de sesión queda fuera del alcance de esta historia.
+El contrato completo está en
+[`specs/001-comandas/contracts/openapi.yaml`](specs/001-comandas/contracts/openapi.yaml) y la
+validación manual en [`specs/001-comandas/quickstart.md`](specs/001-comandas/quickstart.md).
+
+## Editar pedidos enviados (historia 002)
+
+Sobre la pantalla de sala, al seleccionar un pedido en estado `enviada` aparece el botón
+**Editar pedido**, que abre el editor:
+
+1. **Edición directa**: no hay que "reabrir" nada; al entrar se toma el bloqueo de edición.
+2. **Añadir, retirar y ajustar**: se pueden añadir platos de la carta, cambiar cantidades, corregir
+   indicaciones y retirar líneas (nunca la última). Cada cambio se aplica al mismo pedido y a la
+   misma mesa, y lo marca como **Modificada** con **Cambios pendientes**.
+3. **Enviar cambios**: los cambios no se comunican a cocina hasta pulsar explícitamente
+   **Enviar cambios**; entonces se publica el evento SSE `pedido-modificado`.
+4. **Bloqueo**: solo un camarero puede editar el pedido a la vez. Si otro lo tiene, la API responde
+   `423 pedido_bloqueado`. Si el bloqueo caduca por inactividad, al guardar se responde
+   `409 bloqueo_expirado` y el editor ofrece **Reabrir edición**.
+5. **Liberación**: el bloqueo se libera al enviar los cambios, al cancelar o salir del editor y
+   automáticamente tras `BLOQUEO_INACTIVIDAD_MINUTOS` (15 por defecto) sin actividad.
+
+### API de la historia 002
+
+| Método   | Ruta                               | Descripción                                                    |
+| -------- | ---------------------------------- | -------------------------------------------------------------- |
+| `GET`    | `/api/pedidos/{id}/editar`         | Estado del bloqueo (`libre`, `bloqueado`, `expirado`)          |
+| `POST`   | `/api/pedidos/{id}/editar`         | Toma el bloqueo (`423` si es de otro, `409` si no es editable) |
+| `DELETE` | `/api/pedidos/{id}/editar`         | Libera el bloqueo (idempotente)                                |
+| `POST`   | `/api/pedidos/{id}/enviar-cambios` | Comunica los cambios a cocina y libera el bloqueo              |
+| `GET`    | `/api/pedidos/{id}`                | Incluye `modificada`, `cambios_pendientes` y el bloqueo        |
+
+Los endpoints de líneas (`POST`/`PATCH`/`DELETE`) admiten pedidos `enviada` cuando el camarero
+tiene el bloqueo. Detalles en
+[`specs/002-editar-comanda/quickstart.md`](specs/002-editar-comanda/quickstart.md) y
+[`specs/002-editar-comanda/contracts/openapi.yaml`](specs/002-editar-comanda/contracts/openapi.yaml).
+
+## Verificación de la historia 003
+
+```bash
+docker compose up --build
+docker compose exec backend npm run seed
+
+# API
+curl http://localhost:3000/api/cocineros/cocinero-entrantes
+curl http://localhost:3000/api/partidas/entrantes/pedidos-pendientes
+curl -N http://localhost:3000/api/partidas/entrantes/eventos
+
+# Interfaz
+# http://localhost:5173/cocina?cocinero=cocinero-entrantes
+
+# Pruebas
+npm test
+```
+
+La vista de cocina identifica al cocinero con `?cocinero=<id>` (por defecto
+`cocinero-entrantes`). El canal SSE se abre por partida y refresca la lista sin recargar.
+
+## Cocina: marcar platos como listos (historia 004)
+
+La pantalla de cocina (`/cocina?cocinero=cocinero-entrantes`) permite marcar cada plato como
+**listo** o **deshacer** la marca. Al completar el último plato de un pedido, el pedido desaparece y
+aparece un aviso «Pedido completado» con la acción «Deshacer» durante 10 segundos.
+
+La pantalla de sala de una mesa está en `/sala/platos?mesa=mesa-1` y muestra el estado de los platos,
+actualizándose por SSE sin recargar.
+
+### API de la historia 004
+
+| Método | Ruta                                              | Descripción                                        |
+| ------ | ------------------------------------------------- | -------------------------------------------------- |
+| `PUT`  | `/api/pedidos/{pedidoId}/lineas/{lineaId}/estado` | Marca o deshace (`listo`/`pendiente`); idempotente |
+| `GET`  | `/api/mesas/{mesaId}/estado-platos`               | Platos de la mesa con estado y `listoEn`           |
+
 ## Alcance actual
 
-Este incremento implementa **solo el esqueleto compartido**: estructura, Docker, configuración,
-conexión a SQLite, migración base, hub SSE, cliente HTTP/SSE, tema, rutas provisionales y pruebas
-de humo. **No implementa** todavía los flujos de las historias 001–008; eso corresponde a las
-tareas de cada `tasks.md`.
+- Esqueleto compartido: estructura, Docker, SQLite, hub SSE, cliente HTTP/SSE, tema y pruebas de
+  humo.
+- Historia **001**: abrir mesa y tomar pedido, con anulación y sin conexión.
+- Historia **002**: edición de pedidos enviados, bloqueo y envío explícito de cambios.
+- Historia **003**: pedidos pendientes por partida, tiempo de espera, detalle de platos, marcado
+  accesible, aviso «Modificado», actualización en vivo, sin conexión y reintento.
+- Historia **004**: marcar/deshacer platos como listos, aviso «Pedido completado» con «Deshacer»,
+  reflejo en sala y canal SSE.
+- Las historias `005`–`008` siguen pendientes.
