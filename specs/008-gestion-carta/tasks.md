@@ -131,8 +131,8 @@ comprobar que el plato desaparece de la carta de sala sin que el administrador l
 
 ### Implementación de la US3
 
-- [ ] T042 [US3] Ampliar los esquemas zod con nombre/estado de ingrediente e `ingredienteIds` (existencia y sin duplicados) en `backend/src/api/cartaSchemas.js`
-- [ ] T043 [US3] Implementar el alta y la edición de ingredientes (`crearIngrediente`, `actualizarIngrediente`) en `backend/src/services/cartaService.js`
+- [X] T042 [US3] Ampliar los esquemas zod con nombre/estado de ingrediente e `ingredienteIds` (existencia y sin duplicados) en `backend/src/api/cartaSchemas.js`
+- [X] T043 [US3] Implementar el alta y la edición de ingredientes (`crearIngrediente`, `actualizarIngrediente`) en `backend/src/services/cartaService.js`
 - [X] T044 [US3] Implementar la asociación N:M mediante `ingredienteIds` (sustitución del conjunto completo) en `backend/src/services/cartaService.js`
 - [X] T045 [US3] Implementar los endpoints `GET/PATCH /api/admin/ingredientes` en `backend/src/api/cartaAdminRouter.js`
 - [X] T046 [US3] Implementar el endpoint `POST /api/admin/ingredientes` y completar `PATCH` con nombre y estado en `backend/src/api/cartaAdminRouter.js`
