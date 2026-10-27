@@ -1,4 +1,5 @@
 import { listarMesasAbiertasParaSala } from '../db/mesas.js';
+import { obtenerAvisoActivoDeMesa } from './avisos.js';
 import { aISO } from '../utils/fechas.js';
 
 function aISOFecha(valor) {
@@ -31,7 +32,7 @@ export function obtenerInstantaneaSala(db) {
       en_curso: Boolean(pedidoEnCurso),
       enviada: Boolean(pedidoEnviado),
       completa,
-      aviso: null,
+      aviso: obtenerAvisoActivoDeMesa(db, mesa.id),
       platos,
     };
   });

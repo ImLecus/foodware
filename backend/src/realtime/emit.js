@@ -28,11 +28,8 @@ export function emitirAvisoActivo({ avisoId, mesaId, generadoEn }) {
   });
 }
 
-export function emitirAvisoRetirado({ avisoId, mesaId }) {
-  publicar('aviso.retirado', {
-    aviso_id: avisoId,
-    mesa_id: mesaId,
-  });
+export function emitirAvisoRetirado({ mesaId }) {
+  publicar('aviso.retirado', { mesa_id: mesaId });
 }
 
 export function emitirAvisoDescartado({ avisoId, mesaId, descartadoEn }) {

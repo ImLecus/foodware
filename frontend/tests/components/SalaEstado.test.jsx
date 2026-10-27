@@ -57,9 +57,73 @@ describe('SalaEstado', () => {
     renderizar();
 
     expect(screen.getByText('Mesa 1')).toBeInTheDocument();
-    expect(screen.getByText('Croquetas')).toBeInTheDocument();
+    expect(screen.getByText(/Croquetas/)).toBeInTheDocument();
     expect(screen.getByText('Listo')).toBeInTheDocument();
     expect(screen.getByText('Pendiente')).toBeInTheDocument();
+  });
+
+  it('muestra el aviso de la mesa completa y su control de sonido', () => {
+    useSala.mockReturnValue({
+      mesas: [
+        {
+          id: 'mesa-1',
+          identificador: 'Mesa 1',
+          abierta: true,
+          completa: true,
+          aviso: {
+            id: 'aviso-1',
+            mesa_id: 'mesa-1',
+            estado: 'activo',
+            generado_en: '2026-10-27T09:00:00.000Z',
+          },
+          platos: [
+            { id: 'l1', nombre: 'Croquetas', cantidad: 1, partida: 'entrantes', estado: 'listo' },
+          ],
+        },
+      ],
+      cargando: false,
+      error: null,
+      sinConexion: false,
+      silenciado: false,
+      alternarSonido: vi.fn(),
+      descartarAviso: vi.fn(),
+    });
+
+    renderizar();
+
+    const alerta = screen.getByRole('alert');
+    expect(alerta).toHaveTextContent('Mesa completa');
+    expect(alerta).toHaveTextContent('Mesa 1');
+    expect(screen.getByRole('button', { name: 'Silenciar sonido' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Descartar aviso' })).toBeInTheDocument();
+  });
+
+  it('mantiene la vista de platos y no muestra avisos descartados', () => {
+    useSala.mockReturnValue({
+      mesas: [
+        {
+          id: 'mesa-1',
+          identificador: 'Mesa 1',
+          abierta: true,
+          completa: true,
+          aviso: null,
+          platos: [
+            { id: 'l1', nombre: 'Croquetas', cantidad: 1, partida: 'entrantes', estado: 'listo' },
+          ],
+        },
+      ],
+      cargando: false,
+      error: null,
+      sinConexion: false,
+      silenciado: false,
+      alternarSonido: vi.fn(),
+      descartarAviso: vi.fn(),
+    });
+
+    renderizar();
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByText(/Croquetas/)).toBeInTheDocument();
   });
 
   it('muestra un estado vacío cuando no hay mesas abiertas', () => {

@@ -104,24 +104,24 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T033 [P] [US2] Test unitario del ciclo de vida del aviso (completitud, creación, retirada al revertir, recálculo tras editar la comanda enviada —añadir un plato pendiente retira el aviso, los platos listos no tocados siguen listos—, mesa sin líneas enviadas, varias mesas completas a la vez) en `backend/tests/unit/avisos.test.js`
-- [ ] T034 [P] [US2] Test de contrato de los eventos SSE `aviso.activo` y `aviso.retirado` en `backend/tests/contract/avisos-eventos.test.js`
-- [ ] T035 [P] [US2] Test del control de sonido (activado por defecto, suena una vez, silencio/reactivación y persistencia) en `frontend/tests/components/AvisoMesa.sonido.test.jsx`
-- [ ] T036 [P] [US2] Test de componente de `AvisoMesa` (señal visual persistente, identifica la mesa) en `frontend/tests/components/AvisoMesa.test.jsx`
+- [x] T033 [P] [US2] Test unitario del ciclo de vida del aviso (completitud, creación, retirada al revertir, recálculo tras editar la comanda enviada —añadir un plato pendiente retira el aviso, los platos listos no tocados siguen listos—, mesa sin líneas enviadas, varias mesas completas a la vez) en `backend/tests/unit/avisos.test.js`
+- [x] T034 [P] [US2] Test de contrato de los eventos SSE `aviso.activo` y `aviso.retirado` en `backend/tests/contract/avisos-eventos.test.js`
+- [x] T035 [P] [US2] Test del control de sonido (activado por defecto, suena una vez, silencio/reactivación y persistencia) en `frontend/tests/components/AvisoMesa.sonido.test.jsx`
+- [x] T036 [P] [US2] Test de componente de `AvisoMesa` (señal visual persistente, identifica la mesa) en `frontend/tests/components/AvisoMesa.test.jsx`
 
 ### Implementation for User Story 2
 
-- [ ] T037 [US2] Implementar el acceso a la tabla `avisos` (aviso vigente por mesa, alta de aviso) en `backend/src/db/avisos.js`
-- [ ] T038 [US2] Implementar el servicio de avisos (cálculo de completitud, creación/retirada del aviso) en `backend/src/services/avisos.js`
-- [ ] T039 [US2] Integrar la creación/retirada del aviso en el cambio de estado de línea y difundir `aviso.activo`/`aviso.retirado` (con la convención `punto.minuscula` de `realtime/emit.js`) en `backend/src/services/estadoLinea.js` y `backend/src/realtime/emit.js`
-- [ ] T040 [US2] Incluir el aviso vigente y `completa` en la instantánea de sala en `backend/src/services/salaMesas.js`
-- [ ] T041 [US2] Recalcular la completitud y crear/retirar el aviso al editar una comanda ya enviada (añadir, cambiar o retirar un plato), reutilizando el cálculo de T038 y difundiendo `aviso.activo`/`aviso.retirado` cuando proceda en `backend/src/services/avisos.js`
-- [ ] T042 [US2] Ampliar el punto de integración existente de la historia 002 `POST /api/pedidos/:pedidoId/enviar-cambios` en `backend/src/routes/pedidos.js` para recalcular la completitud de la mesa al confirmar los cambios (no en cada añadir/cambiar/retirar) y emitir `aviso.activo`/`aviso.retirado` cuando proceda, reutilizando el servicio de avisos de T038
-- [ ] T043 [P] [US2] Implementar la señal sonora (pitido una vez por aviso) en `frontend/src/utils/sonido.js`
-- [ ] T044 [US2] Implementar el componente `AvisoMesa` (señal visual destacada + control de sonido + acción de descartar) en `frontend/src/components/AvisoMesa.jsx`
-- [ ] T045 [US2] Gestionar los eventos SSE de aviso y la señal sonora una sola vez en `frontend/src/hooks/useSala.js`
-- [ ] T046 [US2] Renderizar el aviso y el control de sonido en la vista de sala en `frontend/src/pages/SalaEstado.jsx`
-- [ ] T047 [US2] Test de integración del recálculo tras editar una comanda enviada (añadir un plato pendiente retira el aviso y la mesa deja de estar completa; al marcarlo listo se genera un aviso nuevo) en `backend/tests/integration/sala-edicion.test.js`
+- [x] T037 [US2] Implementar el acceso a la tabla `avisos` (aviso vigente por mesa, alta de aviso) en `backend/src/db/avisos.js`
+- [x] T038 [US2] Implementar el servicio de avisos (cálculo de completitud, creación/retirada del aviso) en `backend/src/services/avisos.js`
+- [x] T039 [US2] Integrar la creación/retirada del aviso en el cambio de estado de línea y difundir `aviso.activo`/`aviso.retirado` (con la convención `punto.minuscula` de `realtime/emit.js`) en `backend/src/services/estadoLinea.js` y `backend/src/realtime/emit.js`
+- [x] T040 [US2] Incluir el aviso vigente y `completa` en la instantánea de sala en `backend/src/services/salaMesas.js`
+- [x] T041 [US2] Recalcular la completitud y crear/retirar el aviso al editar una comanda ya enviada (añadir, cambiar o retirar un plato), reutilizando el cálculo de T038 y difundiendo `aviso.activo`/`aviso.retirado` cuando proceda en `backend/src/services/avisos.js`
+- [x] T042 [US2] Ampliar el punto de integración existente de la historia 002 `POST /api/pedidos/:pedidoId/enviar-cambios` en `backend/src/routes/pedidos.js` para recalcular la completitud de la mesa al confirmar los cambios (no en cada añadir/cambiar/retirar) y emitir `aviso.activo`/`aviso.retirado` cuando proceda, reutilizando el servicio de avisos de T038
+- [x] T043 [P] [US2] Implementar la señal sonora (pitido una vez por aviso) en `frontend/src/utils/sonido.js`
+- [x] T044 [US2] Implementar el componente `AvisoMesa` (señal visual destacada + control de sonido + acción de descartar) en `frontend/src/components/AvisoMesa.jsx`
+- [x] T045 [US2] Gestionar los eventos SSE de aviso y la señal sonora una sola vez en `frontend/src/hooks/useSala.js`
+- [x] T046 [US2] Renderizar el aviso y el control de sonido en la vista de sala en `frontend/src/pages/SalaEstado.jsx`
+- [x] T047 [US2] Test de integración del recálculo tras editar una comanda enviada (añadir un plato pendiente retira el aviso y la mesa deja de estar completa; al marcarlo listo se genera un aviso nuevo) en `backend/tests/integration/sala-edicion.test.js`
 
 **Checkpoint**: User Stories 1 y 2 funcionan de forma independiente
 

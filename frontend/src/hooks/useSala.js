@@ -1,18 +1,35 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { obtenerMesasSala } from '../services/api.js';
 import { suscribirASala } from '../services/realtime.js';
+import { guardarSilenciado, leerSilenciado, reproducirPitido } from '../utils/sonido.js';
 
 export function useSala() {
   const [mesas, setMesas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [sinConexion, setSinConexion] = useState(false);
+  const [silenciado, setSilenciado] = useState(() => leerSilenciado());
   const mesasRef = useRef([]);
+  const silenciadoRef = useRef(silenciado);
+  const avisosSonados = useRef(new Set());
+
+  useEffect(() => {
+    silenciadoRef.current = silenciado;
+  }, [silenciado]);
 
   const actualizarMesas = useCallback((siguiente) => {
     const lista = Array.isArray(siguiente) ? siguiente : [];
     mesasRef.current = lista;
     setMesas(lista);
+  }, []);
+
+  const alternarSonido = useCallback(() => {
+    setSilenciado((actual) => {
+      const siguiente = !actual;
+      silenciadoRef.current = siguiente;
+      guardarSilenciado(siguiente);
+      return siguiente;
+    });
   }, []);
 
   const recargar = useCallback(async () => {
@@ -57,7 +74,24 @@ export function useSala() {
           return;
         }
 
-        if (nombre === 'aviso.activo' || nombre === 'aviso.retirado' || nombre === 'aviso.descartado') {
+        if (nombre === 'aviso.activo') {
+          const avisoId = datos?.aviso_id;
+          if (
+            avisoId &&
+            !silenciadoRef.current &&
+            !avisosSonados.current.has(avisoId)
+          ) {
+            avisosSonados.current.add(avisoId);
+            reproducirPitido();
+          }
+          recargar();
+          return;
+        }
+
+        if (nombre === 'aviso.retirado' || nombre === 'aviso.descartado') {
+          if (datos?.aviso_id) {
+            avisosSonados.current.delete(datos.aviso_id);
+          }
           recargar();
           return;
         }
@@ -86,6 +120,8 @@ export function useSala() {
     cargando,
     error,
     sinConexion,
+    silenciado,
+    alternarSonido,
     descartarAviso,
     recargar,
   };

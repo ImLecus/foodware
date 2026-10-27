@@ -1,4 +1,5 @@
-import { Box, Grid, Heading, Text } from '@chakra-ui/react';
+import { Box, Grid, Heading, Stack, Text } from '@chakra-ui/react';
+import AvisoMesa from '../components/AvisoMesa.jsx';
 import AvisoSinConexion from '../components/AvisoSinConexion.jsx';
 import EstadoCarga from '../components/EstadoCarga.jsx';
 import EstadoVacio from '../components/EstadoVacio.jsx';
@@ -6,7 +7,10 @@ import MesaCard from '../components/MesaCard.jsx';
 import { useSala } from '../hooks/useSala.js';
 
 export default function SalaEstado() {
-  const { mesas, cargando, error, sinConexion } = useSala();
+  const { mesas, cargando, error, sinConexion, silenciado, alternarSonido, descartarAviso } =
+    useSala();
+
+  const avisos = mesas.filter((mesa) => mesa.aviso);
 
   return (
     <Box>
@@ -18,6 +22,20 @@ export default function SalaEstado() {
       </Text>
 
       {sinConexion && <AvisoSinConexion />}
+
+      {avisos.length > 0 && (
+        <Stack spacing={3} mb={6} aria-label="Avisos de mesas completas">
+          {avisos.map((mesa) => (
+            <AvisoMesa
+              key={mesa.aviso.id}
+              mesa={mesa}
+              silenciado={silenciado}
+              onAlternarSonido={alternarSonido}
+              onDescartar={() => descartarAviso?.(mesa.aviso.id)}
+            />
+          ))}
+        </Stack>
+      )}
 
       {cargando && <EstadoCarga />}
 
