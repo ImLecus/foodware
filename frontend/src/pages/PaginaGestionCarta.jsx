@@ -1,27 +1,25 @@
-import { Box, Button, Heading, Spinner, Stack } from '@chakra-ui/react';
+import { Box, Button, Heading, Spinner, Stack, Alert, AlertIcon, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import FormularioPlato from '../components/FormularioPlato.jsx';
 import TablaPlatos from '../components/TablaPlatos.jsx';
 import { actualizarPlato, crearPlato, obtenerCartaAdmin } from '../services/cartaClient.js';
-
-const cabecerasSesion = () => {
-  const usuarioId = import.meta.env.VITE_USUARIO_ID || 'admin-1';
-  return { 'x-usuario-id': usuarioId };
-};
+import { USUARIO_ID } from '../services/sesion.js';
 
 export default function PaginaGestionCarta() {
   const [platos, setPlatos] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [platoEditando, setPlatoEditando] = useState(null);
 
   const cargar = async () => {
     setCargando(true);
+    setError(null);
     try {
       const datos = await obtenerCartaAdmin(cabecerasSesion());
       setPlatos(datos);
     } catch (e) {
-      // mantener estado
+      setError('No se pudo cargar la carta. Comprueba que el backend esté en http://localhost:3000');
     } finally {
       setCargando(false);
     }
@@ -37,16 +35,26 @@ export default function PaginaGestionCarta() {
     cargar();
   };
 
-  const handleActualizar = async (datos) => {
-    await actualizarPlato(platoEditando.id, datos, cabecerasSesion());
-    setPlatoEditando(null);
-    cargar();
-  };
+const cabecerasSesion = () => {
+  const usuarioId = import.meta.env.VITE_USUARIO_ID || USUARIO_ID || 'admin-1';
+  return { 'x-usuario-id': usuarioId };
+};
 
   if (cargando) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minH="200px">
         <Spinner />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p={6}>
+        <Alert status="error">
+          <AlertIcon />
+          <Text>{error}</Text>
+        </Alert>
       </Box>
     );
   }
@@ -84,4 +92,3 @@ export default function PaginaGestionCarta() {
     </Box>
   );
 }
-EOF

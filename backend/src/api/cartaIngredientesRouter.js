@@ -1,4 +1,5 @@
 import express from 'express';
+import { randomUUID } from 'crypto';
 import { requireRole } from '../middleware/authorize.js';
 import { actualizarIngredienteSchema, crearIngredienteSchema } from './cartaSchemas.js';
 
@@ -21,7 +22,6 @@ export function crearCartaIngredientesRouter(db) {
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Datos inválidos' });
       }
-      const { randomUUID } = await import('crypto');
       const id = randomUUID();
       db.prepare('INSERT INTO ingredientes (id, nombre, estado) VALUES (?, ?, ?)').run(
         id,

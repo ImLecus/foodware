@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import request from 'supertest';
 import Database from 'better-sqlite3';
 import { createApp } from '../../src/app.js';
-import { randomUUID } from 'crypto';
 
 function setupDb() {
   const db = new Database(':memory:');

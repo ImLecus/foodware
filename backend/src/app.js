@@ -22,6 +22,7 @@ export function createApp(db) {
 
   app.use(cors({ origin: config.corsOrigin }));
   app.use(express.json());
+  app.locals.db = db;
 
   app.use('/api/health', healthRouter(db));
   app.use('/api/eventos', eventsRouter);

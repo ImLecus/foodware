@@ -33,4 +33,3 @@ export default function TablaPlatos({ platos = [], onEditar }) {
     </Box>
   );
 }
-EOF

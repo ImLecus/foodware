@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
 import { actualizarPlatoSchema, crearPlatoSchema } from '../../src/api/cartaSchemas.js';
 
 describe('validación plato', () => {

@@ -2,6 +2,7 @@ import express from 'express';
 import { CartaService } from '../services/cartaService.js';
 import { crearCartaAdminRouter } from './cartaAdminRouter.js';
 import { crearCartaRouter } from './cartaRouter.js';
+import { crearCartaIngredientesRouter } from './cartaIngredientesRouter.js';
 
 export function crearApiRouter(db) {
   const router = express.Router();
@@ -9,7 +10,7 @@ export function crearApiRouter(db) {
 
   router.use('/admin/platos', crearCartaAdminRouter(db, cartaService));
   router.use('/carta', crearCartaRouter(db, cartaService));
-  router.use('/admin/ingredientes', (await import('./cartaIngredientesRouter.js')).crearCartaIngredientesRouter(db));
+  router.use('/admin/ingredientes', crearCartaIngredientesRouter(db));
 
   return router;
 }
