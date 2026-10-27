@@ -243,3 +243,13 @@ actualizándose por SSE sin recargar.
 - Historia **004**: marcar/deshacer platos como listos, aviso «Pedido completado» con «Deshacer»,
   reflejo en sala y canal SSE.
 - Las historias `005`–`008` siguen pendientes.
+
+### API de la historia 007 (Dashboard de estadísticas)
+
+| Método | Ruta                | Descripción                                                       |
+| ------ | ------------------- | ----------------------------------------------------------------- |
+| `GET`  | `/api/reports/daily` | Informe diario con total, desgloses por camarero/plato y comparación con el día anterior. Requiere rol `encargado` vía cabecera `x-usuario-id`. |
+
+Ruta frontend: `/dashboard` (protegida para `encargado`).
+
+- Historia **007**: dashboard de estadísticas del servicio (total diario, desgloses por camarero/plato y comparación con día anterior).

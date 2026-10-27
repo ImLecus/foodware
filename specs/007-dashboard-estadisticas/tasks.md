@@ -145,14 +145,14 @@ porcentaje.
 
 **Propósito**: Mejoras que afectan a varias historias
 
-- [ ] T046 [P] Añadir índice sobre `cuentas(fechaCierre, estado)` para el rendimiento (<3 s) en `backend/db/schema.sql`
-- [ ] T047 [P] Implementar el estado "sin conexión" reutilizable en `frontend/src/components/EstadoConexion.jsx`
-- [ ] T048 [P] Actualizar la documentación de puesta en marcha en `README.md`
-- [ ] T049 Auditar accesibilidad de tablas e indicadores (texto + icono, no solo color) en `frontend/src/components/TablaDesglose.jsx` y `frontend/src/components/IndicadorTendencia.jsx`
-- [ ] T050 Ejecutar los escenarios E1–E9 de `quickstart.md` y registrar resultados
+- [X] T046 [P] Añadir índice sobre `cuentas(fechaCierre, estado)` para el rendimiento (<3 s) en `backend/db/schema.sql`
+- [X] T047 [P] Implementar el estado "sin conexión" reutilizable en `frontend/src/components/EstadoConexion.jsx`
+- [X] T048 [P] Actualizar la documentación de puesta en marcha en `README.md`
+- [X] T049 Auditar accesibilidad de tablas e indicadores (texto + icono, no solo color) en `frontend/src/components/TablaDesglose.jsx` y `frontend/src/components/IndicadorTendencia.jsx`
+- [X] T050 Ejecutar los escenarios E1–E9 de `quickstart.md` y registrar resultados
 - [X] T051 Ejecutar el escenario E10 de `quickstart.md` (día anterior sin ventas: diferencia en euros, «sin base de comparación», sin porcentaje) y registrar resultados (depende de T042, T045)
-- [ ] T052 [P] Endurecer la seguridad (comprobación de rol en backend, sin datos de más) en `backend/src/api/reportsRouter.js`
-- [ ] T053 [P] Añadir prueba de formato es-ES de importes y fechas (punto de miles, coma decimal, € y fecha) en `frontend/tests/utils/format.test.js`
+- [X] T052 [P] Endurecer la seguridad (comprobación de rol en backend, sin datos de más) en `backend/src/api/reportsRouter.js`
+- [X] T053 [P] Añadir prueba de formato es-ES de importes y fechas (punto de miles, coma decimal, € y fecha) en `frontend/tests/utils/format.test.js`
 
 ---
 
