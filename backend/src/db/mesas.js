@@ -7,7 +7,7 @@ export function listarMesas(db) {
               (SELECT p.id FROM pedidos p
                 WHERE p.mesa_id = m.id AND p.estado = 'en_curso') AS pedido_en_curso_id
          FROM mesas m
-        ORDER BY m.identificador`,
+        ORDER BY CAST(REPLACE(m.identificador, 'Mesa ', '') AS INTEGER), m.identificador`,
     )
     .all();
 }
@@ -29,7 +29,7 @@ export function listarMesasAbiertasParaSala(db) {
                 SELECT 1 FROM pedidos p
                 WHERE p.mesa_id = m.id AND p.estado IN ('en_curso', 'enviada')
               )
-        ORDER BY m.identificador`,
+        ORDER BY CAST(REPLACE(m.identificador, 'Mesa ', '') AS INTEGER), m.identificador`,
     )
     .all();
 
