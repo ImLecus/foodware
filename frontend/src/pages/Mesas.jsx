@@ -136,13 +136,14 @@ export default function Mesas() {
     setEditando(false);
     setMesaSeleccionadaId(mesa.id);
 
-    if (!mesa.pedido_en_curso_id) {
+    const pedidoId = mesa.pedido_en_curso_id ?? mesa.pedido_enviado_id;
+    if (!pedidoId) {
       setPedido(null);
       return;
     }
 
     try {
-      setPedido(await obtenerPedido(mesa.pedido_en_curso_id));
+      setPedido(await obtenerPedido(pedidoId));
     } catch (error) {
       mostrarError(error);
     }
