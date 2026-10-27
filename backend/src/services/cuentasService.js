@@ -4,6 +4,7 @@ import { exigirMesa } from '../domain/pedidos.js';
 import { ErrorHttp } from '../middleware/error.js';
 import { emitirMesaCerrada } from '../realtime/emit.js';
 import { aISO } from '../utils/fechas.js';
+import { validarDivisionIguales, validarDivisionPorConsumo } from './divisionService.js';
 
 const CONSUMOS_DE_MESA = `
   SELECT l.id AS linea_id,
@@ -170,5 +171,113 @@ export function cerrarCuentaUnica(db, mesaId, { totalBaseCentimos }) {
     },
     ticket_estado: 'emitido',
     ticket: componerTicket(cuenta),
+  };
+}
+
+/**
+ * Confirma la división de la cuenta pendiente de cobro. Persiste la cuenta en
+ * estado abierta, sus partes y, en modo por consumo, las asignaciones. No cierra
+ * la mesa ni emite ticket: eso ocurre al pagar la última parte.
+ */
+export function confirmarDivision(db, mesaId, datos) {
+  const mesa = exigirMesa(obtenerMesa(db, mesaId));
+  const persistida = obtenerCuentaPersistida(db, mesaId);
+
+  if (mesa.estado === 'cerrada' || persistida?.estado === 'cerrada') {
+    throw new ErrorHttp(409, 'La cuenta ya está cerrada');
+  }
+
+  if (persistida?.modo_division) {
+    const pagadas = db
+      .prepare(
+        "SELECT COUNT(*) AS total FROM cuentas_partes WHERE cuenta_id = ? AND estado = 'pagada'",
+      )
+      .get(persistida.id).total;
+    if (pagadas > 0) {
+      throw new ErrorHttp(
+        409,
+        'La división ya tiene partes pagadas: no se puede rehacer',
+        'division_con_pagos',
+      );
+    }
+  }
+
+  const consumos = listarConsumos(db, mesaId);
+  const total = calcularTotal(consumos);
+
+  if (datos.totalBaseCentimos !== total) {
+    throw new ErrorHttp(
+      422,
+      'El total de la cuenta ha cambiado: vuelve a revisarlo',
+      'total_desactualizado',
+    );
+  }
+
+  const partes = [...datos.partes].sort((a, b) => a.orden - b.orden);
+  if (datos.modo === 'iguales') {
+    validarDivisionIguales({ totalCentimos: total, partes });
+  } else {
+    validarDivisionPorConsumo({
+      totalCentimos: total,
+      consumos,
+      partes,
+      asignaciones: datos.asignaciones,
+    });
+  }
+
+  const cuentaId = randomUUID();
+  const idsPorOrden = new Map();
+
+  const guardar = db.transaction(() => {
+    if (persistida) {
+      db.prepare('DELETE FROM cuentas WHERE id = ?').run(persistida.id);
+    }
+
+    db.prepare(
+      `INSERT INTO cuentas (id, mesa_id, estado, total_centimos, modo_division)
+       VALUES (?, ?, 'abierta', ?, ?)`,
+    ).run(cuentaId, mesaId, total, datos.modo);
+
+    for (const parte of partes) {
+      const parteId = randomUUID();
+      idsPorOrden.set(parte.orden, parteId);
+      db.prepare(
+        `INSERT INTO cuentas_partes (id, cuenta_id, orden, comensal, importe_centimos)
+         VALUES (?, ?, ?, ?, ?)`,
+      ).run(parteId, cuentaId, parte.orden, parte.comensal.trim(), parte.importe_centimos);
+    }
+
+    for (const asignacion of datos.asignaciones) {
+      db.prepare(
+        `INSERT INTO cuentas_parte_consumos (id, parte_id, linea_id, importe_centimos)
+         VALUES (?, ?, ?, ?)`,
+      ).run(
+        randomUUID(),
+        idsPorOrden.get(asignacion.parte_orden),
+        asignacion.linea_id,
+        asignacion.importe_centimos,
+      );
+    }
+  });
+  guardar();
+
+  const cuenta = db
+    .prepare(
+      `SELECT id, mesa_id, estado, total_centimos, modo_division
+         FROM cuentas
+        WHERE id = ?`,
+    )
+    .get(cuentaId);
+
+  return {
+    cuenta: {
+      id: cuenta.id,
+      mesa_id: cuenta.mesa_id,
+      estado: cuenta.estado,
+      total_centimos: cuenta.total_centimos,
+      modo_division: cuenta.modo_division,
+      ticket_estado: 'no_emitido',
+    },
+    division: obtenerDivision(db, cuenta),
   };
 }

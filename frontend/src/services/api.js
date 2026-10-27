@@ -153,3 +153,7 @@ export function cerrarCuentaUnica(mesaId, totalBaseCentimos) {
     total_base_centimos: totalBaseCentimos,
   });
 }
+
+export function dividirCuenta(mesaId, division) {
+  return apiEnviar(`/sala/mesas/${encodeURIComponent(mesaId)}/cuenta/division`, 'POST', division);
+}

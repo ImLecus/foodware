@@ -93,22 +93,22 @@ mesas y las líneas de pedido (consumos) de las historias 01–04.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T024 [P] [US2] Test unitario de `divisionService` (partes iguales con reparto de céntimos, por consumo, porciones y suma exacta) en `backend/tests/unit/divisionService.test.js`
-- [ ] T025 [P] [US2] Test de contrato de `POST .../cuenta/cierre` con división (201, `422` por suma incorrecta y por total base cambiado) en `backend/tests/contract/cierre-division.test.js`
-- [ ] T026 [P] [US2] Test de componente de `DivisionCuenta` (partes iguales y por consumo, suma mostrada) en `frontend/tests/components/DivisionCuenta.test.jsx`
+- [x] T024 [P] [US2] Test unitario de `divisionService` (partes iguales con reparto de céntimos, por consumo, porciones y suma exacta) en `backend/tests/unit/divisionService.test.js`
+- [x] T025 [P] [US2] Test de contrato de `POST .../cuenta/division` (201, `422` por suma incorrecta y por total base cambiado, `409` con partes pagadas) en `backend/tests/contract/division-cuenta.test.js`
+- [x] T026 [P] [US2] Test de componente de `DivisionCuenta` (partes iguales y por consumo, suma mostrada) en `frontend/tests/components/DivisionCuenta.test.jsx`
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Implementar `divisionService` (partes iguales con reparto de céntimos de uno en uno, por consumo con porciones, y validación de la suma y del total base) en `backend/src/services/divisionService.js`
-- [ ] T028 [US2] Extender `cuentasService` para persistir las partes (incluido `comensal`) y las asignaciones en la transacción de cierre en `backend/src/services/cuentasService.js`
-- [ ] T029 [US2] Extender `POST .../cuenta/cierre` para aceptar `modo` `iguales`/`por_consumo` con `partes` (incluido `comensal` obligatorio) y `asignaciones`, validando `422` (comensal, suma y total base) e invalidando cualquier división persistida anterior (FR-017) en `backend/src/routes/cuentas.js` y `backend/src/services/cuentasService.js`
-- [ ] T030 [US2] Ampliar las llamadas del frontend con el cierre por división en `frontend/src/services/api.js`
-- [ ] T031 [P] [US2] Implementar el componente `DivisionCuenta` (elección de partes iguales o por consumo y número de partes) en `frontend/src/components/DivisionCuenta.jsx`
-- [ ] T032 [P] [US2] Implementar el componente `AsignarConsumos` (asignación de platos o porciones a las partes) en `frontend/src/components/AsignarConsumos.jsx`
-- [ ] T033 [US2] Implementar el componente `ParteCuenta` (importe y comensal de una parte) en `frontend/src/components/ParteCuenta.jsx`
-- [ ] T034 [US2] Extender `useCuenta` (construcción de la división, total base y reinicio al cambiar la cuenta) en `frontend/src/hooks/useCuenta.js`
-- [ ] T035 [US2] Integrar la división en la página `CierreCuenta` en `frontend/src/pages/CierreCuenta.jsx`
-- [ ] T036 [US2] Test de integración de la división (partes iguales con redondeo, división por consumo, persistencia del comensal de cada parte y reinicio de una división persistida al cambiar la cuenta) en `backend/tests/integration/cierre-division.test.js`
+- [x] T027 [US2] Implementar `divisionService` (partes iguales con reparto de céntimos de uno en uno, por consumo con porciones, y validación de la suma y del total base) en `backend/src/services/divisionService.js`
+- [x] T028 [US2] Extender `cuentasService` para persistir las partes (incluido `comensal`) y las asignaciones en la transacción de división en `backend/src/services/cuentasService.js`
+- [x] T029 [US2] Implementar `POST .../cuenta/division` con `modo` `iguales`/`por_consumo` y `partes` (incluido `comensal` obligatorio) y `asignaciones`, validando `422` (suma, total base y cobertura) y sustituyendo la división persistida anterior solo si sus partes siguen pendientes (FR-017) en `backend/src/routes/cuentas.js` y `backend/src/services/cuentasService.js`
+- [x] T030 [US2] Ampliar las llamadas del frontend con la división de la cuenta en `frontend/src/services/api.js`
+- [x] T031 [P] [US2] Implementar el componente `DivisionCuenta` (elección de partes iguales o por consumo y número de partes) en `frontend/src/components/DivisionCuenta.jsx`
+- [x] T032 [P] [US2] Implementar el componente `AsignarConsumos` (asignación de platos o porciones a las partes) en `frontend/src/components/AsignarConsumos.jsx`
+- [x] T033 [US2] Implementar el componente `ParteCuenta` (importe y comensal de una parte) en `frontend/src/components/ParteCuenta.jsx`
+- [x] T034 [US2] Extender `useCuenta` (confirmación de la división y actualización de la cuenta) en `frontend/src/hooks/useCuenta.js`
+- [x] T035 [US2] Integrar la división en la página `CierreCuenta` en `frontend/src/pages/CierreCuenta.jsx`, con prueba de página en `frontend/tests/pages/CierreCuenta.test.jsx`
+- [x] T036 [US2] Test de integración de la división (partes iguales con redondeo, división por consumo, persistencia del comensal de cada parte y reinicio de una división persistida al cambiar la cuenta) en `backend/tests/integration/division-cuenta.test.js`
 
 **Checkpoint**: User Stories 1 y 2 funcionan de forma independiente
 

@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import DivisionCuenta from '../components/DivisionCuenta.jsx';
 import ResumenCuenta from '../components/ResumenCuenta.jsx';
 import { useCuenta } from '../hooks/useCuenta.js';
 import { listarMesas } from '../services/api.js';
@@ -30,7 +31,16 @@ export default function CierreCuenta() {
   const [ticket, setTicket] = useState(null);
   const [aviso, setAviso] = useState(null);
 
-  const { cuenta, cargando, error, sinConexion, cerrando, cerrar } = useCuenta(mesaId);
+  const {
+    cuenta,
+    cargando,
+    error,
+    sinConexion,
+    cerrando,
+    confirmandoDivision,
+    cerrar,
+    dividir,
+  } = useCuenta(mesaId);
 
   useEffect(() => {
     setTicket(null);
@@ -83,8 +93,18 @@ export default function CierreCuenta() {
     setParametros({});
   }
 
+  async function confirmarDivision(datos) {
+    try {
+      await dividir(datos);
+      setAviso({ tipo: 'success', texto: 'División confirmada. Ya puedes cobrar cada parte.' });
+    } catch {
+      // El error de la API se muestra en el aviso superior.
+    }
+  }
+
   const puedeCobrar =
     Boolean(cuenta) &&
+    !cuenta.division &&
     !cargando &&
     !sinConexion &&
     !cerrando &&
@@ -186,6 +206,28 @@ export default function CierreCuenta() {
 
             <ResumenCuenta cuenta={cuenta} cargando={cargando} />
 
+            {!cargando && cuenta && !cuenta.division && (
+              <Box mt={4}>
+                <DivisionCuenta
+                  cuenta={cuenta}
+                  onConfirmar={confirmarDivision}
+                  confirmando={confirmandoDivision}
+                  deshabilitado={sinConexion}
+                />
+              </Box>
+            )}
+
+            {!cargando && cuenta?.division && (
+              <Alert status="info" borderRadius="md" mt={4}>
+                <AlertIcon />
+                <AlertDescription>
+                  Cuenta dividida en {cuenta.division.partes.length} parte(s) con{' '}
+                  {cuenta.division.modo === 'iguales' ? 'partes iguales' : 'consumos asignados'}.
+                  El cobro se realiza parte a parte.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {ticket && (
               <Alert status="success" borderRadius="md" mt={4}>
                 <AlertIcon />
@@ -202,15 +244,17 @@ export default function CierreCuenta() {
               </Text>
             )}
 
-            <Button
-              mt={4}
-              colorScheme="teal"
-              onClick={confirmar}
-              isLoading={cerrando}
-              isDisabled={!puedeCobrar}
-            >
-              Confirmar cobro único
-            </Button>
+            {!cuenta?.division && (
+              <Button
+                mt={4}
+                colorScheme="teal"
+                onClick={confirmar}
+                isLoading={cerrando}
+                isDisabled={!puedeCobrar}
+              >
+                Confirmar cobro único
+              </Button>
+            )}
           </CardBody>
         </Card>
       )}
