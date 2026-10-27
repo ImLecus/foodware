@@ -359,5 +359,5 @@ cargarDemo();
 db.close();
 
 console.log(
-  'Datos cargados: partidas, usuarios, mesas, carta, ingredientes y pedidos de ejemplo (001–003).',
+  'Datos cargados: partidas, usuarios, mesas, carta, ingredientes, cuentas y pedidos de ejemplo.',
 );
