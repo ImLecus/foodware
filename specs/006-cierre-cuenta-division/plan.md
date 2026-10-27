@@ -1,186 +1,183 @@
 # Plan de Implementación: Cierre y división de cuenta
 
-**Rama**: `feature/006-cierre-cuenta-division` | **Fecha**: 2026-10-20 | **Spec**: [spec.md](./spec.md)
+**Rama**: `feature/006-cierre-cuenta-division` | **Fecha**: 2026-10-27 | **Spec**: [spec.md](./spec.md)
 
-**Entrada**: Especificación de la funcionalidad en `/specs/006-cierre-cuenta-division/spec.md`
-
-**Nota**: Este fichero lo genera el comando `/speckit.plan`; su definición describe el flujo de ejecución.
+**Entrada**: Especificación de la historia 006, incluidas las clarificaciones del 2026-10-27.
 
 ## Resumen
 
-El camarero necesita cerrar la cuenta de una mesa: ver el importe total calculado a partir
-de lo consumido con el precio fijado al pedir, dividir la cuenta (en partes iguales o según
-el consumo de cada comensal) y marcar cada parte como pagada por separado. En una cuenta
-dividida solo se genera **un único ticket final al pagarse la última parte**, con el total y
-el desglose completo; no hay tickets provisionales por las partes intermedias. Si una parte
-se marca por error, puede volver a pendiente mientras la mesa siga abierta. Al completarse
-el cobro, la mesa queda cerrada y rechaza nuevas operaciones.
+El camarero cierra la cuenta de una mesa, calcula el total con los precios fijados al pedir,
+puede dividirla en partes iguales o por consumo y registra el pago de cada parte. En una cuenta
+dividida se emite **un único ticket final al pagarse la última parte**. Si una parte se marca por
+error, puede volver a pendiente mientras la cuenta siga abierta.
 
-Enfoque técnico: un flujo web (React + Chakra UI) que consulta la cuenta por la API HTTP de
-Express, confirma la división y registra el pago de cada parte. El backend persiste la
-división con sus partes en estado pendiente y, en la **misma transacción** que marca la
-última parte pendiente como pagada (o al confirmar un pago único), cierra la cuenta y la
-mesa, compone el ticket y avisa a la vista de sala (historia 005) reutilizando su canal de
-eventos. Deshacer el pago de una parte solo se admite mientras la mesa no esté cerrada. Se
-reutiliza el stack ya fijado a nivel de proyecto (SQLite + `better-sqlite3`, JavaScript ES2022,
-ExpressJS, React + Chakra UI, Docker y los mismos *runners* de pruebas). No se introduce
-inicio de sesión (las mesas son compartidas) ni integración con terminales de pago.
+Al completar el cobro, la **cuenta queda cerrada** y la **mesa vuelve a estar libre** para una
+nueva comanda; la cuenta anterior se conserva como histórico. El cierre se rechaza mientras
+existan platos pendientes en cocina, para no liberar una mesa con comida aún en preparación.
+
+La API reutiliza la sesión y autorización de la historia 000: los endpoints exigen sesión con rol
+`camarero`; no se aceptan identidades por cabecera ni por URL. La persistencia usa SQLite,
+migraciones versionadas y el hub SSE compartido.
 
 ## Contexto Técnico
 
-**Lenguaje/Versión**: JavaScript (ES2022) sobre Node.js 22 LTS; frontend React 18 (JSX).
+**Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 22; React 18 y JSX en frontend.
 
-**Dependencias principales**: React 18 + Chakra UI (única librería de componentes de UI),
-ExpressJS 4 (API HTTP), SQLite con el cliente `better-sqlite3`. No requiere canal en tiempo real
-propio; para avisar a la vista de sala reutiliza el hub SSE compartido del proyecto.
+**Dependencias principales**: React 18 + Chakra UI, ExpressJS 4, `better-sqlite3`, Vitest,
+Supertest y React Testing Library. No se añaden frameworks ni pasarelas de pago.
 
-**Almacenamiento**: SQLite en fichero persistido en un volumen Docker, consultado con SQL sencillo mediante `better-sqlite3` y
-migraciones versionadas. La historia 006 es propietaria de las tablas de cuenta, partes y
-asignaciones de consumo; **lee** las mesas y las líneas de pedido de las historias 01–04 y
-**cierra** la mesa (transición de estado) al pagarse la última parte o al confirmar el pago
-único, que es su propia operación.
+**Autenticación**: historia 000. Cookie de sesión `HttpOnly`; `POST/GET` de cuentas requieren
+`autenticar` + `requireRole('camarero')`. El backend es la fuente de verdad del permiso.
 
-**Pruebas**: Backend Vitest + Supertest (cálculo del total, redondeo, pago por partes,
-emisión única del ticket, reversión y cierre); Frontend Vitest + React Testing Library
-(resumen, división, pago y reversión de partes, ticket y estados de error).
+**Almacenamiento**: SQLite con migraciones versionadas. La historia 006 escribe `cuentas`,
+`cuentas_partes` y `cuentas_parte_consumos`; lee mesas, pedidos y líneas de pedido. Se añade
+`cuentas.pedido_id` para asociar cada cuenta a la comanda que la origina y permitir que una mesa
+reutilizada tenga una cuenta nueva sin que la cerrada anterior la bloquee. El cierre actualiza
+`mesas.estado`.
 
-**Plataforma objetivo**: Aplicación web (navegador en tablet/PC de sala) más servidor Node;
-ejecución reproducible con Docker (Linux).
+**Estado de mesa**: tras el cobro se usa `mesas.estado = 'libre'` y la mesa vuelve a aparecer en
+sala como disponible. El valor `cerrada` deja de usarse para mesas de esta versión; no se borra
+el dato histórico de la cuenta. Una nueva comanda crea un pedido y una cuenta nuevos. Las
+consultas de cuenta/ticket se resuelven por el pedido actual o por la cuenta cerrada más reciente,
+no por un estado global de la mesa.
 
-**Tipo de proyecto**: Aplicación web con frontend y backend separados.
+**Estado de cocina**: las líneas enviadas tienen `estado = pendiente|listo`. El cierre se bloquea
+si alguna línea de un pedido `enviada` de la mesa sigue pendiente. Las líneas de pedidos no
+enviados no están en cocina y no forman parte de esta comprobación.
 
-**Objetivos de rendimiento**: cerrar la cuenta de una mesa en ≤ 2 min (SC-002); completar la
-división entre varios comensales en ≤ 3 min (SC-006); calcular y mostrar el total, registrar el
-pago de cada parte y emitir el ticket al cerrar en ≤ 2 s.
+**Tiempo real**: al cerrar la cuenta se publica `mesa-cerrada` en el hub existente
+(`GET /api/eventos`); la sala debe refrescar y mostrar la mesa como libre, no eliminarla del
+inventario.
 
-**Restricciones**: requiere conexión a la red del restaurante (suposición compartida con las
-historias 01–04); los precios se usan con IVA incluido y sin desglose de impuestos (v1); UI
-solo con Chakra UI; todos los textos en español de España y euro (€); arranque reproducible
+**Pruebas**: backend Vitest + Supertest (total, división, pagos, ticket, reutilización y bloqueo
+por cocina); frontend Vitest + RTL (resumen, división, pago/reversión, ticket y avisos).
+
+**Plataforma objetivo**: aplicación web en navegador de tablet/PC y servidor Node, reproducible
 con Docker.
 
-**Escala/Alcance**: un único restaurante; decenas de mesas abiertas y un puñado de pantallas
-concurrentes (sala y cocina). Alcance de esta historia: el flujo de cierre, la división, el
-pago y la reversión de cada parte y la emisión del ticket. En una cuenta dividida el ticket
-se emite una sola vez, al pagarse la última parte; no hay tickets provisionales. Fuera de
-alcance: impresión o entrega del ticket, terminales de pago, propinas, descuentos, anulaciones
-parciales y reapertura de mesas cerradas.
+**Objetivos de rendimiento**: cierre en ≤ 2 min; división en ≤ 3 min; cálculo y respuesta de
+cuenta/pago en ≤ 2 s.
+
+**Restricciones**: conexión a la red local; precios con IVA incluido y sin desglose; UI con
+Chakra UI; textos en español de España y euros; sin impresión, terminales de pago, propinas,
+descuentos, anulaciones parciales ni recuperación de cuentas cerradas.
+
+**Escala/Ámbito**: un restaurante, decenas de mesas y varias pantallas concurrentes.
 
 ## Verificación de la Constitución
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+*GATE: debe pasar antes de la investigación y volver a comprobarse tras el diseño.*
 
 | Principio / regla | Comprobación | Estado |
-|-------------------|------------|--------|
-| I. Simplicidad ante todo | Un flujo + API HTTP; sin capas, ni gestor de estado global, ni ORM; solo se persiste la división en cobro para conservar el pago y la reversión de cada parte | Pasa |
-| II. Español de España y euro | Todos los textos en español; importes en € con formato español | Pasa |
-| III. Cero alcance fantasma | Solo lo especificado en FR-001–FR-018 (total, división, pago por partes, reversión de una parte pagada, ticket único al pagar la última parte, bloqueo de mesa); sin impresión ni pasarelas de pago | Pasa |
-| IV. Verificable por no técnico | Comprobable desde la interfaz (cerrar, dividir, marcar y deshacer el pago de partes, ver el ticket único, mesa bloqueada) | Pasa |
-| V. Datos con respeto | Solo la etiqueta de comensal necesaria para identificar una parte; secretos por variables de entorno, nunca en el repo | Pasa |
-| VI. Conventional Commits | Proceso de commits del equipo; no afecta al diseño | Pasa |
-| VII. Desarrollo en equipo | Docker, README de arranque y decisiones documentadas en el repo | Pasa |
-| Tecnología obligatoria | React + Chakra UI (frontend), ExpressJS sobre Node (backend); no se añaden frameworks | Pasa |
-| Contenedores (Docker) | `docker-compose` levanta frontend y backend (SQLite en volumen) | Pasa |
-| Calidad y pruebas | Cada tarea incluye pruebas automatizadas junto al desarrollo | Pasa |
-| Flujo de trabajo (Git Flow) | Feature parte de `develop` y vuelve por Pull Request | Pasa |
+|---|---|---|
+| I. Simplicidad | Un flujo HTTP y una única persistencia de cuenta/partes; sin ORM ni estado global | Pasa |
+| II. Español y euro | Textos, fechas e importes con convención española | Pasa |
+| III. Cero alcance fantasma | Solo FR-001–FR-019: cierre, división, pagos, ticket, reutilización y bloqueo por cocina | Pasa |
+| IV. Verificable por no técnico | Cerrar, dividir, pagar, reutilizar la mesa y ver pendientes desde la interfaz | Pasa |
+| V. Datos con respeto | Solo etiqueta de comensal; sin secretos en el repositorio | Pasa |
+| VI. Conventional Commits | Proceso de commits del equipo | Pasa |
+| VII. Desarrollo en equipo | Docker, README y decisiones documentadas | Pasa |
+| Tecnología obligatoria | React + Chakra UI y ExpressJS sobre Node | Pasa |
+| Contenedores | `docker-compose` mantiene frontend, backend y SQLite en volumen | Pasa |
+| Calidad y pruebas | Cada funcionalidad incluye pruebas automatizadas | Pasa |
+| Flujo de trabajo | Rama de feature y Pull Request según Git Flow | Pasa |
 
-**Resultado (pre-diseño)**: sin violaciones. No se requiere Complexity Tracking.
-
-**Resultado (post-diseño, tras Fase 1)**: se mantiene sin violaciones. `better-sqlite3` y el cliente HTTP
-son librerías/nativos, no frameworks; no se añade tiempo real propio (se reutiliza el hub compartido de
-la historia 005), respetando la Tecnología obligatoria y el Principio I.
+**Resultado**: sin violaciones ni seguimiento de complejidad.
 
 ## Estructura del Proyecto
 
-### Documentación (esta funcionalidad)
+### Documentación
 
 ```text
 specs/006-cierre-cuenta-division/
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
+├── plan.md
+├── research.md
+├── data-model.md
+├── quickstart.md
+├── contracts/
 │   └── api.md
-└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
+└── tasks.md          # se regenera con /speckit.tasks; no lo genera este comando
 ```
 
-### Código fuente (raíz del repositorio)
+### Código afectado (estado actual del repositorio)
 
 ```text
 backend/
+├── migrations/
+│   ├── 001_init.sql             # mesas, pedidos y líneas (historias 001–004)
+│   ├── 004_cuentas.sql          # cuentas, partes y consumos (006)
+│   └── 007_cuenta_pedido.sql    # enlace cuenta–pedido para reutilizar mesas (006)
 ├── src/
-│   ├── app.js                     # Express app (middleware + montaje de rutas)
-│   ├── server.js                  # Servidor HTTP; publica en el hub SSE compartido (`realtime/hub.js`)
-│   ├── db.js                      # Conexión a SQLite (better-sqlite3) + runner de migraciones (compartido)
-│   ├── migrations/
-│   │   ├── 001_base.sql           # mesas y líneas de pedido (historias 01–04; NO propiedad de 006)
-│   │   └── 002_cuentas.sql        # cuentas, cuentas_partes y cuentas_parte_consumos (006)
-│   ├── middleware/
-│   │   └── errores.js             # Manejo centralizado de errores (400/404/409/422/500)
-│   ├── routes/
-│   │   └── cuentas.js             # GET cuenta, POST división, pago/reversión de partes, POST cierre único, GET ticket
-│   ├── realtime/
-│   │   └── eventos.js             # emite «mesa-cerrada» al hub compartido
-│   └── services/
-│       ├── cuentasService.js      # Cálculo del total, persistencia de la división y cierre transaccional
-│       ├── divisionService.js     # Partes iguales (redondeo) y por consumo
-│       └── ticketService.js       # Composición del ticket (solo cuando se emite, al cerrar la cuenta)
-├── scripts/
-│   └── seed.js                    # Datos de ejemplo (mesa con consumos)
+│   ├── app.js                   # monta /api/sala y /api/auth
+│   ├── middleware/autenticar.js # sesión desde cookie (historia 000)
+│   ├── middleware/authorize.js  # requireRole('camarero')
+│   ├── routes/cuentas.js        # cuenta, división, pagos, cierre y ticket
+│   ├── services/cuentasService.js
+│   ├── services/divisionService.js
+│   ├── services/ticketService.js
+│   ├── realtime/emit.js         # mesa-cerrada
+│   └── db/mesas.js              # lectura/estado de mesas
 └── tests/
-    ├── contract/                  # Contratos de API de cuenta, división, pago de partes y ticket (Supertest)
-    ├── integration/               # Cierre, división, pago/reversión por partes y bloqueo de mesa
-    └── unit/                      # Total, redondeo de céntimos, validación de la división y emisión del ticket
+    ├── contract/
+    ├── integration/
+    └── unit/
 
 frontend/
 ├── src/
-│   ├── App.jsx                    # Enrutado (compartido)
-│   ├── main.jsx                   # Arranque (compartido)
-│   ├── pages/
-│   │   └── CierreCuenta.jsx       # Flujo de cierre: total, división, pago/reversión de partes y ticket
-│   ├── components/
-│   │   ├── ResumenCuenta.jsx      # Total y consumos de la mesa
-│   │   ├── DivisionCuenta.jsx     # Elección de partes iguales o por consumo
-│   │   ├── ParteCuenta.jsx        # Importe, comensal, estado de pago y reversión
-│   │   ├── AsignarConsumos.jsx    # Asignación de platos/porciones a las partes
-│   │   ├── TicketFinal.jsx        # Total y desglose de partes (solo cuando se emite)
-│   │   └── SinConexion.jsx        # Indicador de «sin conexión» (compartido con 005)
-│   ├── hooks/
-│   │   └── useCuenta.js           # Carga la cuenta y gobierna el flujo de cierre
-│   └── services/
-│       ├── api.js                 # Llamadas HTTP (fetch) (compartido con 005)
-│       └── formato.js             # Importes en € y números/fechas con formato español
+│   ├── App.jsx
+│   ├── pages/CierreCuenta.jsx
+│   ├── hooks/useCuenta.js
+│   ├── components/ResumenCuenta.jsx
+│   ├── components/DivisionCuenta.jsx
+│   ├── components/AsignarConsumos.jsx
+│   ├── components/ParteCuenta.jsx
+│   ├── components/TicketFinal.jsx
+│   └── services/api.js
 └── tests/
-    ├── components/                # Resumen, división, pago/reversión de partes y ticket
-    └── integration/               # Flujo de cierre completo (pago por partes y ticket único)
-
-docker-compose.yml                 # frontend + backend (SQLite en volumen) (compartido)
-backend/Dockerfile
-frontend/Dockerfile
 ```
 
-**Decisión de estructura**: se elige la opción "Web application" (frontend + backend separados),
-coherente con la Tecnología obligatoria de la constitución. El backend ExpressJS añade a la
-API existente las rutas de cuenta, división, pago de partes y cierre; el frontend React +
-Chakra UI implementa el flujo de cierre, el pago y la reversión de partes y las vistas de
-división y ticket. La base de datos SQLite se aprovisiona con `docker-compose`.
+**Decisión de estructura**: se mantiene la arquitectura web actual. No se crea una capa nueva;
+el backend añade la comprobación de cocina y el cambio de estado de mesa en el servicio de
+cuentas, y el frontend muestra el aviso y la mesa libre.
 
-**Frontera de alcance (propiedad de datos)**:
+## Frontera de datos y propiedad
 
-- **Propiedad de 006** (se crea y escribe aquí): `cuentas`, `cuentas_partes`,
-  `cuentas_parte_consumos`.
-- **Solo lectura** (propiedad de las historias 01–04): `mesas` y las líneas de pedido
-  (consumos) con su precio fijado al pedir.
-- **Transición de estado propia de 006**: marcar la mesa como cerrada al pagarse la última
-  parte pendiente (o al confirmar el pago único); la apertura de mesa pertenece a la
-  historia 01.
-- **Integración**: se reutiliza el hub SSE compartido del proyecto únicamente para emitir el
-  evento `mesa-cerrada` (la vista de sala deja de mostrar la mesa); la historia 006 no
-  introduce su propio canal de tiempo real.
+- **006 escribe**: `cuentas` (incluido `pedido_id`), `cuentas_partes`, `cuentas_parte_consumos` y `mesas.estado`.
+- **006 solo lee**: pedidos, líneas de pedido y platos para calcular consumos y detectar
+  pendientes de cocina.
+- **No reabre cuentas**: una cuenta cerrada es histórico; una nueva comanda crea una cuenta
+  nueva.
+- **No modifica líneas de cocina**: el cierre se bloquea; no cancela ni marca platos por su
+  cuenta.
+
+## Fases de implementación
+
+### Fase 0 — Investigación
+
+Resolver reutilización de mesas, bloqueo por cocina, estado de mesa, histórico de cuentas,
+autenticación heredada y eventos de sala. Resultado: [research.md](./research.md).
+
+### Fase 1 — Diseño
+
+Actualizar [data-model.md](./data-model.md), [contracts/api.md](./contracts/api.md) y
+[quickstart.md](./quickstart.md) para reflejar:
+
+- asociación `cuentas.pedido_id` y consulta de la cuenta de la comanda actual;
+- migración de enlace cuenta–pedido con el siguiente número disponible;
+
+- mesa liberada al cerrar y nueva comanda sobre la misma mesa;
+- bloqueo del cierre por líneas pendientes de pedidos enviados;
+- contrato de error `platos_pendientes` y lista de platos;
+- endpoints protegidos por sesión de camarero;
+- ticket y cuentas cerradas como histórico.
+
+### Fase 2 — Tareas
+
+Regenerar `tasks.md` después de este plan. Las tareas antiguas que asumen
+`mesas.estado = 'cerrada'` o que no comprueban cocina no son válidas y deben sustituirse.
 
 ## Seguimiento de Complejidad
 
-> **Rellena SOLO si la Verificación de la Constitución tiene violaciones que justificar**
-
-No hay violaciones: la solución usa únicamente el stack obligatorio y no introduce
-complejidad anticipada.
+No hay violaciones constitucionales ni complejidad que justificar. La comprobación de pendientes
+es una consulta adicional y el cambio de estado de mesa es una transición directa; no se introduce
+un nuevo canal de tiempo real ni una entidad de histórico separada.

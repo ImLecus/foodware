@@ -1,7 +1,12 @@
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
-import { CABECERA_CAMARERO, crearBaseDePrueba, crearPedidoEnviado } from '../ayuda.js';
+import {
+  CABECERA_CAMARERO,
+  crearBaseDePrueba,
+  crearPedidoEnviado,
+  marcarPedidoListo,
+} from '../ayuda.js';
 
 describe('Cierre de cuenta con pago único (US1)', () => {
   let db;
@@ -11,18 +16,17 @@ describe('Cierre de cuenta con pago único (US1)', () => {
     db?.close();
   });
 
-  function preparar() {
+  async function preparar() {
     db = crearBaseDePrueba();
     app = createApp(db);
+    const pedidoId = await crearPedidoEnviado(app);
+    await marcarPedidoListo(app, pedidoId);
   }
 
-  it('muestra el total, permite cancelar sin cambios y cierra la mesa con un pago único', async () => {
-    preparar();
-    await crearPedidoEnviado(app);
+  it('muestra el total, permite cancelar sin cambios y libera la mesa con un pago único', async () => {
+    await preparar();
 
-    const abierta = await request(app)
-      .get('/api/sala/mesas/mesa-1/cuenta')
-      .set(CABECERA_CAMARERO);
+    const abierta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
 
     expect(abierta.status).toBe(200);
     expect(abierta.body.total_centimos).toBe(3250);
@@ -53,7 +57,7 @@ describe('Cierre de cuenta con pago único (US1)', () => {
     });
 
     const mesaDespues = db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get();
-    expect(mesaDespues.estado).toBe('cerrada');
+    expect(mesaDespues.estado).toBe('libre');
 
     const cuentaCerrada = await request(app)
       .get('/api/sala/mesas/mesa-1/cuenta')
@@ -65,11 +69,35 @@ describe('Cierre de cuenta con pago único (US1)', () => {
       .set(CABECERA_CAMARERO)
       .send({ modo: 'unico', total_base_centimos: 3250 });
     expect(repetido.status).toBe(409);
+
+    const nueva = await request(app).post('/api/mesas/mesa-1/abrir').set(CABECERA_CAMARERO);
+    expect(nueva.status).toBe(201);
   });
 
-  it('rechaza el cierre si el total ha cambiado y mantiene la mesa abierta', async () => {
-    preparar();
+  it('bloquea el cierre mientras haya platos pendientes en cocina', async () => {
+    db = crearBaseDePrueba();
+    app = createApp(db);
     await crearPedidoEnviado(app);
+
+    const respuesta = await request(app)
+      .post('/api/sala/mesas/mesa-1/cuenta/cierre')
+      .set(CABECERA_CAMARERO)
+      .send({ modo: 'unico', total_base_centimos: 3250 });
+
+    expect(respuesta.status).toBe(409);
+    expect(respuesta.body).toMatchObject({
+      codigo: 'platos_pendientes',
+      mensaje: 'Hay platos pendientes en cocina',
+    });
+    expect(respuesta.body.platos).toHaveLength(3);
+    expect(db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get().estado).toBe('ocupada');
+    expect(
+      db.prepare("SELECT COUNT(*) AS total FROM cuentas WHERE mesa_id = 'mesa-1'").get().total,
+    ).toBe(0);
+  });
+
+  it('rechaza el cierre si el total ha cambiado y mantiene la mesa ocupada', async () => {
+    await preparar();
 
     const respuesta = await request(app)
       .post('/api/sala/mesas/mesa-1/cuenta/cierre')
@@ -84,7 +112,9 @@ describe('Cierre de cuenta con pago único (US1)', () => {
   });
 
   it('rechaza el cierre de una cuenta sin importe', async () => {
-    preparar();
+    db = crearBaseDePrueba();
+    app = createApp(db);
+    await request(app).post('/api/mesas/mesa-1/abrir').set(CABECERA_CAMARERO);
 
     const respuesta = await request(app)
       .post('/api/sala/mesas/mesa-1/cuenta/cierre')
@@ -96,8 +126,7 @@ describe('Cierre de cuenta con pago único (US1)', () => {
   });
 
   it('rechaza un modo de cierre no válido', async () => {
-    preparar();
-    await crearPedidoEnviado(app);
+    await preparar();
 
     const respuesta = await request(app)
       .post('/api/sala/mesas/mesa-1/cuenta/cierre')
@@ -108,7 +137,7 @@ describe('Cierre de cuenta con pago único (US1)', () => {
   });
 
   it('devuelve 404 al cerrar una mesa inexistente', async () => {
-    preparar();
+    await preparar();
 
     const respuesta = await request(app)
       .post('/api/sala/mesas/mesa-inexistente/cuenta/cierre')

@@ -2,7 +2,12 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
-import { CABECERA_CAMARERO, crearBaseDePrueba, crearPedidoEnviado } from '../ayuda.js';
+import {
+  CABECERA_CAMARERO,
+  crearBaseDePrueba,
+  crearPedidoEnviado,
+  marcarPedidoListo,
+} from '../ayuda.js';
 
 describe('Pago y reversión de partes (US3)', () => {
   let db;
@@ -17,6 +22,7 @@ describe('Pago y reversión de partes (US3)', () => {
     db = crearBaseDePrueba();
     app = createApp(db);
     pedidoId = await crearPedidoEnviado(app);
+    await marcarPedidoListo(app, pedidoId);
   }
 
   async function dividirEnDos() {
@@ -100,7 +106,11 @@ describe('Pago y reversión de partes (US3)', () => {
     const respuesta = await deshacer(ana.id);
 
     expect(respuesta.status).toBe(200);
-    expect(respuesta.body.parte).toMatchObject({ id: ana.id, estado: 'pendiente', pagada_en: null });
+    expect(respuesta.body.parte).toMatchObject({
+      id: ana.id,
+      estado: 'pendiente',
+      pagada_en: null,
+    });
     expect(respuesta.body.ticket_estado).toBe('no_emitido');
     expect(respuesta.body.ticket).toBeNull();
     expect(respuesta.body.mesa_abierta).toBe(true);
@@ -128,7 +138,7 @@ describe('Pago y reversión de partes (US3)', () => {
 
     expect((await pagar(luis.id)).status).toBe(409);
     expect((await deshacer(luis.id)).status).toBe(409);
-    expect(db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get().estado).toBe('cerrada');
+    expect(db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get().estado).toBe('libre');
     expect(
       db
         .prepare("SELECT estado FROM cuentas WHERE mesa_id = 'mesa-1' ORDER BY abierta_en DESC")
@@ -150,9 +160,7 @@ describe('Pago y reversión de partes (US3)', () => {
     expect(respuesta.status).toBe(422);
     expect(respuesta.body.codigo).toBe('total_desactualizado');
 
-    const cuenta = await request(app)
-      .get('/api/sala/mesas/mesa-1/cuenta')
-      .set(CABECERA_CAMARERO);
+    const cuenta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
     expect(cuenta.status).toBe(200);
     expect(cuenta.body.total_centimos).toBe(3850);
     expect(cuenta.body.division).toBeNull();

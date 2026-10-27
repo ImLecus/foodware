@@ -58,3 +58,25 @@ export function insertarLinea(
      VALUES (?, ?, ?, ?, 100, ?, ?)`,
   ).run(id, pedidoId, platoId, cantidad, estado, estado === 'listo' ? '2026-10-20 10:05:00' : null);
 }
+
+/** Inserta una cuenta cerrada histórica para probar la reutilización de una mesa. */
+export function insertarCuentaCerrada(
+  db,
+  { id = 'cuenta-cerrada', mesaId = 'mesa-1', pedidoId = null, totalCentimos = 0 } = {},
+) {
+  db.prepare(
+    `INSERT INTO cuentas (id, mesa_id, pedido_id, estado, total_centimos, modo_division, cerrada_en)
+     VALUES (?, ?, ?, 'cerrada', ?, 'unico', datetime('now'))`,
+  ).run(id, mesaId, pedidoId, totalCentimos);
+}
+
+/** Inserta una cuenta cerrada en una fecha concreta para pruebas de informes. */
+export function insertarCuentaCerradaEnFecha(
+  db,
+  { id = 'cuenta-fecha', mesaId = 'mesa-1', fecha, totalCentimos = 0, camareroId = null } = {},
+) {
+  db.prepare(
+    `INSERT INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+     VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
+  ).run(id, mesaId, camareroId, totalCentimos, `${fecha} 10:00:00`, `${fecha} 12:00:00`);
+}

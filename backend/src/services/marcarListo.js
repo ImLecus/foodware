@@ -56,6 +56,10 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
       throw new ErrorHttp(404, 'El pedido no existe', 'pedido_no_encontrado');
     }
 
+    if (pedido.estado === 'cerrada') {
+      throw new ErrorHttp(409, 'La cuenta ya está cerrada', 'cuenta_cerrada');
+    }
+
     exigirMesaAbierta(exigirMesa(obtenerMesa(db, pedido.mesa_id)));
 
     const linea = buscarLineaDePedido(db, pedidoId, lineaId);

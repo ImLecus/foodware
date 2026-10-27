@@ -183,6 +183,15 @@ const cargar = db.transaction(() => {
     `${anteayer} 10:00:00`,
     `${anteayer} 12:00:00`,
   );
+  // Mesa con una cuenta histórica y una comanda nueva: demuestra la reutilización.
+  insertarCuenta.run(
+    'cuenta-reutilizada',
+    'mesa-9',
+    'camarero-1',
+    1200,
+    `${ayer} 09:00:00`,
+    `${ayer} 09:30:00`,
+  );
 
   const insertarPedido = db.prepare(
     `INSERT OR IGNORE INTO pedidos (id, mesa_id, camarero_id, estado, creado_en, enviado_en)
@@ -289,6 +298,14 @@ const pedidosDemo = [
     ],
   },
   {
+    id: 'pedido-reutilizado',
+    mesa: 'mesa-9',
+    camarero: 'camarero-1',
+    enviadoEn: '-5 minutes',
+    modificado: 0,
+    lineas: [{ id: 'linea-reutilizada-1', plato: 'plato-2', cantidad: 1, estado: 'pendiente' }],
+  },
+  {
     id: 'pedido-demo-8',
     mesa: 'mesa-8',
     camarero: 'camarero-1',
@@ -364,6 +381,87 @@ const cargarDemo = db.transaction(() => {
 
 cargar();
 cargarDemo();
+
+// Asocia las cuentas históricas a pedidos con consumos para que el dashboard
+// pueda mostrar desgloses por plato coherentes con sus totales.
+const vincularCuentasHistoricas = db.transaction(() => {
+  const cuentasHistoricas = [
+    {
+      cuentaId: 'cuenta-ayer-1',
+      pedidoId: 'pedido-historico-1',
+      mesaId: 'mesa-1',
+      camareroId: 'camarero-1',
+      fecha: ayer,
+      lineas: [
+        { id: 'linea-historica-1', plato: 'plato-1', cantidad: 2, precio: 850 },
+        { id: 'linea-historica-2', plato: 'plato-3', cantidad: 1, precio: 1800 },
+        { id: 'linea-historica-3', plato: 'plato-6', cantidad: 1, precio: 600 },
+      ],
+    },
+    {
+      cuentaId: 'cuenta-ayer-2',
+      pedidoId: 'pedido-historico-2',
+      mesaId: 'mesa-2',
+      camareroId: 'camarero-2',
+      fecha: ayer,
+      lineas: [
+        { id: 'linea-historica-4', plato: 'plato-2', cantidad: 2, precio: 700 },
+        { id: 'linea-historica-5', plato: 'plato-4', cantidad: 1, precio: 2200 },
+      ],
+    },
+    {
+      cuentaId: 'cuenta-anteayer-1',
+      pedidoId: 'pedido-historico-3',
+      mesaId: 'mesa-3',
+      camareroId: 'camarero-1',
+      fecha: anteayer,
+      lineas: [
+        { id: 'linea-historica-6', plato: 'plato-1', cantidad: 1, precio: 850 },
+        { id: 'linea-historica-7', plato: 'plato-5', cantidad: 1, precio: 1650 },
+      ],
+    },
+    {
+      cuentaId: 'cuenta-reutilizada',
+      pedidoId: 'pedido-historico-4',
+      mesaId: 'mesa-9',
+      camareroId: 'camarero-1',
+      fecha: ayer,
+      lineas: [
+        { id: 'linea-historica-8', plato: 'plato-2', cantidad: 1, precio: 700 },
+        { id: 'linea-historica-9', plato: 'plato-8', cantidad: 1, precio: 500 },
+      ],
+    },
+  ];
+
+  const insertarPedido = db.prepare(
+    `INSERT OR IGNORE INTO pedidos (id, mesa_id, camarero_id, estado, creado_en, enviado_en)
+     VALUES (?, ?, ?, 'enviada', ?, ?)`,
+  );
+  const insertarLinea = db.prepare(
+    `INSERT OR IGNORE INTO lineas_pedido (id, pedido_id, plato_id, cantidad, precio_centimos)
+     VALUES (?, ?, ?, ?, ?)`,
+  );
+  const vincularCuenta = db.prepare(
+    'UPDATE cuentas SET pedido_id = ?, total_centimos = ? WHERE id = ?',
+  );
+
+  for (const cuenta of cuentasHistoricas) {
+    const total = cuenta.lineas.reduce((suma, linea) => suma + linea.cantidad * linea.precio, 0);
+    insertarPedido.run(
+      cuenta.pedidoId,
+      cuenta.mesaId,
+      cuenta.camareroId,
+      `${cuenta.fecha} 09:00:00`,
+      `${cuenta.fecha} 09:00:00`,
+    );
+    for (const linea of cuenta.lineas) {
+      insertarLinea.run(linea.id, cuenta.pedidoId, linea.plato, linea.cantidad, linea.precio);
+    }
+    vincularCuenta.run(cuenta.pedidoId, total, cuenta.cuentaId);
+  }
+});
+
+vincularCuentasHistoricas();
 db.close();
 
 console.log(

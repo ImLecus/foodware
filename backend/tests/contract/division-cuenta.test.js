@@ -41,6 +41,7 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
     expect(respuesta.status).toBe(201);
     expect(respuesta.body.cuenta).toMatchObject({
       mesa_id: 'mesa-1',
+      pedido_id: expect.any(String),
       estado: 'abierta',
       total_centimos: 3250,
       modo_division: 'iguales',
@@ -67,9 +68,7 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       .map((fila) => fila.comensal);
     expect(comensales).toEqual(['Ana', 'Luis', 'Marta']);
 
-    const cuenta = await request(app)
-      .get('/api/sala/mesas/mesa-1/cuenta')
-      .set(CABECERA_CAMARERO);
+    const cuenta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
     expect(cuenta.status).toBe(200);
     expect(cuenta.body.division.modo).toBe('iguales');
     expect(cuenta.body.division.partes).toHaveLength(3);
@@ -158,9 +157,7 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
         { orden: 1, comensal: 'Ana', importe_centimos: 3250 },
         { orden: 2, comensal: 'Luis', importe_centimos: 0 },
       ],
-      asignaciones: [
-        { parte_orden: 1, linea_id: linea.id, importe_centimos: 850 },
-      ],
+      asignaciones: [{ parte_orden: 1, linea_id: linea.id, importe_centimos: 850 }],
     });
 
     expect(respuesta.status).toBe(422);
@@ -194,7 +191,9 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       'Pablo',
     ]);
 
-    const cuentas = db.prepare("SELECT COUNT(*) AS total FROM cuentas WHERE mesa_id = 'mesa-1'").get();
+    const cuentas = db
+      .prepare("SELECT COUNT(*) AS total FROM cuentas WHERE mesa_id = 'mesa-1'")
+      .get();
     expect(cuentas.total).toBe(1);
   });
 
@@ -230,10 +229,10 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
   it('rechaza dividir una cuenta ya cerrada', async () => {
     await prepararConPedido();
     db.prepare(
-      `INSERT INTO cuentas (id, mesa_id, estado, total_centimos, modo_division, cerrada_en)
-       VALUES (?, 'mesa-1', 'cerrada', 3250, 'unico', datetime('now'))`,
+      `INSERT INTO cuentas (id, mesa_id, pedido_id, estado, total_centimos, modo_division, cerrada_en)
+       VALUES (?, 'mesa-1', (SELECT id FROM pedidos WHERE mesa_id = 'mesa-1' LIMIT 1), 'cerrada', 3250, 'unico', datetime('now'))`,
     ).run(randomUUID());
-    db.prepare("UPDATE mesas SET estado = 'cerrada' WHERE id = 'mesa-1'").run();
+    db.prepare("UPDATE mesas SET estado = 'libre' WHERE id = 'mesa-1'").run();
 
     const respuesta = await dividir({
       modo: 'iguales',

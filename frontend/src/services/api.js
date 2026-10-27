@@ -11,8 +11,9 @@ async function leerRespuesta(respuesta) {
   if (!respuesta.ok) {
     let detalle = 'No se pudo completar la solicitud';
     let codigo = null;
+    let cuerpo = null;
     try {
-      const cuerpo = await respuesta.json();
+      cuerpo = await respuesta.json();
       detalle = cuerpo.mensaje ?? cuerpo.error ?? detalle;
       codigo = cuerpo.codigo ?? null;
     } catch {
@@ -21,6 +22,7 @@ async function leerRespuesta(respuesta) {
     const error = new Error(detalle);
     error.status = respuesta.status;
     error.codigo = codigo;
+    error.platos = cuerpo?.platos ?? null;
     throw error;
   }
   return respuesta.status === 204 ? null : respuesta.json();

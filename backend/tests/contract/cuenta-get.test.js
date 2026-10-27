@@ -36,6 +36,14 @@ describe('GET /api/sala/mesas/:mesaId/cuenta', () => {
       ticket_estado: 'no_emitido',
     });
 
+    expect(respuesta.body.pedido_id).toEqual(expect.any(String));
+    expect(respuesta.body.platos_pendientes).toHaveLength(3);
+    expect(respuesta.body.platos_pendientes[0]).toMatchObject({
+      nombre: 'Croquetas de jamón',
+      partida: 'entrantes',
+      estado: 'pendiente',
+    });
+
     expect(respuesta.body.consumos).toHaveLength(3);
     expect(respuesta.body.consumos.map((consumo) => consumo.nombre)).toEqual([
       'Croquetas de jamón',

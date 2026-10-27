@@ -18,7 +18,8 @@ contenido mínimo y reglas de presentación verificables por una persona no téc
 | Vacío | Respuesta 200 con `totalVendido = 0` y sin cuentas | Total `0,00 €` y mensaje de "no hay ventas registradas para este día" |
 | Sin datos anteriores | `comparacion.diaAnterior = null` | Mensaje "sin datos anteriores para comparar" en el bloque de comparación |
 | Sin base de comparación | `comparacion.sinBaseComparacion = true` | Diferencia en euros y etiqueta «sin base de comparación»; no se muestra porcentaje |
-| Sin conexión / error | Fallo de red o error 5xx | Mensaje "sin conexión" o error, conservando la última vista cargada si existía |
+| Error de red | Fallo de red (sin respuesta HTTP) | Mensaje «sin conexión», conservando la última vista cargada si existía |
+| Error del servidor | `400`/`500` con respuesta HTTP | Mensaje de error del servidor; nunca etiquetarlo como «sin conexión» |
 | Sin permiso | 401/403 | Mensaje de acceso restringido al encargado |
 
 ## Contenido obligatorio (estado "Datos")

@@ -1,194 +1,177 @@
 # Phase 1 — Data Model: Cierre y división de cuenta
 
-Este documento describe las entidades que la historia 006 necesita. La historia **lee** las
-mesas y las líneas de pedido de las historias 01–04, **escribe** la cuenta, sus partes y las
-asignaciones de consumo, y **cierra** la mesa. La cuenta se persiste en estado abierto al
-confirmarse una división (para conservar el pago de cada parte entre peticiones) y pasa a
-cerrada al pagarse la última parte; el ticket es un modelo derivado con estado
-`no emitido`/`emitido` (no persistido).
+Actualizado el 2026-10-27 con las clarificaciones de reutilización de mesa y bloqueo por
+platos pendientes de cocina.
+
+La historia **lee** mesas, pedidos y líneas de pedido de las historias 001–004, **escribe** la
+cuenta, sus partes y las asignaciones de consumo, y **libera** la mesa al cerrar la cuenta. La
+cuenta cerrada se conserva como histórico; no se reabre.
 
 ## Entidades
 
-### Mesa (propiedad de la historia 01; aquí solo lectura + cierre)
+### Mesa (propiedad de la historia 001; aquí lectura y liberación)
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | entero | Identificador único de la mesa |
-| `numero` | texto | Identificador visible de la mesa en sala (p. ej. "12") |
-| `abierta` | booleano | `true` mientras la mesa está en servicio |
+| `id` | texto | Identificador único de la mesa. |
+| `identificador` | texto | Nombre visible de la mesa en sala (por ejemplo, «Mesa 12»). |
+| `estado` | enumerado | `libre` \| `ocupada` \| `cerrada`; 006 deja de producir `cerrada` al cobrar y usa `libre`. |
 
 **Reglas**:
-- Solo se puede cerrar la cuenta de una mesa con `abierta = true` (FR-001).
-- La historia 006 marca `abierta = false` en la misma transacción en que se paga la última
-  parte pendiente de una cuenta dividida (o se confirma el pago único) (FR-011, FR-012); la
-  apertura de la mesa es de la historia 01 y no se reabre en v1.
+- Solo se puede cerrar la cuenta de una mesa que tenga un pedido en curso o enviado y no tenga
+  otra cuenta abierta en cobro.
+- Al cerrar la cuenta, la mesa pasa a `libre` en la misma transacción (FR-011, clarificación
+  2026-10-27). Puede abrirse una comanda nueva inmediatamente.
+- La cuenta cerrada no se reabre. La nueva comanda crea un pedido y una cuenta nuevos.
+- El valor heredado `cerrada` no se usa para nuevas mesas de esta versión; si existe en datos
+  antiguos, se trata como una mesa no disponible hasta que se migre o se libere manualmente.
 
-### Consumo (línea de pedido; propiedad de las historias 01–04; aquí solo lectura)
-
-Cada plato anotado en el pedido de la mesa, con el precio fijado en el momento de pedirlo.
+### Pedido (propiedad de las historias 001–004; aquí solo lectura)
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | entero | Identificador único de la línea |
-| `mesa_id` | entero | Mesa a la que pertenece (relación N:1 con Mesa) |
-| `nombre` | texto | Nombre del plato |
-| `cantidad` | entero | Unidades de la línea (≥ 1) |
-| `partida` | enumerado | `entrantes` \| `principales` \| `postres` |
-| `precio_unitario_cent` | entero | Precio unitario **fijado al pedir**, en céntimos (IVA incluido) |
-| `importe_cent` | entero (derivado) | `cantidad × precio_unitario_cent` |
+| `id` | texto | Identificador del pedido. |
+| `mesa_id` | texto | Mesa a la que pertenece. |
+| `estado` | enumerado | `en_curso` \| `enviada` \| `cerrada`. |
+| `enviado_en` | fecha | Momento de envío a cocina. |
 
 **Reglas**:
-- El precio no cambia aunque cambie la carta; un cambio de precio no altera cuentas en curso
-  (FR-002, clarificación).
-- El importe se calcula en céntimos enteros.
+- Los consumos de una mesa son las líneas de sus pedidos `en_curso` y `enviada` con precio
+  fijado al pedir.
+- Solo las líneas de pedidos `enviada` están en cocina y participan en el bloqueo de cierre.
+
+### Consumo / línea de pedido (propiedad de las historias 001–004; aquí solo lectura)
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | texto | Identificador de la línea. |
+| `pedido_id` | texto | Pedido al que pertenece. |
+| `plato_id` | texto | Plato de la carta. |
+| `nombre` | texto | Nombre del plato en el momento de la consulta. |
+| `cantidad` | entero | Unidades (≥ 1). |
+| `partida` | enumerado | `entrantes` \| `principales` \| `postres`. |
+| `precio_centimos` | entero | Precio unitario fijado al pedir, IVA incluido. |
+| `estado` | enumerado | `pendiente` \| `listo`. |
+| `listo_en` | fecha / nulo | Momento en que cocina la marcó lista. |
+| `importe_centimos` | entero derivado | `cantidad × precio_centimos`. |
+
+**Reglas**:
+- El precio no cambia si cambia la carta (FR-002).
+- Todas las líneas de la mesa se incluyen en el total, tengan estado `pendiente` o `listo`.
+- Una línea de un pedido `enviada` con `estado = pendiente` bloquea el cierre y se muestra al
+  camarero (FR-019).
+- Las líneas de un pedido `en_curso` no se consideran pendientes de cocina, porque aún no se
+  han enviado.
 
 ### Cuenta (propiedad de esta historia 006)
 
-Importe total de lo consumido por una mesa y su estado. Sin división, la **cuenta abierta**
-es derivada (se calcula desde los consumos mientras la mesa está abierta) y solo se persiste
-al confirmar el pago único. Al confirmar una **división**, la cuenta se persiste en estado
-`abierta` con sus partes pendientes para conservar los pagos y sus reversiones entre
-peticiones; pasa a `cerrada` al pagarse la última parte.
-
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | entero | Identificador único de la cuenta |
-| `mesa_id` | entero | Mesa a la que pertenece (relación N:1 con Mesa) |
-| `estado` | enumerado | `abierta` \| `cerrada`; `abierta` se persiste al confirmar una división |
-| `total_cent` | entero | Importe total, en céntimos (IVA incluido); es el total base de la división |
-| `modo_division` | enumerado / nulo | `unico` \| `iguales` \| `por_consumo` |
-| `creada_en` | marca de tiempo | Momento de creación del registro |
-| `cerrada_en` | marca de tiempo / nulo | Momento del cierre; nulo mientras está abierta |
+| `id` | texto | Identificador único. |
+| `mesa_id` | texto | Mesa de la cuenta. |
+| `pedido_id` | texto / nulo | Pedido de la comanda que origina la cuenta; permite separar cuentas históricas de una mesa reutilizada. |
+| `estado` | enumerado | `abierta` (división confirmada) \| `cerrada`. |
+| `total_centimos` | entero | Total de consumos, IVA incluido. |
+| `modo_division` | enumerado / nulo | `unico` \| `iguales` \| `por_consumo`. |
+| `abierta_en` | fecha | Creación de la cuenta persistida. |
+| `cerrada_en` | fecha / nulo | Cierre de la cuenta. |
+| `camarero_id` | texto / nulo | Camarero que realizó el cobro, cuando se persiste. |
 
 **Reglas**:
-- Existe como máximo **una cuenta cerrada vigente por mesa** y como máximo **una cuenta
-  abierta persistida en cobro** (con división confirmada); cerrar una cuenta ya cerrada se
-  rechaza (FR-014).
-- Mientras la cuenta persistida está `abierta`, su `total_cent` es el **total base** de la
-  división. Si al pagar o revertir una parte el total actual de los consumos difiere, se
-  rechaza la operación (`422`), se descarta la división y el camarero debe rehacerla (FR-017).
-- `modo_division = unico` significa un solo pago, sin partes (FR-005, suposición).
-- La cuenta pasa a `cerrada` una sola vez, en la transacción que completa el pago (pago único
-  o última parte pendiente); no se reabre en v1.
+- La cuenta se asocia al pedido de la comanda (`pedido_id`). La consulta de la cuenta actual usa el
+  pedido activo de la mesa; una cuenta cerrada de un pedido anterior no bloquea una comanda nueva.
+- Sin división, la cuenta abierta es derivada de los consumos y no se persiste hasta el cobro.
+- Al confirmar una división se persiste la cuenta en estado `abierta`, con sus partes pendientes.
+- La cuenta pasa a `cerrada` una sola vez, en la transacción que completa el pago único o la
+  última parte pendiente.
+- No se puede cerrar mientras haya líneas pendientes de pedidos enviados; se devuelve
+  `409 platos_pendientes` con la lista de líneas.
+- Cada mesa puede tener varias cuentas cerradas históricas y, como máximo, una cuenta abierta
+  persistida en cobro.
+- La cuenta cerrada no se reabre; una nueva comanda crea una cuenta nueva.
 
 ### Parte de la cuenta (propiedad de esta historia 006)
 
-Cada porción de la división, con su importe, el comensal asociado y su estado de pago.
-
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | entero | Identificador único de la parte |
-| `cuenta_id` | entero | Cuenta a la que pertenece (relación N:1 con Cuenta) |
-| `orden` | entero | Posición de la parte (1..n); determina el reparto de céntimos (FR-018) |
-| `comensal` | texto / nulo | Etiqueta del comensal al que se asocia la parte (FR-008) |
-| `importe_cent` | entero | Importe de la parte, en céntimos |
-| `estado` | enumerado | `pendiente` \| `pagada`; toda parte nace `pendiente` |
-| `pagada_en` | marca de tiempo / nulo | Momento en que se marcó como pagada; nulo si está pendiente |
+| `id` | texto | Identificador único. |
+| `cuenta_id` | texto | Cuenta a la que pertenece. |
+| `orden` | entero | Posición 1..n; determina el reparto de céntimos. |
+| `comensal` | texto | Etiqueta del comensal. |
+| `importe_centimos` | entero | Importe de la parte. |
+| `estado` | enumerado | `pendiente` \| `pagada`. |
+| `pagada_en` | fecha / nulo | Momento del pago. |
 
 **Reglas**:
-- La suma de `importe_cent` de todas las partes es exactamente `cuenta.total_cent` (FR-009).
-- En partes iguales, la parte con `orden ≤ resto` recibe un céntimo más (FR-018).
-- La mesa se cierra solo cuando todas las partes tienen `estado = pagada` (FR-016).
-- Al marcar la **última** parte pendiente como pagada se cierra la cuenta y la mesa en la
-  misma transacción y se emite el único ticket (FR-010, SC-008).
-- Una parte `pagada` puede volver a `pendiente` mientras la mesa no esté cerrada; al revertir
-  se limpia `pagada_en`. Si la mesa ya está cerrada, la reversión se rechaza (FR-016, SC-009).
-- Una parte `pagada` no se puede volver a marcar como pagada; una parte `pendiente` no se
-  puede desmarcar.
+- La suma de las partes es exactamente `cuenta.total_centimos`.
+- En partes iguales, el sobrante se reparte de uno en uno por orden.
+- La cuenta se cierra solo cuando todas las partes están pagadas y no hay platos pendientes de
+  cocina.
+- Una parte pagada puede volver a pendiente mientras la cuenta esté abierta.
+- Al marcar la última parte como pagada se cierra la cuenta, se libera la mesa y se emite el
+  ticket único; si hay platos pendientes, la operación se rechaza.
 
 ### Asignación de consumo (propiedad de esta historia 006)
 
-Reparto de un consumo (o de una porción de su importe) a una parte, en la división por
-consumo.
-
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | entero | Identificador único de la asignación |
-| `cuenta_id` | entero | Cuenta a la que pertenece (FK) |
-| `parte_id` | entero | Parte de la división a la que se asigna (FK) |
-| `consumo_id` | entero | Consumo (línea de pedido) asignado (FK, solo lectura) |
-| `importe_cent` | entero | Porción del importe del consumo asignada a la parte |
+| `id` | texto | Identificador de la asignación. |
+| `parte_id` | texto | Parte de la cuenta. |
+| `linea_id` | texto | Consumo asignado. |
+| `importe_centimos` | entero | Porción del consumo asignada a la parte. |
 
 **Reglas**:
-- Para cada consumo, la suma de sus asignaciones es igual a su `importe_cent` (todo lo
-  consumido queda repartido).
-- Permite repartir un plato compartido entre varias partes (edge case).
-
-### División de la cuenta (modelo, no persistido como entidad propia)
-
-Conjunto de partes en que se reparte el importe, con su modo (`iguales` o `por_consumo`) y, en
-el modo por consumo, las asignaciones de consumos o porciones. Se persiste en
-`cuentas_partes` y `cuentas_parte_consumos` al confirmar la división, con todas las partes en
-estado `pendiente`; no se persiste como entidad propia. Mientras ninguna parte esté pagada, la
-división puede sustituirse por otra (cancelar y rehacer sin cobrar); con alguna parte pagada,
-solo se descarta si la cuenta cambia (FR-017).
+- La suma de asignaciones de cada consumo es su importe.
+- La suma de asignaciones de cada parte es su importe.
+- Permite repartir un plato compartido entre varias partes.
 
 ### Ticket (modelo derivado, no persistido)
 
-Documento final compuesto a partir de la cuenta cerrada y sus partes: el total y el desglose
-de cada parte con su importe. No se persiste una tabla propia; su **estado** se deriva de la
-cuenta: `no_emitido` mientras la cuenta está abierta (aunque haya partes ya pagadas) y
-`emitido` cuando la cuenta se cierra. Se emite **una sola vez**, al pagarse la última parte
-pendiente de una cuenta dividida o al confirmar el pago único; no existen tickets
-provisionales por partes intermedias (FR-010, SC-008). `generadoEn` coincide con
-`cuenta.cerrada_en`. Una vez emitido, puede volver a mostrarse desde la cuenta cerrada.
-
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `estado` | enumerado (derivado) | `no_emitido` \| `emitido` |
-| `totalCent` | entero | Total de la cuenta cerrada |
-| `partes` | lista | Desglose de cada parte con su importe (vacío en modo único) |
-| `generadoEn` | marca de tiempo | Momento del cierre; nulo si `estado = no_emitido` |
+| `estado` | enumerado | `no_emitido` \| `emitido`. |
+| `mesa_id` | texto | Mesa de la cuenta cerrada. |
+| `total_centimos` | entero | Total de la cuenta. |
+| `generado_en` | fecha | `cuenta.cerrada_en`. |
+| `partes` | lista | Desglose de partes; vacío en pago único. |
+
+**Reglas**:
+- `no_emitido` mientras la cuenta está abierta.
+- `emitido` solo cuando la cuenta se cierra; se emite una sola vez.
+- Al liberar la mesa y abrir una comanda nueva, el ticket histórico no se modifica.
 
 ## Relaciones
 
 ```text
-Mesa   1 ──── N Consumo                 (una mesa agrupa varios consumos)
-Mesa   1 ──── N Cuenta                  (histórico; como máximo 1 cerrada vigente)
-Cuenta 1 ──── N Parte de la cuenta      (una cuenta puede dividirse en varias partes)
-Cuenta 1 ──── N Asignación de consumo   (solo en modo por consumo)
-Parte  1 ──── N Asignación de consumo
-Consumo 1 ── N Asignación de consumo    (un consumo puede repartirse en porciones)
+Mesa 1 ─── N Pedido
+Mesa 1 ─── N Cuenta (histórico)
+Pedido 1 ─ N Consumo
+Cuenta 1 ─ N Parte
+Cuenta 1 ─ N Asignación
+Parte 1 ── N Asignación
+Consumo 1 ─ N Asignación
 ```
 
-## Reglas de validación y cálculo
+## Validaciones y cálculos
 
-1. **Total de la cuenta**: `total_cent = Σ consumo.importe_cent` (cantidad × precio unitario
-   fijado al pedir), en céntimos.
-2. **Partes iguales**: `base = total_cent ÷ n` y `resto = total_cent − base × n`; las partes
-   con `orden ≤ resto` reciben `base + 1`, el resto `base`.
-3. **División por consumo**: la suma de asignaciones de cada consumo es su importe y la suma
-   de todas las asignaciones es `total_cent`.
-4. **Coincidencia exacta**: `Σ parte.importe_cent = cuenta.total_cent` siempre (FR-009).
-5. **Cierre**: se cierra en la misma transacción que marca la última parte pendiente como
-   pagada (o al confirmar el pago único), solo si el total actual coincide con el total base,
-   ninguna parte queda pendiente y la cuenta no estaba cerrada (FR-011, FR-014, FR-016).
-   No existe una operación de cierre separada para cuentas divididas.
-6. **Emisión del ticket**: se emite exactamente una vez al cerrar la cuenta; antes de ese
-   momento `estado = no_emitido` y la consulta del ticket se rechaza (FR-010, SC-008).
-7. **Reversión**: una parte pagada vuelve a pendiente solo con la mesa abierta; la operación
-   limpia `pagada_en` y no emite ni invalida ningún ticket, porque todavía no existe
-   (FR-016, SC-009).
-8. **Mesa sin consumos**: la cuenta muestra un total de cero y **no** permite un cierre sin
-   importe (edge case).
+1. **Total**: suma de `cantidad × precio_centimos` de todas las líneas de pedidos `en_curso` y
+   `enviada`.
+2. **Partes iguales**: base y resto según reparto determinista.
+3. **Por consumo**: cada consumo queda cubierto exactamente y cada parte coincide con sus
+   asignaciones.
+4. **Bloqueo de cocina**: si existe alguna línea `pendiente` en un pedido `enviada` de la mesa,
+   no se permite cerrar la cuenta ni pagar la última parte.
+5. **Cierre**: cuenta pasa a `cerrada`, mesa a `libre`, se emite ticket y `mesa-cerrada` en la
+   misma transacción.
+6. **Reutilización**: la mesa liberada puede abrir una nueva comanda; la cuenta anterior queda
+   cerrada y no se reabre.
+7. **Ticket**: un único ticket al cerrar; consultable después.
 
 ## Transiciones de estado
 
 ```text
-Cuenta
-  derivada (sin división) / abierta persistida (división confirmada)
-        ──(pago único o última parte pendiente)──▶ cerrada (persistida)
-
-Parte de la cuenta
-  pendiente ──(camarero marca como pagada)──▶ pagada
-  pagada ──(camarero deshace la marca; mesa abierta)──▶ pendiente
-  (no se admite pagar una parte ya pagada ni desmarcar una pendiente)
-
-Ticket
-  no_emitido ──(se cierra la cuenta: pago único o última parte)──▶ emitido
-  (no hay vuelta atrás: la mesa ya está cerrada)
-
-Mesa
-  abierta ──(pago único o última parte pendiente)──▶ cerrada
-  (no se reabre en v1; las nuevas operaciones se rechazan)
+Mesa:      libre ──(abrir)──▶ ocupada ──(cerrar cuenta)──▶ libre
+Cuenta:    derivada/abierta ──(pago único o última parte)──▶ cerrada
+Parte:     pendiente ──(pagar)──▶ pagada ──(deshacer; cuenta abierta)──▶ pendiente
+Ticket:    no_emitido ──(cerrar cuenta)──▶ emitido
 ```

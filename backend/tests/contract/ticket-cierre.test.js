@@ -1,7 +1,12 @@
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
-import { CABECERA_CAMARERO, crearBaseDePrueba, crearPedidoEnviado } from '../ayuda.js';
+import {
+  CABECERA_CAMARERO,
+  crearBaseDePrueba,
+  crearPedidoEnviado,
+  marcarPedidoListo,
+} from '../ayuda.js';
 
 describe('Ticket final de la cuenta (US3)', () => {
   let db;
@@ -14,7 +19,8 @@ describe('Ticket final de la cuenta (US3)', () => {
   async function prepararConPedido() {
     db = crearBaseDePrueba();
     app = createApp(db);
-    await crearPedidoEnviado(app);
+    const pedidoId = await crearPedidoEnviado(app);
+    await marcarPedidoListo(app, pedidoId);
   }
 
   async function dividirEnDos() {
@@ -57,9 +63,7 @@ describe('Ticket final de la cuenta (US3)', () => {
     expect(ticket.body.codigo).toBe('ticket_no_emitido');
     expect(ticket.body.ticket_estado).toBe('no_emitido');
 
-    const cuenta = await request(app)
-      .get('/api/sala/mesas/mesa-1/cuenta')
-      .set(CABECERA_CAMARERO);
+    const cuenta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
     expect(cuenta.status).toBe(200);
     expect(cuenta.body.ticket_estado).toBe('no_emitido');
     expect(cuenta.body.division.partes.map((parte) => parte.estado)).toEqual([
@@ -95,6 +99,29 @@ describe('Ticket final de la cuenta (US3)', () => {
 
     expect(ticket.status).toBe(200);
     expect(ticket.body).toEqual(ultimoPago.body.ticket);
+  });
+
+  it('bloquea la última parte si quedan platos pendientes y permite cerrar tras cocinarlos', async () => {
+    db = crearBaseDePrueba();
+    app = createApp(db);
+    const pedidoId = await crearPedidoEnviado(app);
+    const [ana, luis] = await dividirEnDos();
+
+    const primera = await pagar(ana.id);
+    expect(primera.status).toBe(200);
+
+    const ultimaBloqueada = await pagar(luis.id);
+    expect(ultimaBloqueada.status).toBe(409);
+    expect(ultimaBloqueada.body.codigo).toBe('platos_pendientes');
+    expect(ultimaBloqueada.body.platos).toHaveLength(3);
+    expect(db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get().estado).toBe('ocupada');
+
+    await marcarPedidoListo(app, pedidoId);
+
+    const ultima = await pagar(luis.id);
+    expect(ultima.status).toBe(200);
+    expect(ultima.body.ticket_estado).toBe('emitido');
+    expect(db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get().estado).toBe('libre');
   });
 
   it('rechaza el cierre único de una cuenta dividida', async () => {

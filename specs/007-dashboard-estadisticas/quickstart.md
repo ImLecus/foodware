@@ -40,7 +40,7 @@ contrato del endpoint; estados de la página).
 
 ### E1. Visión global del total (US1, SC-001, FR-002)
 1. Iniciar sesión como **encargado** y abrir `/dashboard`.
-2. **Esperado**: se ve el total del último día completado en euros en primer plano (`1.287,50 €`).
+2. **Esperado**: se ve el total del último día completado **anterior a hoy** en euros en primer plano (`1.287,50 €`). Si hoy ya se cerró una cuenta, hoy sigue sin aparecer hasta que termine el día.
 
 ### E2. Desglose por camarero (US2, FR-003)
 1. En el mismo dashboard, mirar la tabla "por camarero".
@@ -75,11 +75,20 @@ contrato del endpoint; estados de la página).
 ### E8. Sin conexión (aclaración de la spec)
 1. Con el dashboard abierto, cortar la red o detener el backend.
 2. Recargar/refrescar.
-3. **Esperado**: mensaje de "sin conexión"/error, sin pérdida de la última vista conservada.
+3. **Esperado**: mensaje «sin conexión» si falla la red; si el servidor devuelve `400/500`, se muestra el mensaje de error real, no «sin conexión».
 
 ### E9. Rendimiento (SC-005)
 1. Con un día de datos representativo, cronometrar la carga del dashboard.
 2. **Esperado**: los datos se muestran en menos de 3 s.
+
+### E11. Cierre de una cuenta hoy (FR-001, aclaración 2026-10-27)
+
+1. Cerrar una cuenta de una mesa hoy.
+2. Abrir/recargar `/dashboard` sin indicar fecha.
+3. **Esperado**: sigue mostrando el último día natural completado anterior a hoy, sin error y sin
+   datos parciales del día en curso.
+4. Consultar explícitamente `GET /api/reports/daily?date=<hoy>`.
+5. **Esperado**: `400`, porque el día en curso no está completado.
 
 ### E10. Día anterior sin ventas (FR-011, SC-006)
 1. Preparar los datos con el día anterior sin ninguna cuenta cerrada y el día actual con ventas.
