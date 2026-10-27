@@ -45,6 +45,20 @@ describe('SalaPage (US2)', () => {
     expect(screen.getByText('pendiente')).toBeInTheDocument();
   });
 
+  it('muestra el error de carga en español', async () => {
+    obtenerEstadoPlatos.mockRejectedValue(
+      new Error('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.'),
+    );
+
+    renderizar();
+
+    expect(
+      await screen.findByText(
+        'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
+      ),
+    ).toBeInTheDocument();
+  });
+
   it('actualiza el estado al recibir un evento sin recargar', async () => {
     obtenerEstadoPlatos.mockResolvedValueOnce([lineaPendiente]);
     renderizar();

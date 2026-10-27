@@ -81,6 +81,10 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(403);
+    expect(respuesta.body).toMatchObject({
+      codigo: 'partida_ajena',
+      mensaje: 'La línea no pertenece a tu partida',
+    });
   });
 
   it('devuelve 409 al marcar listo un pedido ya completado', async () => {
@@ -91,5 +95,9 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(409);
+    expect(respuesta.body).toMatchObject({
+      codigo: 'pedido_completado',
+      mensaje: 'El pedido ya está completado',
+    });
   });
 });
