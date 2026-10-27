@@ -2,6 +2,7 @@ import {
   actualizarEstadoLinea,
   buscarLineaDePedido,
   contarLineasPendientes,
+  listarLineasDePedido,
 } from '../models/lineaPedido.js';
 import { buscarMesa, numeroDeMesa } from '../models/mesa.js';
 import { buscarPedido } from '../models/pedido.js';
@@ -26,6 +27,16 @@ function respuestaLinea(linea, { pedidoCompletado = false, pedidoReabierto = fal
     pedidoCompletado,
     pedidoReabierto,
   };
+}
+
+function partidasDelPedido(db, pedidoId) {
+  return [...new Set(listarLineasDePedido(db, pedidoId).map((linea) => linea.partida))];
+}
+
+function refrescarPartidas(partidas) {
+  for (const partida of partidas) {
+    emitirPendientesCambiado({ partida });
+  }
 }
 
 /**
@@ -85,9 +96,7 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
         cantidad: linea.cantidad,
       });
       respuesta.mesa = sincronizarAvisoMesa(db, pedido.mesa_id, { nuevoPlatoListo: true });
-      if (respuesta.pedidoCompletado) {
-        emitirPendientesCambiado({ partida: linea.partida, mesaId: pedido.mesa_id });
-      }
+      refrescarPartidas(partidasDelPedido(db, pedidoId));
       logger.info('Línea marcada como lista', {
         pedidoId,
         lineaId,
@@ -119,8 +128,8 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
       cantidad: linea.cantidad,
     });
     respuesta.mesa = sincronizarAvisoMesa(db, pedido.mesa_id);
+    refrescarPartidas(partidasDelPedido(db, pedidoId));
     if (respuesta.pedidoReabierto) {
-      emitirPendientesCambiado({ partida: linea.partida, mesaId: pedido.mesa_id });
       emitirPedidoReabierto({
         pedidoId,
         partida: linea.partida,

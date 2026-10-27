@@ -62,6 +62,38 @@ describe('eventos SSE por partida', () => {
     }
   });
 
+  it('refresca todas las partidas del pedido al cambiar una línea', async () => {
+    const pedidoId = await prepararPedidoEnCurso();
+    await request(app).post(`/api/pedidos/${pedidoId}/confirmar`).set(CABECERA_CAMARERO);
+
+    const lineaEntrante = db
+      .prepare(
+        `SELECT l.id
+           FROM lineas_pedido l
+           JOIN platos p ON p.id = l.plato_id
+          WHERE l.pedido_id = ? AND p.partida_codigo = 'entrantes'`,
+      )
+      .get(pedidoId);
+
+    const entrantes = suscribirCanal('entrantes');
+    const principales = suscribirCanal('principales');
+    const postres = suscribirCanal('postres');
+
+    const respuesta = await request(app)
+      .put(`/api/pedidos/${pedidoId}/lineas/${lineaEntrante.id}/estado?partida=entrantes`)
+      .set(CABECERA_CAMARERO)
+      .send({ estado: 'listo' });
+
+    expect(respuesta.status).toBe(200);
+    expect(entrantes.escrito.join('')).toContain('event: linea.actualizada');
+    expect(principales.escrito.join('')).not.toContain('event: linea.actualizada');
+    expect(postres.escrito.join('')).not.toContain('event: linea.actualizada');
+
+    for (const cliente of [entrantes, principales, postres]) {
+      expect(cliente.escrito.join('')).toContain('event: pedido.pendientes-cambiado');
+    }
+  });
+
   it('emite pedido.modificado y pendientes-cambiado al enviar cambios', async () => {
     ({ db, app } = crearAppDePrueba());
     const pedidoId = await crearPedidoEnviado(app);

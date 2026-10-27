@@ -271,3 +271,9 @@ Task: "Build loading and error components in frontend/src/components/EstadoCarga
 - [X] T061 Añadir logging de emisión de eventos en `backend/src/realtime/emit.js` o `backend/src/realtime/hub.js` con tipo, partida e identificadores, y cubrirlo con una prueba per T050 (missing)
 - [X] T062 Añadir el mapa de FR-001…FR-018 a las pruebas y a la documentación de verificación de la historia, indicando qué test cubre cada requisito per T054 (missing)
 - [X] T063 Derivar `modificado` únicamente de `modificadoEn` no nulo en `backend/src/services/verPedidos.js` y ajustar fixtures y pruebas para que el flag legado `modificado` no produzca falsos positivos per T031, T028, `data-model.md` (partial)
+
+---
+
+## Phase 8: Convergence
+
+- [X] T064 Actualizar el estado de las líneas de otras partidas en las pantallas de cocina: al marcar o deshacer una línea, emitir un refresco (`pedido.pendientes-cambiado` o evento equivalente) a todas las partidas presentes en el pedido, no solo a la partida de la línea, para que las pantallas que muestran todas las líneas no conserven estados obsoletos; añadir una prueba de integración con un pedido mixto y canales de dos partidas en `backend/tests/integration/eventos-partida.test.js` per FR-007, US2/AC4, US3/AC4, T043, T057, T058 (partial)
