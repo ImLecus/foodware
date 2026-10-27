@@ -40,7 +40,7 @@ modelo derivado** que se calcula desde los consumos (no se persiste). Al confirm
 **división**, se persiste una fila de `cuentas` en estado `abierta` con su total base, sus
 partes en estado `pendiente` y sus asignaciones; así el pago y la reversión de cada parte
 sobreviven entre peticiones. En la misma transacción que completa el pago (última parte
-pendiente o pago único) la cuenta pasa a `cerrada`, se guarda `cerrada_en` y se cierra la mesa.
+pendiente o pago único) la cuenta pasa a `cerrada`, se guarda `cerrada_en` y la mesa vuelve a estar `libre` para una nueva comanda.
 
 **Rationale**: el pago por partes y su reversión son operaciones separadas en el tiempo y
 necesitan un estado persistido; sin él no se podría deshacer una marca ni saber cuántas partes
@@ -101,26 +101,27 @@ vivo (no exigido por la spec).
 
 **Decisión**: el camarero marca cada parte como pagada por separado. Cada marca se valida y
 persiste en su propia transacción. Al marcar la **última** parte pendiente, la misma
-transacción comprueba que el total actual coincide con el total base, cierra la cuenta y la
-mesa, emite el único ticket y publica `mesa-cerrada`. Una parte marcada por error puede volver
-a `pendiente` mientras la mesa siga abierta; la reversión limpia `pagada_en` y deja la cuenta
+transacción comprueba que el total actual coincide con el total base, cierra la cuenta, libera
+la mesa, emite el único ticket y publica `mesa-cerrada`. Una parte marcada por error puede volver
+a `pendiente` mientras la cuenta siga abierta; la reversión limpia `pagada_en` y deja la cuenta
 abierta. Cerrar una cuenta ya cerrada se rechaza (`409`), igual que revertir una parte con la
-mesa cerrada.
+cuenta cerrada.
 
-**Rationale**: cumple literalmente las clarificaciones del 2026-10-20 y SC-007/SC-009: la mesa
+**Rationale**: cumple literalmente las clarificaciones del 2026-10-20 y SC-007/SC-009: la cuenta
 solo se cierra con todas las partes pagadas y la reversión es posible únicamente antes del
-cierre. La transacción evita cierres parciales, tickets duplicados o una mesa cerrada con
+cierre. La transacción evita cierres parciales, tickets duplicados o una cuenta cerrada con
 partes pendientes.
 
 **Alternativas consideradas**: una única operación de cierre con todas las partes ya pagadas
 (contradice el pago y la reversión parte a parte); permitir revertir después del cierre
-(contradice la clarificación y obligaría a reabrir la mesa); persistir cada pago como un
+(contradice la clarificación y obligaría a reabrir la cuenta); persistir cada pago como un
 borrador independiente (más estados y limpieza).
 
 ## 7. Notificación a la vista de sala (integración con la historia 005)
 
-**Decisión**: al cerrar la mesa, el backend emite el evento `mesa-cerrada` por el **hub SSE ya
-existente** (historia 005), para que las pantallas de sala dejen de mostrar la mesa. La
+**Decisión**: al cerrar la cuenta, el backend emite el evento `mesa-cerrada` por el **hub SSE ya
+existente** (historia 005), para que las pantallas de sala refresquen la mesa y la muestren como
+libre. La
 pantalla de cierre de 006 no se suscribe a tiempo real: carga la cuenta por HTTP y valida el
 total base en cada operación de pago.
 
@@ -129,20 +130,22 @@ total base en cada operación de pago.
 propio.
 
 **Alternativas consideradas**: que la historia 006 tuviera su propio canal en vivo (innecesario);
-no notificar (la vista de sala mostraría mesas cerradas hasta recargar).
+no notificar (la vista de sala mantendría la mesa ocupada hasta recargar).
 
 ## 8. Pruebas automatizadas y verificación
 
 **Decisión**: backend con Vitest + Supertest (contrato de las rutas de cuenta, división y pago
 por partes; cálculo del total; redondeo de céntimos en partes iguales; validación de la
 división; pago y reversión de partes; emisión única del ticket; cierre transaccional; rechazo
-de cuenta ya cerrada, de partes pendientes al cerrar y de reversión con la mesa cerrada) y
+de cuenta ya cerrada, de partes pendientes al cerrar, de bloqueo por platos pendientes, de
+reutilización de mesa y de reversión con la cuenta cerrada) y
 frontend con Vitest + React Testing Library (resumen del total, división en ambos modos, pago
 y reversión de partes, ticket y estado de error). Los criterios de éxito se comprueban además
 con los escenarios de `quickstart.md`.
 
 **Rationale**: cumple la regla de "pruebas junto a la funcionalidad" de la constitución y hace
-verificables los redondeos y el bloqueo de mesa, que son los puntos más propensos a fallar.
+verificables los redondeos, el bloqueo por cocina y la reutilización de la mesa, que son los
+puntos más propensos a fallar.
 
 **Alternativas consideradas**: un único *runner* para todo (posible, pero con peor encaje en
 cada entorno).
@@ -169,7 +172,7 @@ cuenta cerrada).
 
 **Decisión**: deshacer la marca de una parte es una operación de estado, no un reembolso: la
 parte vuelve a `pendiente` y se limpia `pagada_en`. Solo se permite mientras la cuenta y la
-mesa estén abiertas; tras cerrarse la última parte, la mesa ya está cerrada y la reversión se
+cuenta esté abierta; tras cerrarse la última parte, la cuenta ya está cerrada y la reversión se
 rechaza. El sistema no se integra con terminales de pago: el cobro lo confirma el camarero y
 la aplicación solo registra el estado de cada parte.
 
@@ -179,4 +182,47 @@ reversión no requiere anular ni reemitir ningún documento.
 
 **Alternativas consideradas**: integrar la reversión con el terminal de pago (fuera de
 alcance); impedir la reversión una vez marcada (contradice la clarificación); permitirla tras
-el cierre (obligaría a reabrir la mesa, prohibido en v1).
+el cierre (obligaría a reabrir la cuenta, fuera de alcance en v1).
+
+## 11. Reutilización de la mesa tras el cobro (FR-011, FR-012, clarificación 2026-10-27)
+
+**Decisión**: al cerrar la cuenta, `mesas.estado` pasa a `libre`; la mesa vuelve a aparecer en
+sala y puede abrir una nueva comanda. La cuenta cerrada se conserva como histórico y no se
+reabre. La nueva comanda crea un pedido y una cuenta nuevos; la consulta de cuenta/ticket por
+mesa devuelve el registro correspondiente a la comanda o al cierre más reciente. Para soportarlo se
+añade `cuentas.pedido_id` y se consulta la cuenta por el pedido actual; así una cuenta cerrada
+antigua no bloquea una comanda nueva de la misma mesa.
+
+**Rationale**: evita mesas inutilizables y mantiene el histórico sin duplicar la entidad Mesa.
+El estado `libre` ya existe en el esquema y es el que usa la historia 001 para permitir abrir.
+
+**Alternativas consideradas**: mantener `cerrada` y permitir una reapertura explícita (añade un
+estado y una operación que la spec no pide); liberar solo al día siguiente o mediante acción
+manual (peor experiencia y más pasos).
+
+## 12. Bloqueo del cierre por platos pendientes de cocina (FR-019, clarificación 2026-10-27)
+
+**Decisión**: antes de cerrar la cuenta se consultan las líneas de pedidos `enviada` de la mesa.
+Si alguna línea tiene `estado = 'pendiente'`, se rechaza el cierre con `409 platos_pendientes` y
+se devuelve la lista de líneas pendientes. La interfaz muestra esa lista y mantiene la mesa
+abierta. No se cancelan ni se marcan líneas automáticamente. El mismo bloqueo se aplica al
+intentar pagar la última parte de una cuenta dividida.
+
+**Rationale**: impide cobrar y liberar una mesa con comida aún en preparación, conserva la
+información de cocina y evita que el camarero tenga que adivinar qué falta. No se introducen
+estados nuevos: se lee el estado ya existente de las líneas.
+
+**Alternativas consideradas**: cancelar pendientes y descontarlos del total (puede tirar comida
+ya preparada y exige borrar consumos); marcarlos como servidos (falsea cocina); permitir el
+cierre dejándolos pendientes (es el comportamiento actual defectuoso).
+
+## 13. Autenticación y autorización heredadas de la historia 000
+
+**Decisión**: todos los endpoints de cuenta se montan detrás de `autenticar` y
+`requireRole('camarero')`. La identidad se obtiene solo de la cookie de sesión; no se aceptan
+cabeceras de camarero ni parámetros de URL. Sin sesión se responde `401`; con otro rol, `403`.
+
+**Rationale**: la historia 000 ya sustituyó la identidad simulada; 006 no debe reintroducirla.
+
+**Alternativas consideradas**: mantener la identidad por cabecera para tests (dejaría un bypass
+de autenticación); confiar solo en el guard de la interfaz (inseguro).

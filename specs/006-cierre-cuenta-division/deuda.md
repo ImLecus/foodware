@@ -1,3 +1,8 @@
+> **Actualización 2026-10-27**: las clarificaciones y el plan nuevo sustituyen la decisión de
+> dejar la mesa en `cerrada` y no reutilizarla. La mesa se libera como `libre`, se añade
+> `cuentas.pedido_id` y el cierre se bloquea si hay platos pendientes de cocina. Este documento
+> se conserva como registro histórico de la deuda detectada en la implementación anterior.
+
 # Deuda técnica de la historia 006
 
 Registro de desviaciones e inconsistencias detectadas en `/speckit.analyze` (2026-10-27) que

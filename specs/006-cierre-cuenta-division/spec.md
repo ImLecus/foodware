@@ -11,7 +11,7 @@
 ### Session 2026-10-13
 
 - Q: Para dividir la cuenta "por lo consumido", ¿cómo sabe el sistema qué corresponde a cada comensal? → A: El camarero asigna cada plato consumido (o la porción correspondiente de su importe) a una parte al cerrar la cuenta; el pedido no registra el consumo por comensal.
-- Q: Una vez dividida la cuenta, ¿se cierra la mesa con un único cobro del total o cada parte se marca como pagada por separado? → A: Cada parte se marca como pagada por separado y la mesa se cierra solo cuando todas las partes están pagadas.
+- Q: Una vez dividida la cuenta, ¿se cierra la mesa con un único cobro del total o cada parte se marca como pagada por separado? → A: Cada parte se marca como pagada por separado y la cuenta se cierra solo cuando todas las partes están pagadas; la mesa se libera entonces.
 - Q: ¿Debe el ticket final mostrar el desglose de impuestos (IVA) o basta con el total y las partes? → A: Los precios ya incluyen el IVA; el ticket muestra el total y las partes, sin desglose de impuestos (fuera de alcance en v1).
 - Q: Si la cuenta cambia después de iniciar la división, ¿se actualiza sola, se reinicia o se bloquean los cambios? → A: La división se reinicia al modificar la cuenta y el camarero debe rehacerla sobre el total actualizado.
 - Q: Cuando la cuenta no se puede repartir en partes exactamente iguales, ¿qué parte asume los céntimos sobrantes? → A: Los céntimos sobrantes se reparten de uno en uno entre las partes por orden, empezando por la primera, de modo que la suma siga coincidiendo con el total.
@@ -21,12 +21,12 @@
 ### Session 2026-10-20
 
 - Q: En una cuenta dividida, ¿cuándo debe generarse el ticket final: al confirmar el cobro, al pagarse la última parte, o uno por cada parte? (FR-010, FR-011) → A: Un único ticket final, generado al pagarse la última parte, con el total y el desglose completo.
-- Q: Si el camarero marca por error una parte de la cuenta como pagada, ¿puede deshacer esa marca antes de que se cierre la mesa? (FR-016) → A: Sí, puede volver a marcarla como pendiente mientras la mesa no esté cerrada.
+- Q: Si el camarero marca por error una parte de la cuenta como pagada, ¿puede deshacer esa marca antes de que se cierre la cuenta? (FR-016) → A: Sí, puede volver a marcarla como pendiente mientras la cuenta no esté cerrada.
 
 ### Session 2026-10-27
 
 - Q: Cuando se cobra y cierra una mesa, ¿debe quedar disponible de inmediato para abrir una nueva comanda? → A: La mesa vuelve a estar libre inmediatamente al cerrar la cuenta; la cuenta anterior queda como histórico y puede abrirse una nueva comanda sobre la misma mesa.
-- Q: Si al cerrar una mesa quedan platos pendientes en cocina, ¿qué debe hacer el sistema? → A: Impedir el cierre hasta que cocina marque todos los platos como listos; mostrar un aviso con los platos pendientes.
+- Q: Si al cerrar una cuenta quedan platos pendientes en cocina, ¿qué debe hacer el sistema? → A: Impedir el cierre hasta que cocina marque todos los platos como listos; mostrar un aviso con los platos pendientes.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -96,9 +96,9 @@ nuevas operaciones y que la mesa liberada puede abrir otra comanda.
 1. **Given** una cuenta sin dividir preparada para cerrar, **When** el camarero confirma el cobro, **Then** el sistema genera el ticket final con el total de la cuenta y el desglose de cada parte con su importe.
 2. **Given** una cuenta cerrada tras el cobro, **When** se intenta realizar una nueva operación sobre esa cuenta, **Then** el sistema la rechaza por estar cerrada; la mesa liberada sí puede abrir una nueva comanda.
 3. **Given** una cuenta ya cerrada, **When** se intenta cerrarla de nuevo, **Then** el sistema lo impide.
-4. **Given** una cuenta dividida con partes aún pendientes de pago, **When** se intenta cerrar la mesa, **Then** el sistema no la cierra hasta que todas las partes estén pagadas.
+4. **Given** una cuenta dividida con partes aún pendientes de pago, **When** se intenta cerrar la cuenta, **Then** el sistema no la cierra hasta que todas las partes estén pagadas.
 5. **Given** una cuenta dividida con partes pendientes, **When** el camarero marca una parte intermedia como pagada, **Then** todavía no se genera el ticket final; **When** se paga la última parte, **Then** se genera un único ticket final con el total y el desglose completo.
-6. **Given** una cuenta dividida con una parte marcada como pagada y la mesa aún abierta, **When** el camarero deshace esa marca, **Then** la parte vuelve a estar pendiente y la mesa no se cierra hasta que se pague de nuevo.
+6. **Given** una cuenta dividida con una parte marcada como pagada y la cuenta aún abierta, **When** el camarero deshace esa marca, **Then** la parte vuelve a estar pendiente y la cuenta no se cierra hasta que se pague de nuevo.
 7. **Given** una mesa con platos pendientes en cocina, **When** el camarero intenta cerrar la cuenta, **Then** el sistema impide el cierre y muestra los platos pendientes; **When** cocina termina todos los platos y el camarero vuelve a intentarlo, **Then** el cierre se permite.
 
 En una cuenta dividida, el ticket se rige por el escenario 5: no se emite hasta pagar la última parte.
@@ -112,7 +112,7 @@ En una cuenta dividida, el ticket se rige por el escenario 5: no se emite hasta 
 - ¿Qué ocurre si el camarero cancela el cierre antes de confirmar el cobro? La cuenta y la mesa deben quedar como estaban, sin cambios.
 - ¿Qué ocurre con una mesa sin consumos? La cuenta debe mostrar un total de cero y no debe permitir un cierre sin importe.
 - ¿Qué ocurre si no están pagadas todas las partes de una cuenta dividida? La mesa no se cierra hasta que todas las partes queden marcadas como pagadas.
-- ¿Qué ocurre si el camarero marca una parte como pagada por error? Puede volver a marcarla como pendiente mientras la mesa no esté cerrada; la mesa no se cierra si queda alguna parte pendiente.
+- ¿Qué ocurre si el camarero marca una parte como pagada por error? Puede volver a marcarla como pendiente mientras la cuenta no esté cerrada; la cuenta no se cierra si queda alguna parte pendiente.
 - ¿Qué ocurre si se modifica la cuenta después de iniciar la división? La división se reinicia y el camarero debe rehacerla sobre el nuevo total.
 - ¿Qué ocurre si un precio cambia entre el consumo y el cierre? Se aplica el precio registrado en el momento de pedir cada plato; el cambio de precio no altera las cuentas ya en curso.
 - ¿Qué ocurre si se intenta cerrar una cuenta que ya está cerrada? El sistema debe impedirlo.
@@ -138,7 +138,7 @@ En una cuenta dividida, el ticket se rige por el escenario 5: no se emite hasta 
 - **FR-013**: El sistema MUST mostrar los importes en euros (€) con el formato español de números y fechas.
 - **FR-014**: El sistema MUST impedir cerrar una cuenta que ya esté cerrada.
 - **FR-015**: Al cerrar la cuenta, el camarero MUST poder asignar cada plato consumido (o una porción de su importe) a una de las partes de la división, ya que el pedido no registra el consumo por comensal.
-- **FR-016**: Cuando la cuenta esté dividida, el camarero MUST poder marcar cada parte como pagada por separado; la mesa MUST cerrarse solo cuando todas las partes estén pagadas. El camarero MUST poder deshacer la marca de una parte pagada mientras la mesa no esté cerrada, devolviéndola a pendiente.
+- **FR-016**: Cuando la cuenta esté dividida, el camarero MUST poder marcar cada parte como pagada por separado; la cuenta MUST cerrarse solo cuando todas las partes estén pagadas. El camarero MUST poder deshacer la marca de una parte pagada mientras la cuenta no esté cerrada, devolviéndola a pendiente.
 - **FR-017**: Si la cuenta se modifica después de iniciar una división, el sistema MUST reiniciar la división para que el camarero la rehaga sobre el total actualizado.
 - **FR-018**: En una división en partes iguales que no sea exacta, el sistema MUST repartir los céntimos sobrantes de uno en uno entre las partes por orden, empezando por la primera, de modo que la suma siga coincidiendo con el total.
 - **FR-019**: Si una mesa tiene platos pendientes en cocina, el sistema MUST impedir el cierre de su cuenta y MUST mostrar los platos pendientes; el cierre MUST permitirse cuando todos los platos estén marcados como listos.
@@ -163,16 +163,16 @@ En una cuenta dividida, el ticket se rige por el escenario 5: no se emite hasta 
 - **SC-004**: El ticket final incluye el total y el desglose de cada parte con su importe en el 100 % de los cierres.
 - **SC-005**: Una cuenta cerrada rechaza el 100 % de las nuevas operaciones intentadas sobre ella; la mesa liberada permite abrir una nueva comanda. El 100 % de los cierres con platos pendientes en cocina se bloquea y muestra esos platos.
 - **SC-006**: El camarero completa la división de una cuenta entre varios comensales en menos de 3 minutos.
-- **SC-007**: Una mesa cuya cuenta está dividida permanece abierta hasta que el 100 % de sus partes están marcadas como pagadas.
+- **SC-007**: Una mesa cuya cuenta está dividida permanece ocupada hasta que el 100 % de sus partes están marcadas como pagadas.
 - **SC-008**: En el 100 % de las cuentas divididas se genera un único ticket final al pagarse la última parte, y ninguno antes.
-- **SC-009**: El 100 % de las partes marcadas como pagadas puede volver a pendiente mientras la mesa esté abierta; ninguna mesa se cierra con partes pendientes.
+- **SC-009**: El 100 % de las partes marcadas como pagadas puede volver a pendiente mientras la cuenta esté abierta; ninguna cuenta se cierra con partes pendientes.
 
 ## Assumptions
 
 - El pedido no registra qué comensal consume cada plato; la asignación de platos (o porciones) a las partes de la división se realiza al cerrar la cuenta.
 - Los precios de los platos son los del momento de pedir cada plato y se muestran con IVA incluido; el desglose de impuestos queda fuera del alcance de esta historia.
 - El cobro lo confirma el camarero (efectivo, tarjeta u otro medio); el sistema no se integra con terminales de pago.
-- La división de la cuenta es opcional: por defecto la cuenta se cobra como un único pago; si se divide, cada parte se paga por separado y la mesa se cierra al completarse el pago de todas ellas.
+- La división de la cuenta es opcional: por defecto la cuenta se cobra como un único pago; si se divide, cada parte se paga por separado y la cuenta se cierra al completarse el pago de todas ellas, liberando la mesa.
 - No se contemplan propinas, descuentos ni anulaciones parciales en esta historia.
 - Una mesa cobrada vuelve a estar libre y puede recibir una nueva comanda; las cuentas cerradas se conservan como histórico y no se reabren.
 - Cómo se entrega el ticket (impresión o formato digital) queda fuera del alcance; esta historia se centra en su contenido.
