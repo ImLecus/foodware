@@ -37,3 +37,29 @@ export async function obtenerIngredientes(cabeceras = {}) {
   if (!res.ok) throw new Error('Error al obtener ingredientes');
   return res.json();
 }
+
+export async function crearIngrediente(datos, cabeceras = {}) {
+  const res = await fetch(`${API_BASE}/admin/ingredientes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...cabeceras },
+    body: JSON.stringify(datos),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al crear ingrediente');
+  }
+  return res.json();
+}
+
+export async function actualizarIngrediente(id, datos, cabeceras = {}) {
+  const res = await fetch(`${API_BASE}/admin/ingredientes/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...cabeceras },
+    body: JSON.stringify(datos),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al actualizar ingrediente');
+  }
+  return res.json();
+}
