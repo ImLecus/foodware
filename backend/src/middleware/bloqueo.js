@@ -1,19 +1,21 @@
+import { obtenerMesa } from '../db/mesas.js';
 import { limpiarBloqueo, obtenerPedido } from '../db/pedidos.js';
 import { estadoBloqueo, exigirBloqueoPropio, exigirEditable } from '../domain/edicion.js';
-import { exigirPedido } from '../domain/pedidos.js';
+import { exigirMesa, exigirMesaAbierta, exigirPedido } from '../domain/pedidos.js';
 import { ErrorHttp } from './error.js';
 
 /**
  * Comprueba que el camarero puede modificar las líneas del pedido:
+ * - `cerrada` u otros estados de la mesa: no admite cambios (FR-012).
  * - `en_curso`: se permite (flujo de la historia 001, sin bloqueo).
  * - `enviada`: se exige el bloqueo de edición del propio camarero.
- * - `cerrada` u otros estados: no admite cambios.
  * La caducidad del bloqueo se evalúa y limpia de forma perezosa.
  */
 export function comprobarEdicion(db) {
   return (req, res, next) => {
     try {
       const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
+      exigirMesaAbierta(exigirMesa(obtenerMesa(db, pedido.mesa_id)));
 
       if (pedido.estado === 'en_curso') {
         req.pedido = pedido;

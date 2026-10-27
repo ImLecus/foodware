@@ -25,6 +25,8 @@ import {
   agruparPorPartida,
   exigirAnulable,
   exigirConfirmable,
+  exigirMesa,
+  exigirMesaAbierta,
   exigirPedido,
   serializarPedido,
   serializarPedidoConfirmado,
@@ -43,6 +45,12 @@ function buscarLinea(pedido, lineaId) {
     throw new ErrorHttp(404, 'Línea de pedido no encontrada');
   }
   return linea;
+}
+
+/** Una mesa cerrada no admite nuevas operaciones sobre sus pedidos (FR-012). */
+function exigirMesaAbiertaDelPedido(db, pedido) {
+  exigirMesaAbierta(exigirMesa(obtenerMesa(db, pedido.mesa_id)));
+  return pedido;
 }
 
 export function pedidosRouter(db) {
@@ -84,7 +92,10 @@ export function pedidosRouter(db) {
 
   router.post('/:pedidoId/editar', (req, res, next) => {
     try {
-      const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
+      const pedido = exigirMesaAbiertaDelPedido(
+        db,
+        exigirPedido(obtenerPedido(db, req.params.pedidoId)),
+      );
       adquirirBloqueoEdicion(db, pedido, req.camarero.id);
       res.json(serializarPedido(obtenerPedido(db, pedido.id)));
     } catch (error) {
@@ -193,7 +204,10 @@ export function pedidosRouter(db) {
 
   router.post('/:pedidoId/enviar-cambios', (req, res, next) => {
     try {
-      const pedido = exigirPedido(obtenerPedido(db, req.params.pedidoId));
+      const pedido = exigirMesaAbiertaDelPedido(
+        db,
+        exigirPedido(obtenerPedido(db, req.params.pedidoId)),
+      );
       exigirEditable(pedido);
       exigirBloqueoPropio(pedido, req.camarero.id);
       exigirCambiosPendientes(pedido);
@@ -227,7 +241,12 @@ export function pedidosRouter(db) {
 
   router.post('/:pedidoId/confirmar', (req, res, next) => {
     try {
-      const pedido = exigirConfirmable(exigirPedido(obtenerPedido(db, req.params.pedidoId)));
+      const pedido = exigirConfirmable(
+        exigirMesaAbiertaDelPedido(
+          db,
+          exigirPedido(obtenerPedido(db, req.params.pedidoId)),
+        ),
+      );
       const confirmado = confirmarPedido(db, pedido.id);
       const mesa = obtenerMesa(db, confirmado.mesa_id);
 
@@ -245,7 +264,12 @@ export function pedidosRouter(db) {
 
   router.post('/:pedidoId/anular', (req, res, next) => {
     try {
-      const pedido = exigirAnulable(exigirPedido(obtenerPedido(db, req.params.pedidoId)));
+      const pedido = exigirAnulable(
+        exigirMesaAbiertaDelPedido(
+          db,
+          exigirPedido(obtenerPedido(db, req.params.pedidoId)),
+        ),
+      );
       anularPedido(db, pedido.id);
 
       publicar('pedido-anulado', { pedidoId: pedido.id, mesaId: pedido.mesa_id });

@@ -1,9 +1,11 @@
+import { obtenerMesa } from '../db/mesas.js';
 import {
   actualizarEstadoLinea,
   buscarLineaDePedido,
   contarLineasPendientes,
 } from '../models/lineaPedido.js';
 import { buscarPedido } from '../models/pedido.js';
+import { exigirMesa, exigirMesaAbierta } from '../domain/pedidos.js';
 import { ErrorHttp } from '../middleware/error.js';
 import { logger } from '../config/logger.js';
 import {
@@ -40,6 +42,8 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
   if (!pedido) {
     throw new ErrorHttp(404, 'El pedido no existe', 'pedido_no_encontrado');
   }
+
+  exigirMesaAbierta(exigirMesa(obtenerMesa(db, pedido.mesa_id)));
 
   const linea = buscarLineaDePedido(db, pedidoId, lineaId);
   if (!linea) {
