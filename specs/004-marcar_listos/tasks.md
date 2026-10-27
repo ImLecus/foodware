@@ -272,4 +272,4 @@ Task: "Build kitchen page and components in frontend/src/pages/CocinaPage.jsx, f
 ## Phase 9: Convergence
 
 - [X] T059 Alinear `specs/004-marcar_listos/contracts/openapi.yaml` con la semántica por partida: añadir `partida` opcional a `LineaPedido`, corregir el resumen del ejemplo 200 y la descripción del 409 (partida completada, no pedido completo), y verificar el contrato con la prueba existente per T050, T057, FR-006, FR-014 (`partial`)
-- [ ] T060 Actualizar `specs/004-marcar_listos/data-model.md` para documentar que los avisos de pedido completado pueden coexistir hasta su plazo (cola) y que una nueva marca no descarta automáticamente los anteriores, en coherencia con T058 per SC-009, FR-014, `data-model.md` (`partial`)
+- [X] T060 Actualizar `specs/004-marcar_listos/data-model.md` para documentar que los avisos de pedido completado pueden coexistir hasta su plazo (cola) y que una nueva marca no descarta automáticamente los anteriores, en coherencia con T058 per SC-009, FR-014, `data-model.md` (`partial`)
