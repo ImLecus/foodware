@@ -69,11 +69,6 @@ const anteayer = diaAnterior(ayer);
 
 // Cuentas cerradas en dos días naturales distintos para probar el total y la
 // comparación del dashboard. Las fechas se recalculan en cada carga.
-const cuentas = [
-  { id: 'cuenta-ayer-1', mesa: 'mesa-1', total: 35500, dia: ayer },
-  { id: 'cuenta-ayer-2', mesa: 'mesa-2', total: 22000, dia: ayer },
-  { id: 'cuenta-anteayer-1', mesa: 'mesa-3', total: 18000, dia: anteayer },
-];
 
 // Pedido ya enviado de ejemplo para poder probar la edición (historia 002).
 const pedidosEnviados = [

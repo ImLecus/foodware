@@ -2,7 +2,12 @@ import express from 'express';
 import { z } from 'zod';
 import { requireRole } from '../middleware/authorize.js';
 import { fechaEnMadrid } from '../services/dayTime.js';
-import { obtenerTotalDiario, obtenerUltimoDiaCompletado } from '../services/reportingService.js';
+import {
+  obtenerDesglosePorCamarero,
+  obtenerDesglosePorPlato,
+  obtenerTotalDiario,
+  obtenerUltimoDiaCompletado,
+} from '../services/reportingService.js';
 
 const esquemaFecha = z
   .string()
@@ -50,13 +55,15 @@ export function crearReportsRouter(db) {
       }
 
       const totales = obtenerTotalDiario(db, fechaConsulta);
+      const porCamarero = obtenerDesglosePorCamarero(db, fechaConsulta);
+      const porPlato = obtenerDesglosePorPlato(db, fechaConsulta);
 
       return res.json({
         fecha: fechaConsulta,
         totalVendido: centimosAEuros(totales.totalCentimos),
         numeroCuentas: totales.numeroCuentas,
-        porCamarero: [],
-        porPlato: [],
+        porCamarero,
+        porPlato,
         comparacion: {
           diaActual: fechaConsulta,
           diaAnterior: null,
