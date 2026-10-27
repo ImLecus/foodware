@@ -99,7 +99,7 @@ describe('servicio de marcar/deshacer platos', () => {
         estado: 'listo',
         partida: 'principales',
       }),
-    ).toThrowError(expect.objectContaining({ status: 403 }));
+    ).toThrowError(expect.objectContaining({ status: 403, codigo: 'partida_ajena' }));
   });
 
   it('rechaza marcar como listo un pedido completado con 409', () => {

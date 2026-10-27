@@ -24,10 +24,12 @@ describe('recálculo de la mesa completa al editar una comanda enviada', () => {
 
   async function marcarTodasListas(pedidoId) {
     const pedido = await request(app).get(`/api/pedidos/${pedidoId}`).set(CABECERA_CAMARERO);
-    const lineas = Object.values(pedido.body.por_partida ?? {}).flatMap((partida) => partida);
+    const lineas = Object.entries(pedido.body.por_partida ?? {}).flatMap(([partida, grupo]) =>
+      grupo.map((linea) => ({ ...linea, partida })),
+    );
     for (const linea of lineas) {
       await request(app)
-        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado`)
+        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado?partida=${linea.partida}`)
         .set(CABECERA_CAMARERO)
         .send({ estado: 'listo' });
     }
@@ -71,7 +73,7 @@ describe('recálculo de la mesa completa al editar una comanda enviada', () => {
     const nuevaLinea = editada.platos.find((plato) => plato.id === nueva.body.id);
     expect(nuevaLinea.estado).toBe('pendiente');
     await request(app)
-      .put(`/api/pedidos/${pedidoId}/lineas/${nuevaLinea.id}/estado`)
+      .put(`/api/pedidos/${pedidoId}/lineas/${nuevaLinea.id}/estado?partida=${nuevaLinea.partida}`)
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 

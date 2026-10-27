@@ -23,10 +23,12 @@ describe('descarte y regeneración del aviso de mesa', () => {
 
   async function marcarTodasListas(pedidoId) {
     const pedido = await request(app).get(`/api/pedidos/${pedidoId}`).set(CABECERA_CAMARERO);
-    const lineas = Object.values(pedido.body.por_partida ?? {}).flatMap((partida) => partida);
+    const lineas = Object.entries(pedido.body.por_partida ?? {}).flatMap(([partida, grupo]) =>
+      grupo.map((linea) => ({ ...linea, partida })),
+    );
     for (const linea of lineas) {
       await request(app)
-        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado`)
+        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado?partida=${linea.partida}`)
         .set(CABECERA_CAMARERO)
         .send({ estado: 'listo' });
     }
@@ -83,7 +85,7 @@ describe('descarte y regeneración del aviso de mesa', () => {
     expect(incompleta.aviso).toBeNull();
 
     const marca = await request(app)
-      .put(`/api/pedidos/${pedidoId}/lineas/${nueva.body.id}/estado`)
+      .put(`/api/pedidos/${pedidoId}/lineas/${nueva.body.id}/estado?partida=entrantes`)
       .set(CABECERA_CAMARERO)
       .send({ estado: 'listo' });
 

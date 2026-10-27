@@ -80,11 +80,20 @@ export function pedidosRouter(db) {
 
   router.put('/:pedidoId/lineas/:lineaId/estado', (req, res, next) => {
     try {
+      const partida = req.query.partida;
+      if (!partida) {
+        throw new ErrorHttp(
+          400,
+          'La partida del cocinero es obligatoria',
+          'partida_requerida',
+        );
+      }
+
       const linea = marcarLinea(db, {
         pedidoId: req.params.pedidoId,
         lineaId: req.params.lineaId,
         estado: req.body?.estado,
-        partida: req.query.partida,
+        partida,
       });
       res.json(linea);
     } catch (error) {
