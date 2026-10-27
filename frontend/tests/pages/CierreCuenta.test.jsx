@@ -1,5 +1,5 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CierreCuenta from '../../src/pages/CierreCuenta.jsx';
@@ -8,6 +8,7 @@ import {
   dividirCuenta,
   listarMesas,
   obtenerCuenta,
+  obtenerTicket,
 } from '../../src/services/api.js';
 
 vi.mock('../../src/services/api.js', () => ({
@@ -15,6 +16,7 @@ vi.mock('../../src/services/api.js', () => ({
   dividirCuenta: vi.fn(),
   listarMesas: vi.fn(),
   obtenerCuenta: vi.fn(),
+  obtenerTicket: vi.fn(),
 }));
 
 const cuenta = {
@@ -115,6 +117,59 @@ describe('CierreCuenta (US2)', () => {
     expect(screen.getByText(/cuenta dividida en 2 parte/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Confirmar cobro único' })).not.toBeInTheDocument();
     expect(cerrarCuentaUnica).not.toHaveBeenCalled();
+  });
+
+  it('muestra el ticket final al abrir una mesa ya cerrada', async () => {
+    const yaCerrada = new Error('La cuenta ya está cerrada');
+    yaCerrada.status = 409;
+    obtenerCuenta.mockRejectedValue(yaCerrada);
+    obtenerTicket.mockResolvedValue({
+      estado: 'emitido',
+      mesa_id: 'mesa-1',
+      identificador: 'Mesa 1',
+      total_centimos: 4250,
+      generado_en: '2026-10-27T21:00:00.000Z',
+      partes: [
+        { orden: 1, comensal: 'Ana', importe_centimos: 2125 },
+        { orden: 2, comensal: 'Luis', importe_centimos: 2125 },
+      ],
+    });
+
+    renderizar();
+
+    const ticket = await screen.findByTestId('ticket-final');
+    expect(obtenerTicket).toHaveBeenCalledWith('mesa-1');
+    expect(within(ticket).getByText('Mesa 1')).toBeInTheDocument();
+    expect(within(ticket).getAllByText('21,25 €')).toHaveLength(2);
+    expect(within(ticket).getAllByText('42,50 €')).toHaveLength(2);
+    expect(screen.getByText(/la mesa ya está cerrada/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Confirmar cobro único' })).not.toBeInTheDocument();
+    expect(screen.queryByText('La cuenta ya está cerrada')).not.toBeInTheDocument();
+  });
+
+  it('muestra el error si la mesa cerrada aún no tiene ticket emitido', async () => {
+    const yaCerrada = new Error('La cuenta ya está cerrada');
+    yaCerrada.status = 409;
+    obtenerCuenta.mockRejectedValue(yaCerrada);
+
+    const sinTicket = new Error('El ticket aún no se ha emitido');
+    sinTicket.status = 409;
+    sinTicket.codigo = 'ticket_no_emitido';
+    obtenerTicket.mockRejectedValue(sinTicket);
+
+    renderizar();
+
+    expect(await screen.findByText(/el ticket aún no se ha emitido/i)).toBeInTheDocument();
+    expect(screen.queryByTestId('ticket-final')).not.toBeInTheDocument();
+  });
+
+  it('no consulta el ticket cuando la cuenta sigue abierta', async () => {
+    obtenerCuenta.mockResolvedValue(cuenta);
+
+    renderizar();
+
+    expect(await screen.findByText('Dividir la cuenta')).toBeInTheDocument();
+    expect(obtenerTicket).not.toHaveBeenCalled();
   });
 
   it('avisa de que no hay conexión y bloquea el cobro', async () => {

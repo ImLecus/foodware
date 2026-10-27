@@ -136,6 +136,9 @@ export default function CierreCuenta() {
     cuenta.estado !== 'cerrada' &&
     cuenta.total_centimos > 0;
 
+  // Mesa ya cerrada: no hay cuenta abierta, pero sí un ticket que se puede re-mostrar.
+  const ticketSinCuenta = Boolean(ticketPartes && !cuenta);
+
   return (
     <Stack spacing={6}>
       <Box>
@@ -217,7 +220,24 @@ export default function CierreCuenta() {
         </Alert>
       )}
 
-      {mesaId && (
+      {mesaId && ticketSinCuenta && (
+        <Card>
+          <CardBody>
+            <Flex justify="space-between" align="center" mb={4} gap={4}>
+              <Heading size="md">{ticketPartes.identificador ?? 'Ticket final'}</Heading>
+              <Button size="sm" variant="ghost" onClick={cancelar}>
+                Volver
+              </Button>
+            </Flex>
+            <Text color="gray.600" mb={4}>
+              La mesa ya está cerrada. Este es el ticket final de su cuenta.
+            </Text>
+            <TicketFinal ticket={ticketPartes} ticketEstado="emitido" hayDivision />
+          </CardBody>
+        </Card>
+      )}
+
+      {mesaId && !ticketSinCuenta && (
         <Card>
           <CardBody>
             <Flex justify="space-between" align="center" mb={4} gap={4}>

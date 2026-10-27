@@ -4,6 +4,7 @@ import {
   deshacerPagoParte,
   dividirCuenta,
   obtenerCuenta,
+  obtenerTicket,
   pagarParte as pagarParteApi,
 } from '../services/api.js';
 
@@ -13,6 +14,11 @@ function esSinConexion(error) {
 
 function esTotalDesactualizado(error) {
   return error?.status === 422 && error?.codigo === 'total_desactualizado';
+}
+
+/** `GET /cuenta` responde 409 cuando la mesa o la cuenta ya están cerradas. */
+function esCuentaCerrada(error) {
+  return error?.status === 409;
 }
 
 function conParteActualizada(cuenta, parte) {
@@ -39,9 +45,28 @@ export function useCuenta(mesaId) {
   const [ticket, setTicket] = useState(null);
   const [ticketEstado, setTicketEstado] = useState('no_emitido');
 
+  const cargarTicket = useCallback(async () => {
+    try {
+      const datos = await obtenerTicket(mesaId);
+      setCuenta(null);
+      setTicket(datos);
+      setTicketEstado('emitido');
+      setError(null);
+      setSinConexion(false);
+    } catch (err) {
+      if (esSinConexion(err)) {
+        setSinConexion(true);
+      } else {
+        setError(err);
+      }
+    }
+  }, [mesaId]);
+
   const recargar = useCallback(async () => {
     if (!mesaId) {
       setCuenta(null);
+      setTicket(null);
+      setTicketEstado('no_emitido');
       setCargando(false);
       return;
     }
@@ -57,13 +82,15 @@ export function useCuenta(mesaId) {
     } catch (err) {
       if (esSinConexion(err)) {
         setSinConexion(true);
+      } else if (esCuentaCerrada(err)) {
+        await cargarTicket();
       } else {
         setError(err);
       }
     } finally {
       setCargando(false);
     }
-  }, [mesaId]);
+  }, [cargarTicket, mesaId]);
 
   useEffect(() => {
     recargar();
