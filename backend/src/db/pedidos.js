@@ -8,6 +8,8 @@ const LINEA_CAMPOS = `l.id,
                       l.cantidad,
                       l.precio_centimos,
                       l.indicaciones,
+                      l.estado,
+                      l.listo_en,
                       p.partida_codigo AS partida`;
 
 const LINEA_JOIN = `FROM lineas_pedido l

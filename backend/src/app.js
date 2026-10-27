@@ -5,7 +5,6 @@ import { manejadorErrores, noEncontrado } from './middleware/error.js';
 import { cocinerosRouter } from './routes/cocineros.js';
 import { eventsRouter } from './routes/events.js';
 import { healthRouter } from './routes/health.js';
-import { lineasRouter } from './routes/lineas.js';
 import { mesasRouter } from './routes/mesas.js';
 import { partidasRouter } from './routes/partidas.js';
 import { pedidosRouter } from './routes/pedidos.js';
@@ -29,7 +28,6 @@ export function createApp(db) {
   app.use('/api/mesas', mesasRouter(db));
   app.use('/api/platos', platosRouter(db));
   app.use('/api/pedidos', pedidosRouter(db));
-  app.use('/api/pedidos', lineasRouter(db));
   app.use('/api/sala', salaRouter(db));
 
   app.use(noEncontrado);

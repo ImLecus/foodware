@@ -4,7 +4,11 @@ import { createApp } from '../../src/app.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
 import { CABECERA_CAMARERO } from '../ayuda.js';
 
-describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
+/**
+ * El marcado de líneas es el mecanismo que la historia 004 ya expone; la 005
+ * lo reutiliza y comprueba que el estado enviado se refleja en la vista de sala.
+ */
+describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado (vista de sala)', () => {
   let db;
   let app;
 
@@ -17,9 +21,15 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
     app = createApp(db);
     insertarPedido(db, { id: 'pedido-1', mesa: 'mesa-1' });
     insertarLinea(db, { id: 'linea-1', pedidoId: 'pedido-1' });
+    insertarLinea(db, { id: 'linea-2', pedidoId: 'pedido-1', platoId: 'plato-principal' });
   }
 
-  it('marca una línea como lista y devuelve el estado de la mesa', async () => {
+  async function leerSala() {
+    const respuesta = await request(app).get('/api/sala/mesas').set(CABECERA_CAMARERO);
+    return respuesta.body.mesas;
+  }
+
+  it('marca una línea como lista y la instantánea de sala lo refleja', async () => {
     preparar();
 
     const respuesta = await request(app)
@@ -28,21 +38,24 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
       .send({ estado: 'listo' });
 
     expect(respuesta.status).toBe(200);
-    expect(respuesta.body).toMatchObject({
-      linea_id: 'linea-1',
-      pedido_id: 'pedido-1',
-      mesa_id: 'mesa-1',
-      estado: 'listo',
-    });
-    expect(respuesta.body.marcado_en).toEqual(expect.any(String));
-    expect(respuesta.body.mesa).toEqual({ completa: true, aviso: null });
+    expect(respuesta.body.estado).toBe('listo');
+
+    const [mesa] = await leerSala();
+    const platoListo = mesa.platos.find((plato) => plato.id === 'linea-1');
+    const platoPendiente = mesa.platos.find((plato) => plato.id === 'linea-2');
+
+    expect(platoListo.estado).toBe('listo');
+    expect(platoPendiente.estado).toBe('pendiente');
+    expect(mesa.completa).toBe(false);
   });
 
-  it('deshace la marca y deja la línea pendiente', async () => {
+  it('deshace la marca y la instantánea de sala vuelve a pendiente', async () => {
     preparar();
-    db.prepare(
-      "UPDATE lineas_pedido SET estado = 'listo', listo_en = datetime('now') WHERE id = 'linea-1'",
-    ).run();
+
+    await request(app)
+      .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
+      .set(CABECERA_CAMARERO)
+      .send({ estado: 'listo' });
 
     const respuesta = await request(app)
       .put('/api/pedidos/pedido-1/lineas/linea-1/estado')
@@ -51,7 +64,10 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
 
     expect(respuesta.status).toBe(200);
     expect(respuesta.body.estado).toBe('pendiente');
-    expect(respuesta.body.marcado_en).toBeNull();
+    expect(respuesta.body.listoEn).toBeNull();
+
+    const [mesa] = await leerSala();
+    expect(mesa.platos.find((plato) => plato.id === 'linea-1').estado).toBe('pendiente');
   });
 
   it('es idempotente al marcar dos veces como listo', async () => {
@@ -69,6 +85,7 @@ describe('PUT /api/pedidos/:pedidoId/lineas/:lineaId/estado', () => {
     expect(primero.status).toBe(200);
     expect(segundo.status).toBe(200);
     expect(segundo.body.estado).toBe('listo');
+    expect(segundo.body.listoEn).toBe(primero.body.listoEn);
   });
 
   it('rechaza un estado no válido con 400', async () => {
