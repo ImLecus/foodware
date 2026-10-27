@@ -64,9 +64,9 @@ total del día y la página `/dashboard` lo muestra en euros; un día sin ventas
 
 ### Pruebas de US1
 
-- [ ] T015 [P] [US1] Prueba de contrato del total en `GET /api/reports/daily` en `backend/tests/contract/reports_daily.test.js`
-- [ ] T016 [P] [US1] Prueba unitaria del cálculo del total diario en `backend/tests/unit/reporting_total.test.js`
-- [ ] T017 [P] [US1] Prueba de componente del total y estados de la página en `frontend/tests/components/dashboard_total.test.jsx`
+- [X] T015 [P] [US1] Prueba de contrato del total en `GET /api/reports/daily` en `backend/tests/contract/reports_daily.test.js`
+- [X] T016 [P] [US1] Prueba unitaria del cálculo del total diario en `backend/tests/unit/reporting_total.test.js`
+- [X] T017 [P] [US1] Prueba de componente del total y estados de la página en `frontend/tests/components/dashboard_total.test.jsx`
 
 ### Implementación de US1
 
