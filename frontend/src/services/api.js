@@ -31,8 +31,9 @@ async function leerRespuesta(respuesta) {
   return respuesta.status === 204 ? null : respuesta.json();
 }
 
-export async function apiGet(ruta) {
-  return leerRespuesta(await fetch(`${API_BASE}${ruta}`, { headers: cabeceras() }));
+export async function apiGet(ruta, cabecerasExtra) {
+  const headers = cabecerasExtra ? { ...cabeceras(), ...cabecerasExtra } : cabeceras();
+  return leerRespuesta(await fetch(`${API_BASE}${ruta}`, { headers }));
 }
 
 export async function apiEnviar(ruta, metodo, cuerpo) {

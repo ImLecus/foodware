@@ -1,3 +1,4 @@
+import { diaAnterior, fechaEnMadrid } from '../services/dayTime.js';
 import { createDb } from './index.js';
 
 const db = createDb();
@@ -62,6 +63,13 @@ const asociaciones = [
   ['plato-6', 'ing-6'],
 ];
 
+const hoy = fechaEnMadrid();
+const ayer = diaAnterior(hoy);
+const anteayer = diaAnterior(ayer);
+
+// Cuentas cerradas en dos días naturales distintos para probar el total y la
+// comparación del dashboard. Las fechas se recalculan en cada carga.
+
 // Pedido ya enviado de ejemplo para poder probar la edición (historia 002).
 const pedidosEnviados = [
   {
@@ -118,6 +126,14 @@ const cargar = db.transaction(() => {
   for (const [platoId, ingredienteId] of asociaciones) {
     insertarAsociacion.run(platoId, ingredienteId);
   }
+
+  const insertarCuenta = db.prepare(
+    `INSERT OR REPLACE INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+     VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
+  );
+  insertarCuenta.run('cuenta-ayer-1', 'mesa-1', 'camarero-1', 35500, `${ayer} 10:00:00`, `${ayer} 12:00:00`);
+  insertarCuenta.run('cuenta-ayer-2', 'mesa-2', 'camarero-2', 22000, `${ayer} 10:00:00`, `${ayer} 12:00:00`);
+  insertarCuenta.run('cuenta-anteayer-1', 'mesa-3', 'camarero-1', 18000, `${anteayer} 10:00:00`, `${anteayer} 12:00:00`);
 
   const insertarPedido = db.prepare(
     `INSERT OR IGNORE INTO pedidos (id, mesa_id, camarero_id, estado, creado_en, enviado_en)
