@@ -97,6 +97,26 @@ function obtenerCuentaDividida(db, mesaId) {
   return cuenta;
 }
 
+/**
+ * Descarta la división confirmada de una mesa porque la cuenta ha cambiado
+ * (FR-017). Las partes y las asignaciones se borran en cascada.
+ */
+export function descartarDivision(db, mesaId) {
+  db.prepare("DELETE FROM cuentas WHERE mesa_id = ? AND estado = 'abierta'").run(mesaId);
+}
+
+/**
+ * Si la división persistida ya no cuadra con los consumos actuales, la descarta
+ * para que `GET /cuenta` nunca devuelva partes que no sumen el total.
+ */
+function descartarDivisionObsoleta(db, cuenta, totalCentimos) {
+  if (!cuenta?.modo_division || cuenta.total_centimos === totalCentimos) {
+    return cuenta;
+  }
+  db.prepare('DELETE FROM cuentas WHERE id = ?').run(cuenta.id);
+  return null;
+}
+
 function obtenerParte(db, cuenta, parteId) {
   const parte = db
     .prepare(
@@ -147,15 +167,17 @@ export function obtenerCuenta(db, mesaId) {
   exigirCuentaAbierta(mesa, persistida);
 
   const consumos = listarConsumos(db, mesaId);
+  const total = calcularTotal(consumos);
+  const division = descartarDivisionObsoleta(db, persistida, total);
 
   return {
     mesa_id: mesa.id,
     identificador: mesa.identificador,
     estado: 'abierta',
-    total_centimos: calcularTotal(consumos),
+    total_centimos: total,
     consumos,
-    division: obtenerDivision(db, persistida),
-    ticket_estado: estadoTicket(persistida),
+    division: obtenerDivision(db, division),
+    ticket_estado: estadoTicket(division),
   };
 }
 

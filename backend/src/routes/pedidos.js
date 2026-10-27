@@ -36,6 +36,7 @@ import { comprobarEdicion } from '../middleware/bloqueo.js';
 import { ErrorHttp } from '../middleware/error.js';
 import { publicar } from '../realtime/hub.js';
 import { sincronizarAvisoMesa } from '../services/avisos.js';
+import { descartarDivision } from '../services/cuentasService.js';
 import { marcarLinea } from '../services/marcarListo.js';
 import { validarLineaPatchEdicion, validarNuevaLineaEdicion } from '../schemas/edicion.js';
 
@@ -123,6 +124,8 @@ export function pedidosRouter(db) {
         throw new ErrorHttp(400, 'El plato no está disponible en la carta');
       }
 
+      descartarDivision(db, pedido.mesa_id);
+
       const linea = anadirLinea(db, {
         pedidoId: pedido.id,
         plato,
@@ -153,6 +156,7 @@ export function pedidosRouter(db) {
       const datos = validarLineaPatchEdicion(req.body);
       const pedido = req.pedido;
       const linea = buscarLinea(pedido, req.params.lineaId);
+      descartarDivision(db, pedido.mesa_id);
       const actualizada = modificarLinea(db, linea.id, datos);
 
       if (pedido.estado === 'enviada') {
@@ -183,6 +187,7 @@ export function pedidosRouter(db) {
       const pedido = req.pedido;
       const linea = buscarLinea(pedido, req.params.lineaId);
       exigirNoQuedaVacio(pedido.lineas.length - 1);
+      descartarDivision(db, pedido.mesa_id);
       retirarLinea(db, linea.id);
 
       if (pedido.estado === 'enviada') {
@@ -270,6 +275,7 @@ export function pedidosRouter(db) {
           exigirPedido(obtenerPedido(db, req.params.pedidoId)),
         ),
       );
+      descartarDivision(db, pedido.mesa_id);
       anularPedido(db, pedido.id);
 
       publicar('pedido-anulado', { pedidoId: pedido.id, mesaId: pedido.mesa_id });

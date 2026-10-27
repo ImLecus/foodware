@@ -11,6 +11,10 @@ function esSinConexion(error) {
   return !error?.status;
 }
 
+function esTotalDesactualizado(error) {
+  return error?.status === 422 && error?.codigo === 'total_desactualizado';
+}
+
 function conParteActualizada(cuenta, parte) {
   if (!cuenta?.division) return cuenta;
 
@@ -141,6 +145,9 @@ export function useCuenta(mesaId) {
       } catch (err) {
         if (esSinConexion(err)) {
           setSinConexion(true);
+        } else if (esTotalDesactualizado(err)) {
+          await recargar();
+          setError(err);
         } else {
           setError(err);
         }
@@ -149,7 +156,7 @@ export function useCuenta(mesaId) {
         setPagandoParteId(null);
       }
     },
-    [mesaId],
+    [mesaId, recargar],
   );
 
   const deshacerPago = useCallback(
@@ -169,6 +176,9 @@ export function useCuenta(mesaId) {
       } catch (err) {
         if (esSinConexion(err)) {
           setSinConexion(true);
+        } else if (esTotalDesactualizado(err)) {
+          await recargar();
+          setError(err);
         } else {
           setError(err);
         }
@@ -177,7 +187,7 @@ export function useCuenta(mesaId) {
         setPagandoParteId(null);
       }
     },
-    [mesaId],
+    [mesaId, recargar],
   );
 
   return {

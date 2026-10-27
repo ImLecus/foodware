@@ -156,4 +156,184 @@ describe('División de la cuenta (US2)', () => {
       db.prepare('SELECT comensal FROM cuentas_partes ORDER BY orden').all(),
     ).toEqual([{ comensal: 'Marta' }, { comensal: 'Pablo' }]);
   });
+
+  async function dividirIgualesYBloquear() {
+    await preparar();
+
+    const division = await dividir({
+      modo: 'iguales',
+      total_base_centimos: 3250,
+      partes: [
+        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+      ],
+    });
+    expect(division.status).toBe(201);
+
+    const bloqueo = await request(app)
+      .post(`/api/pedidos/${pedidoId}/editar`)
+      .set(CABECERA_CAMARERO);
+    expect(bloqueo.status).toBe(200);
+  }
+
+  function contarDivision() {
+    return {
+      cuentas: db.prepare('SELECT COUNT(*) AS total FROM cuentas').get().total,
+      partes: db.prepare('SELECT COUNT(*) AS total FROM cuentas_partes').get().total,
+      asignaciones: db
+        .prepare('SELECT COUNT(*) AS total FROM cuentas_parte_consumos')
+        .get().total,
+    };
+  }
+
+  it('descarta la división al añadir una línea y muestra el total actualizado', async () => {
+    await dividirIgualesYBloquear();
+
+    const anadir = await request(app)
+      .post(`/api/pedidos/${pedidoId}/lineas`)
+      .set(CABECERA_CAMARERO)
+      .send({ plato_id: 'plato-postre', cantidad: 1 });
+    expect(anadir.status).toBe(201);
+
+    const cuenta = await request(app)
+      .get('/api/sala/mesas/mesa-1/cuenta')
+      .set(CABECERA_CAMARERO);
+    expect(cuenta.status).toBe(200);
+    expect(cuenta.body.total_centimos).toBe(3850);
+    expect(cuenta.body.division).toBeNull();
+    expect(contarDivision()).toEqual({ cuentas: 0, partes: 0, asignaciones: 0 });
+  });
+
+  it('descarta la división al modificar la cantidad de una línea', async () => {
+    await dividirIgualesYBloquear();
+
+    const { id: lineaId } = db
+      .prepare(
+        `SELECT l.id FROM lineas_pedido l
+           JOIN pedidos p ON p.id = l.pedido_id
+          WHERE p.mesa_id = 'mesa-1' AND l.plato_id = 'plato-entrante'`,
+      )
+      .get();
+
+    const modificar = await request(app)
+      .patch(`/api/pedidos/${pedidoId}/lineas/${lineaId}`)
+      .set(CABECERA_CAMARERO)
+      .send({ cantidad: 2 });
+    expect(modificar.status).toBe(200);
+
+    const cuenta = await request(app)
+      .get('/api/sala/mesas/mesa-1/cuenta')
+      .set(CABECERA_CAMARERO);
+    expect(cuenta.body.total_centimos).toBe(4100);
+    expect(cuenta.body.division).toBeNull();
+    expect(contarDivision()).toEqual({ cuentas: 0, partes: 0, asignaciones: 0 });
+  });
+
+  it('permite retirar una línea asignada en una división por consumo sin error', async () => {
+    await preparar();
+
+    const lineas = db
+      .prepare(
+        `SELECT l.id, l.plato_id FROM lineas_pedido l
+           JOIN pedidos p ON p.id = l.pedido_id
+          WHERE p.mesa_id = 'mesa-1'`,
+      )
+      .all();
+    const lineaDe = (platoId) => lineas.find((linea) => linea.plato_id === platoId).id;
+
+    const division = await dividir({
+      modo: 'por_consumo',
+      total_base_centimos: 3250,
+      partes: [
+        { orden: 1, comensal: 'Ana', importe_centimos: 2350 },
+        { orden: 2, comensal: 'Luis', importe_centimos: 900 },
+      ],
+      asignaciones: [
+        { parte_orden: 1, linea_id: lineaDe('plato-entrante'), importe_centimos: 850 },
+        { parte_orden: 1, linea_id: lineaDe('plato-principal'), importe_centimos: 900 },
+        { parte_orden: 1, linea_id: lineaDe('plato-postre'), importe_centimos: 600 },
+        { parte_orden: 2, linea_id: lineaDe('plato-principal'), importe_centimos: 900 },
+      ],
+    });
+    expect(division.status).toBe(201);
+
+    const bloqueo = await request(app)
+      .post(`/api/pedidos/${pedidoId}/editar`)
+      .set(CABECERA_CAMARERO);
+    expect(bloqueo.status).toBe(200);
+
+    const retirar = await request(app)
+      .delete(`/api/pedidos/${pedidoId}/lineas/${lineaDe('plato-entrante')}`)
+      .set(CABECERA_CAMARERO);
+    expect(retirar.status).toBe(204);
+
+    const cuenta = await request(app)
+      .get('/api/sala/mesas/mesa-1/cuenta')
+      .set(CABECERA_CAMARERO);
+    expect(cuenta.body.total_centimos).toBe(2400);
+    expect(cuenta.body.division).toBeNull();
+    expect(contarDivision()).toEqual({ cuentas: 0, partes: 0, asignaciones: 0 });
+  });
+
+  it('GET /cuenta descarta una división obsoleta si el total cambia fuera de la API', async () => {
+    await preparar();
+
+    await dividir({
+      modo: 'iguales',
+      total_base_centimos: 3250,
+      partes: [
+        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+      ],
+    });
+
+    db.prepare(
+      "UPDATE lineas_pedido SET cantidad = cantidad + 1 WHERE plato_id = 'plato-entrante'",
+    ).run();
+
+    const cuenta = await request(app)
+      .get('/api/sala/mesas/mesa-1/cuenta')
+      .set(CABECERA_CAMARERO);
+    expect(cuenta.status).toBe(200);
+    expect(cuenta.body.total_centimos).toBe(4100);
+    expect(cuenta.body.division).toBeNull();
+    expect(contarDivision()).toEqual({ cuentas: 0, partes: 0, asignaciones: 0 });
+  });
+
+  it('descarta la división al anular un pedido en curso sin romper las asignaciones', async () => {
+    db = crearBaseDePrueba();
+    app = createApp(db);
+
+    const abrir = await request(app)
+      .post('/api/mesas/mesa-2/abrir')
+      .set(CABECERA_CAMARERO);
+    expect(abrir.status).toBe(201);
+    pedidoId = abrir.body.id;
+
+    const anadir = await request(app)
+      .post(`/api/pedidos/${pedidoId}/lineas`)
+      .set(CABECERA_CAMARERO)
+      .send({ plato_id: 'plato-principal', cantidad: 1 });
+    expect(anadir.status).toBe(201);
+
+    const division = await request(app)
+      .post('/api/sala/mesas/mesa-2/cuenta/division')
+      .set(CABECERA_CAMARERO)
+      .send({
+        modo: 'iguales',
+        total_base_centimos: 1800,
+        partes: [
+          { orden: 1, comensal: 'Ana', importe_centimos: 900 },
+          { orden: 2, comensal: 'Luis', importe_centimos: 900 },
+        ],
+      });
+    expect(division.status).toBe(201);
+    expect(contarDivision().cuentas).toBe(1);
+
+    const anular = await request(app)
+      .post(`/api/pedidos/${pedidoId}/anular`)
+      .set(CABECERA_CAMARERO);
+    expect(anular.status).toBe(204);
+    expect(contarDivision()).toEqual({ cuentas: 0, partes: 0, asignaciones: 0 });
+  });
 });

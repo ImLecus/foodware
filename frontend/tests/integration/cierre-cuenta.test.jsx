@@ -113,4 +113,33 @@ describe('Cierre de cuenta con pago por partes (US3)', () => {
     expect(within(screen.getByTestId('ticket-final')).getAllByText(/21,25/)).toHaveLength(2);
     expect(screen.queryByText(/no se emitirá el ticket/i)).not.toBeInTheDocument();
   });
+
+  it('recarga la cuenta y descarta la división si el pago detecta un total desactualizado', async () => {
+    obtenerCuenta
+      .mockResolvedValueOnce(cuentaDividida)
+      .mockResolvedValueOnce({
+        ...cuentaDividida,
+        total_centimos: 4850,
+        division: null,
+      });
+
+    const error = new Error(
+      'El total de la cuenta ha cambiado: hay que rehacer la división',
+    );
+    error.status = 422;
+    error.codigo = 'total_desactualizado';
+    pagarParte.mockRejectedValue(error);
+
+    renderizar();
+
+    const botones = await screen.findAllByRole('button', { name: 'Marcar como pagada' });
+    fireEvent.click(botones[0]);
+
+    await waitFor(() => expect(obtenerCuenta).toHaveBeenCalledTimes(2));
+    expect(
+      await screen.findByText(/hay que rehacer la división/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Dividir la cuenta')).toBeInTheDocument();
+    expect(screen.queryByText('Ana')).not.toBeInTheDocument();
+  });
 });
