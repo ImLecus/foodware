@@ -14,6 +14,7 @@ import { partidasRouter } from './routes/partidas.js';
 import { pedidosRouter } from './routes/pedidos.js';
 import { platosRouter } from './routes/platos.js';
 import { salaRouter } from './routes/sala.js';
+import { crearApiRouter } from './api/index.js';
 
 /**
  * Construye la aplicación Express. Recibe la conexión a la base de datos
@@ -25,6 +26,7 @@ export function createApp(db) {
   app.use(comprobarOrigen);
   app.use(cors({ origin: config.corsOrigin, credentials: true }));
   app.use(express.json());
+  app.locals.db = db;
 
   app.use('/api/health', healthRouter(db));
   app.use('/api/auth', authRouter(db));
@@ -36,6 +38,7 @@ export function createApp(db) {
   app.use('/api/pedidos', pedidosRouter(db));
   app.use('/api/reports', crearReportsRouter(db));
   app.use('/api/sala', salaRouter(db));
+  app.use('/api', crearApiRouter(db));
   app.use('/api/sala', cuentasRouter(db));
 
   app.use(noEncontrado);

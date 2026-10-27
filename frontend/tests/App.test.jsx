@@ -31,6 +31,5 @@ describe('App', () => {
   it('muestra una página provisional en los módulos aún no implementados', () => {
     renderizar('/admin', USUARIO_ADMIN);
 
-    expect(screen.getByText('Módulo en construcción')).toBeInTheDocument();
-  });
-});
+    expect(screen.getByRole('heading', { name: /gestión de la carta/i })).toBeInTheDocument();
+  });});

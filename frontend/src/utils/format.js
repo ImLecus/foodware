@@ -8,6 +8,10 @@ export function formatearEuros(centimos) {
   });
 }
 
+export function formatearNumero(numero) {
+  return Number(numero).toLocaleString('es-ES');
+}
+
 export function formatearFecha(isoFecha) {
   if (!isoFecha) return '';
   const fecha = new Date(`${isoFecha}T00:00:00`);

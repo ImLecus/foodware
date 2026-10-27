@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import Mesas from './pages/Mesas.jsx';
 import ModuloPendiente from './pages/ModuloPendiente.jsx';
 import PaginaDashboard from './pages/PaginaDashboard.jsx';
+import PaginaGestionCarta from './pages/PaginaGestionCarta.jsx';
 import SalaEstado from './pages/SalaEstado.jsx';
 import SalaPage from './pages/SalaPage.jsx';
 
@@ -110,7 +111,15 @@ export default function App() {
             path="/admin"
             element={
               <RutaProtegida roles={['administrador']}>
-                <ModuloPendiente nombre="Carta y administración" />
+                <PaginaGestionCarta />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/admin/carta"
+            element={
+              <RutaProtegida roles={['administrador']}>
+                <PaginaGestionCarta />
               </RutaProtegida>
             }
           />
