@@ -107,10 +107,14 @@ export default function CocinaPage({ cocineroId }) {
 
     try {
       const resultado = await marcarEstado(pedido.id, linea.id, estado, partida);
-      const datosPedidos = await obtenerPedidosPendientes(partida);
-      setPedidos(datosPedidos);
       if (resultado?.pedidoCompletado) {
         setAvisoCompletado({ pedidoId: pedido.id, lineaId: linea.id });
+      }
+      try {
+        const datosPedidos = await obtenerPedidosPendientes(partida);
+        setPedidos(datosPedidos);
+      } catch {
+        // El aviso ya está disponible aunque falle la recarga de la lista.
       }
     } catch (fallo) {
       setErrorAccion(fallo.message ?? 'No se pudo cambiar el estado del plato');
