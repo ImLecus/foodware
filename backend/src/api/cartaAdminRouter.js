@@ -1,10 +1,11 @@
 import express from 'express';
+import { autenticar } from '../middleware/autenticar.js';
 import { requireRole } from '../middleware/authorize.js';
 import { actualizarPlatoSchema, crearPlatoSchema } from './cartaSchemas.js';
 
 export function crearCartaAdminRouter(db, cartaService) {
   const router = express.Router();
-  router.use(requireRole('administrador'));
+  router.use(autenticar(db), requireRole('administrador'));
 
   router.get('/', (req, res) => {
     try {

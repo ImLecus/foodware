@@ -5,7 +5,6 @@ import FormularioIngrediente from '../components/FormularioIngrediente.jsx';
 import PanelIngredientes from '../components/PanelIngredientes.jsx';
 import TablaPlatos from '../components/TablaPlatos.jsx';
 import { actualizarIngrediente, actualizarPlato, crearIngrediente, crearPlato, obtenerCartaAdmin, obtenerIngredientes } from '../services/cartaClient.js';
-import { USUARIO_ID } from '../services/sesion.js';
 
 export default function PaginaGestionCarta() {
   const [platos, setPlatos] = useState([]);
@@ -17,18 +16,13 @@ export default function PaginaGestionCarta() {
   const [mostrarFormularioIngrediente, setMostrarFormularioIngrediente] = useState(false);
   const [ingredienteEditando, setIngredienteEditando] = useState(null);
 
-  const cabecerasSesion = () => {
-    const usuarioId = import.meta.env.VITE_USUARIO_ID || USUARIO_ID || 'admin-1';
-    return { 'x-usuario-id': usuarioId };
-  };
-
   const cargar = async () => {
     setCargando(true);
     setError(null);
     try {
       const [datosPlatos, datosIngredientes] = await Promise.all([
-        obtenerCartaAdmin(cabecerasSesion()),
-        obtenerIngredientes(cabecerasSesion()).catch(() => []),
+        obtenerCartaAdmin(),
+        obtenerIngredientes().catch(() => []),
       ]);
       setPlatos(datosPlatos);
       setIngredientes(datosIngredientes);
@@ -44,40 +38,40 @@ export default function PaginaGestionCarta() {
   }, []);
 
   const handleCrear = async (datos) => {
-    await crearPlato(datos, cabecerasSesion());
+    await crearPlato(datos);
     setMostrarFormulario(false);
     cargar();
   };
 
   const handleActualizar = async (datos) => {
     if (!platoEditando) return;
-    await actualizarPlato(platoEditando.id, datos, cabecerasSesion());
+    await actualizarPlato(platoEditando.id, datos);
     setPlatoEditando(null);
     setMostrarFormulario(false);
     cargar();
   };
 
   const handleCambiarActivo = async (plato, activo) => {
-    await actualizarPlato(plato.id, { activo }, cabecerasSesion());
+    await actualizarPlato(plato.id, { activo });
     cargar();
   };
 
   const handleCrearIngrediente = async (datos) => {
-    await crearIngrediente(datos, cabecerasSesion());
+    await crearIngrediente(datos);
     setMostrarFormularioIngrediente(false);
     cargar();
   };
 
   const handleActualizarIngrediente = async (datos) => {
     if (!ingredienteEditando) return;
-    await actualizarIngrediente(ingredienteEditando.id, datos, cabecerasSesion());
+    await actualizarIngrediente(ingredienteEditando.id, datos);
     setIngredienteEditando(null);
     setMostrarFormularioIngrediente(false);
     cargar();
   };
 
   const handleCambiarEstadoIngrediente = async (ing, estado) => {
-    await actualizarIngrediente(ing.id, { estado }, cabecerasSesion());
+    await actualizarIngrediente(ing.id, { estado });
     cargar();
   };
 

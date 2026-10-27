@@ -1,65 +1,25 @@
-import { API_BASE } from './api.js';
+import { apiEnviar, apiGet } from './api.js';
 
-export async function obtenerCartaAdmin(cabeceras = {}) {
-  const res = await fetch(`${API_BASE}/admin/platos`, { headers: cabeceras });
-  if (!res.ok) throw new Error('Error al obtener carta');
-  return res.json();
+export function obtenerCartaAdmin() {
+  return apiGet('/admin/platos');
 }
 
-export async function crearPlato(datos, cabeceras = {}) {
-  const res = await fetch(`${API_BASE}/admin/platos`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...cabeceras },
-    body: JSON.stringify(datos),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Error al crear plato');
-  }
-  return res.json();
+export function crearPlato(datos) {
+  return apiEnviar('/admin/platos', 'POST', datos);
 }
 
-export async function actualizarPlato(id, datos, cabeceras = {}) {
-  const res = await fetch(`${API_BASE}/admin/platos/${id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...cabeceras },
-    body: JSON.stringify(datos),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Error al actualizar plato');
-  }
-  return res.json();
+export function actualizarPlato(id, datos) {
+  return apiEnviar(`/admin/platos/${encodeURIComponent(id)}`, 'PATCH', datos);
 }
 
-export async function obtenerIngredientes(cabeceras = {}) {
-  const res = await fetch(`${API_BASE}/admin/ingredientes`, { headers: cabeceras });
-  if (!res.ok) throw new Error('Error al obtener ingredientes');
-  return res.json();
+export function obtenerIngredientes() {
+  return apiGet('/admin/ingredientes');
 }
 
-export async function crearIngrediente(datos, cabeceras = {}) {
-  const res = await fetch(`${API_BASE}/admin/ingredientes`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...cabeceras },
-    body: JSON.stringify(datos),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Error al crear ingrediente');
-  }
-  return res.json();
+export function crearIngrediente(datos) {
+  return apiEnviar('/admin/ingredientes', 'POST', datos);
 }
 
-export async function actualizarIngrediente(id, datos, cabeceras = {}) {
-  const res = await fetch(`${API_BASE}/admin/ingredientes/${id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...cabeceras },
-    body: JSON.stringify(datos),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Error al actualizar ingrediente');
-  }
-  return res.json();
+export function actualizarIngrediente(id, datos) {
+  return apiEnviar(`/admin/ingredientes/${encodeURIComponent(id)}`, 'PATCH', datos);
 }

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import Database from 'better-sqlite3';
-import { CartaService } from '../src/services/cartaService.js';
-
+import { CartaService } from '../../src/services/cartaService.js';
 describe('inmutabilidad precio histórico', () => {
   it('un cambio de precio no altera líneas ya pedidas', () => {
     const db = new Database(':memory:');

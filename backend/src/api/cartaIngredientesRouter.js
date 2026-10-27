@@ -1,4 +1,5 @@
 import express from 'express';
+import { autenticar } from '../middleware/autenticar.js';
 import { requireRole } from '../middleware/authorize.js';
 import { actualizarIngredienteSchema, crearIngredienteSchema } from './cartaSchemas.js';
 import { CartaService } from '../services/cartaService.js';
@@ -6,7 +7,7 @@ import { CartaService } from '../services/cartaService.js';
 export function crearCartaIngredientesRouter(db) {
   const router = express.Router();
   const cartaService = new CartaService(db);
-  router.use(requireRole('administrador'));
+  router.use(autenticar(db), requireRole('administrador'));
 
   router.get('/', (req, res) => {
     try {
