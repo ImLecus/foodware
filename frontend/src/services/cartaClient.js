@@ -33,7 +33,7 @@ export async function actualizarPlato(id, datos, cabeceras = {}) {
 }
 
 export async function obtenerIngredientes(cabeceras = {}) {
-  const res = await fetch(`${API_BASE}/api/admin/ingredientes`, { headers: cabeceras });
+  const res = await fetch(`${API_BASE}/admin/ingredientes`, { headers: cabeceras });
   if (!res.ok) throw new Error('Error al obtener ingredientes');
   return res.json();
 }
