@@ -1,4 +1,7 @@
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
   Card,
   CardBody,
   Divider,
@@ -24,6 +27,7 @@ export default function ResumenCuenta({ cuenta, cargando = false }) {
 
   const consumos = cuenta?.consumos ?? [];
   const total = cuenta?.total_centimos ?? 0;
+  const platosPendientes = cuenta?.platos_pendientes ?? [];
 
   return (
     <Card>
@@ -31,6 +35,22 @@ export default function ResumenCuenta({ cuenta, cargando = false }) {
         <Heading size="sm" mb={3}>
           Consumos
         </Heading>
+
+        {platosPendientes.length > 0 && (
+          <Alert status="warning" borderRadius="md" mb={3}>
+            <AlertIcon />
+            <AlertDescription>
+              Hay platos pendientes en cocina. No se puede cerrar la cuenta hasta que estén listos.
+              <Stack spacing={0} mt={2}>
+                {platosPendientes.map((plato) => (
+                  <Text key={plato.linea_id} fontSize="sm">
+                    {plato.nombre} · {plato.partida}
+                  </Text>
+                ))}
+              </Stack>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {consumos.length === 0 ? (
           <Text color="gray.600">La mesa no tiene consumos.</Text>

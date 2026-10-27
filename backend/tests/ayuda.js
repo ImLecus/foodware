@@ -103,3 +103,17 @@ export async function crearPedidoEnviado(app, { mesaId = 'mesa-1' } = {}) {
 
   return pedidoId;
 }
+
+/** Marca como listas todas las líneas de un pedido enviado usando la sesión del cocinero. */
+export async function marcarPedidoListo(app, pedidoId) {
+  const detalle = await request(app).get(`/api/pedidos/${pedidoId}`).set(CABECERA_CAMARERO);
+
+  for (const [partida, lineas] of Object.entries(detalle.body.por_partida ?? {})) {
+    for (const linea of lineas) {
+      await request(app)
+        .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado`)
+        .set(cookieCocinero(partida))
+        .send({ estado: 'listo' });
+    }
+  }
+}

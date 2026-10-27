@@ -63,7 +63,12 @@ export default function CierreCuenta() {
       try {
         const datos = await listarMesas();
         if (activo) {
-          setMesas(datos.filter((mesa) => mesa.estado !== 'cerrada'));
+          setMesas(
+            datos.filter(
+              (mesa) =>
+                mesa.estado !== 'cerrada' && (mesa.pedido_en_curso_id || mesa.pedido_enviado_id),
+            ),
+          );
           setErrorMesas(null);
         }
       } catch (err) {
@@ -134,9 +139,10 @@ export default function CierreCuenta() {
     !sinConexion &&
     !cerrando &&
     cuenta.estado !== 'cerrada' &&
+    (cuenta.platos_pendientes?.length ?? 0) === 0 &&
     cuenta.total_centimos > 0;
 
-  // Mesa ya cerrada: no hay cuenta abierta, pero sí un ticket que se puede re-mostrar.
+  // Cuenta ya cerrada: no hay cuenta abierta, pero sí un ticket que se puede re-mostrar.
   const ticketSinCuenta = Boolean(ticketPartes && !cuenta);
 
   return (
@@ -200,15 +206,9 @@ export default function CierreCuenta() {
         <Alert status="warning" borderRadius="md">
           <AlertIcon />
           <AlertDescription>
-            Sin conexión. No se puede confirmar el cierre; la cuenta se conserva en pantalla
-            hasta recuperar la conexión.
-            <Button
-              size="sm"
-              mt={2}
-              variant="outline"
-              onClick={recargar}
-              isLoading={cargando}
-            >
+            Sin conexión. No se puede confirmar el cierre; la cuenta se conserva en pantalla hasta
+            recuperar la conexión.
+            <Button size="sm" mt={2} variant="outline" onClick={recargar} isLoading={cargando}>
               Reintentar
             </Button>
           </AlertDescription>
@@ -218,7 +218,14 @@ export default function CierreCuenta() {
       {mesaId && !sinConexion && error && (
         <Alert status="error" borderRadius="md">
           <AlertIcon />
-          <AlertDescription>{error.message}</AlertDescription>
+          <AlertDescription>
+            {error.message}
+            {error.platos?.map((plato) => (
+              <Text key={plato.linea_id} fontSize="sm" mt={1}>
+                {plato.nombre} · {plato.partida}
+              </Text>
+            ))}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -239,7 +246,7 @@ export default function CierreCuenta() {
               </Button>
             </Flex>
             <Text color="gray.600" mb={4}>
-              La mesa ya está cerrada. Este es el ticket final de su cuenta.
+              La cuenta ya está cerrada. Este es el ticket final.
             </Text>
             <TicketFinal ticket={ticketPartes} ticketEstado="emitido" hayDivision />
           </CardBody>
@@ -250,9 +257,7 @@ export default function CierreCuenta() {
         <Card>
           <CardBody>
             <Flex justify="space-between" align="center" mb={4} gap={4}>
-              <Heading size="md">
-                {cuenta?.identificador ?? 'Cuenta de la mesa'}
-              </Heading>
+              <Heading size="md">{cuenta?.identificador ?? 'Cuenta de la mesa'}</Heading>
               <Button size="sm" variant="ghost" onClick={cancelar}>
                 Cancelar
               </Button>
@@ -278,12 +283,9 @@ export default function CierreCuenta() {
                   <AlertDescription>
                     Cuenta dividida en {cuenta.division.partes.length}{' '}
                     {cuenta.division.partes.length === 1 ? 'parte' : 'partes'} con{' '}
-                    {cuenta.division.modo === 'iguales'
-                      ? 'partes iguales'
-                      : 'consumos asignados'}
-                    .{' '}
+                    {cuenta.division.modo === 'iguales' ? 'partes iguales' : 'consumos asignados'}.{' '}
                     {cuenta.estado === 'cerrada'
-                      ? 'La mesa está cerrada y este es el ticket final.'
+                      ? 'La cuenta está cerrada y este es el ticket final.'
                       : 'El cobro se realiza parte a parte.'}
                   </AlertDescription>
                 </Alert>
@@ -307,11 +309,7 @@ export default function CierreCuenta() {
                 </Stack>
 
                 <Box mt={4}>
-                  <TicketFinal
-                    ticket={ticketPartes}
-                    ticketEstado={ticketEstado}
-                    hayDivision
-                  />
+                  <TicketFinal ticket={ticketPartes} ticketEstado={ticketEstado} hayDivision />
                 </Box>
               </Box>
             )}

@@ -2,7 +2,13 @@ import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { reiniciarHub, suscribir } from '../../src/realtime/hub.js';
-import { CABECERA_CAMARERO, clienteSseFalso, crearBaseDePrueba, crearPedidoEnviado } from '../ayuda.js';
+import {
+  CABECERA_CAMARERO,
+  clienteSseFalso,
+  crearBaseDePrueba,
+  crearPedidoEnviado,
+  marcarPedidoListo,
+} from '../ayuda.js';
 
 describe('Ticket único y reversión de partes (US3)', () => {
   let db;
@@ -16,7 +22,8 @@ describe('Ticket único y reversión de partes (US3)', () => {
   async function prepararConPedido() {
     db = crearBaseDePrueba();
     app = createApp(db);
-    await crearPedidoEnviado(app);
+    const pedidoId = await crearPedidoEnviado(app);
+    await marcarPedidoListo(app, pedidoId);
   }
 
   async function dividirEnTres() {
@@ -59,9 +66,7 @@ describe('Ticket único y reversión de partes (US3)', () => {
     expect(segunda.body.ticket).toBeNull();
     expect(primera.body.ticket_estado).toBe('no_emitido');
     expect(segunda.body.ticket_estado).toBe('no_emitido');
-    expect(
-      db.prepare('SELECT COUNT(*) AS total FROM tickets').get().total,
-    ).toBe(0);
+    expect(db.prepare('SELECT COUNT(*) AS total FROM tickets').get().total).toBe(0);
 
     const { respuesta, peticion, escrito } = clienteSseFalso();
     suscribir(peticion, respuesta);
@@ -74,11 +79,12 @@ describe('Ticket único y reversión de partes (US3)', () => {
       'Luis',
       'Marta',
     ]);
-    expect(ultima.body.ticket.partes.reduce((suma, parte) => suma + parte.importe_centimos, 0)).toBe(
-      3250,
-    );
+    expect(
+      ultima.body.ticket.partes.reduce((suma, parte) => suma + parte.importe_centimos, 0),
+    ).toBe(3250);
     expect(escrito.join('')).toContain('event: mesa-cerrada');
     expect(escrito.join('')).toContain('"mesa_id":"mesa-1"');
+    expect(db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get().estado).toBe('libre');
   });
 
   it('permite revertir una parte con la mesa abierta y volver a pagarla', async () => {
@@ -92,9 +98,7 @@ describe('Ticket único y reversión de partes (US3)', () => {
     expect(reversion.status).toBe(200);
     expect(reversion.body.parte.estado).toBe('pendiente');
     expect(reversion.body.mesa_abierta).toBe(true);
-    expect(db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get().estado).not.toBe(
-      'cerrada',
-    );
+    expect(db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get().estado).toBe('ocupada');
 
     const deNuevo = await pagar(luis.id);
     expect(deNuevo.body.ticket).toBeNull();
@@ -115,8 +119,8 @@ describe('Ticket único y reversión de partes (US3)', () => {
 
     expect(respuesta.status).toBe(409);
     expect(respuesta.body.error).toMatch(/cerrada/i);
-    expect(
-      db.prepare("SELECT estado FROM cuentas_partes WHERE id = ?").get(marta.id).estado,
-    ).toBe('pagada');
+    expect(db.prepare('SELECT estado FROM cuentas_partes WHERE id = ?').get(marta.id).estado).toBe(
+      'pagada',
+    );
   });
 });

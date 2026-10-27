@@ -1,7 +1,12 @@
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
-import { CABECERA_CAMARERO, crearBaseDePrueba, crearPedidoEnviado } from '../ayuda.js';
+import {
+  CABECERA_CAMARERO,
+  crearBaseDePrueba,
+  crearPedidoEnviado,
+  marcarPedidoListo,
+} from '../ayuda.js';
 
 describe('Cierre de la cuenta con pago por partes (US3)', () => {
   let db;
@@ -14,7 +19,8 @@ describe('Cierre de la cuenta con pago por partes (US3)', () => {
   async function prepararConPedido() {
     db = crearBaseDePrueba();
     app = createApp(db);
-    await crearPedidoEnviado(app);
+    const pedidoId = await crearPedidoEnviado(app);
+    await marcarPedidoListo(app, pedidoId);
   }
 
   async function dividirEnDos() {
@@ -66,7 +72,7 @@ describe('Cierre de la cuenta con pago por partes (US3)', () => {
     expect(segundo.body.ticket.total_centimos).toBe(3250);
 
     const mesa = db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get();
-    expect(mesa.estado).toBe('cerrada');
+    expect(mesa.estado).toBe('libre');
 
     const cuentaCerrada = await request(app)
       .get('/api/sala/mesas/mesa-1/cuenta')
@@ -81,17 +87,15 @@ describe('Cierre de la cuenta con pago por partes (US3)', () => {
     expect(ticket.body.partes).toHaveLength(2);
   });
 
-  it('rechaza abrir un pedido nuevo en una mesa cerrada', async () => {
+  it('permite abrir un pedido nuevo en la mesa liberada', async () => {
     await prepararConPedido();
     const [ana, luis] = await dividirEnDos();
     await pagar(ana.id);
     await pagar(luis.id);
 
-    const respuesta = await request(app)
-      .post('/api/mesas/mesa-1/abrir')
-      .set(CABECERA_CAMARERO);
+    const respuesta = await request(app).post('/api/mesas/mesa-1/abrir').set(CABECERA_CAMARERO);
 
-    expect(respuesta.status).toBe(409);
-    expect(respuesta.body.error).toMatch(/cerrada/i);
+    expect(respuesta.status).toBe(201);
+    expect(respuesta.body.estado).toBe('en_curso');
   });
 });

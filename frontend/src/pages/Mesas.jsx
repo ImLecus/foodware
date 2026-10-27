@@ -126,7 +126,7 @@ export default function Mesas() {
   }, [cargarMesas]);
 
   const mesaSeleccionada = mesas.find((mesa) => mesa.id === mesaSeleccionadaId) ?? null;
-  // Las mesas cerradas dejan de mostrarse en la vista de sala (FR-011).
+  // Las cuentas cerradas liberan la mesa; sigue visible como libre.
   const mesasVisibles = mesas.filter((mesa) => mesa.estado !== 'cerrada');
   const puedeEditar = Boolean(pedido && pedido.estado === 'en_curso' && enLinea);
 
@@ -286,7 +286,7 @@ export default function Mesas() {
                       <code>npm run seed</code> en el backend.
                     </>
                   ) : (
-                    'No hay mesas abiertas: todas están cerradas.'
+                    'No hay mesas para mostrar.'
                   )}
                 </AlertDescription>
               </Alert>

@@ -183,6 +183,15 @@ const cargar = db.transaction(() => {
     `${anteayer} 10:00:00`,
     `${anteayer} 12:00:00`,
   );
+  // Mesa con una cuenta histórica y una comanda nueva: demuestra la reutilización.
+  insertarCuenta.run(
+    'cuenta-reutilizada',
+    'mesa-9',
+    'camarero-1',
+    1200,
+    `${ayer} 09:00:00`,
+    `${ayer} 09:30:00`,
+  );
 
   const insertarPedido = db.prepare(
     `INSERT OR IGNORE INTO pedidos (id, mesa_id, camarero_id, estado, creado_en, enviado_en)
@@ -287,6 +296,14 @@ const pedidosDemo = [
       { id: 'linea-demo-14', plato: 'plato-1', cantidad: 1, estado: 'pendiente' },
       { id: 'linea-demo-15', plato: 'plato-3', cantidad: 1, estado: 'pendiente' },
     ],
+  },
+  {
+    id: 'pedido-reutilizado',
+    mesa: 'mesa-9',
+    camarero: 'camarero-1',
+    enviadoEn: '-5 minutes',
+    modificado: 0,
+    lineas: [{ id: 'linea-reutilizada-1', plato: 'plato-2', cantidad: 1, estado: 'pendiente' }],
   },
   {
     id: 'pedido-demo-8',

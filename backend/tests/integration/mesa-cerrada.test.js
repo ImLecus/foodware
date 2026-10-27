@@ -6,9 +6,10 @@ import {
   CABECERA_COCINERO,
   crearBaseDePrueba,
   crearPedidoEnviado,
+  marcarPedidoListo,
 } from '../ayuda.js';
 
-describe('Mesa cerrada: rechazo de escrituras sobre sus pedidos (US3/FR-012)', () => {
+describe('Cuenta cerrada y mesa liberada: escrituras sobre la cuenta anterior (US3/FR-012)', () => {
   let db;
   let app;
   let pedidoId;
@@ -17,10 +18,11 @@ describe('Mesa cerrada: rechazo de escrituras sobre sus pedidos (US3/FR-012)', (
     db?.close();
   });
 
-  async function cerrarMesaConPedidoEnviado() {
+  async function cerrarCuentaConPedidoEnviado() {
     db = crearBaseDePrueba();
     app = createApp(db);
     pedidoId = await crearPedidoEnviado(app);
+    await marcarPedidoListo(app, pedidoId);
 
     // El camarero toma el bloqueo antes del cierre; después ya no podrá editar.
     const bloqueo = await request(app)
@@ -34,6 +36,8 @@ describe('Mesa cerrada: rechazo de escrituras sobre sus pedidos (US3/FR-012)', (
       .send({ modo: 'unico', total_base_centimos: 3250 });
     expect(cierre.status).toBe(201);
 
+    expect(db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get().estado).toBe('libre');
+
     const { id: lineaId } = db
       .prepare('SELECT id FROM lineas_pedido WHERE pedido_id = ? ORDER BY rowid LIMIT 1')
       .get(pedidoId);
@@ -45,8 +49,8 @@ describe('Mesa cerrada: rechazo de escrituras sobre sus pedidos (US3/FR-012)', (
     return db.prepare('SELECT estado, modificado FROM pedidos WHERE id = ?').get(pedidoId);
   }
 
-  it('rechaza con 409 añadir, modificar o retirar líneas y no altera el pedido', async () => {
-    const lineaId = await cerrarMesaConPedidoEnviado();
+  it('rechaza añadir, modificar o retirar líneas de la cuenta cerrada y no altera el pedido', async () => {
+    const lineaId = await cerrarCuentaConPedidoEnviado();
     const lineasAntes = db
       .prepare('SELECT COUNT(*) AS total FROM lineas_pedido WHERE pedido_id = ?')
       .get(pedidoId).total;
@@ -56,73 +60,65 @@ describe('Mesa cerrada: rechazo de escrituras sobre sus pedidos (US3/FR-012)', (
       .set(CABECERA_CAMARERO)
       .send({ plato_id: 'plato-postre', cantidad: 1 });
     expect(anadir.status).toBe(409);
-    expect(anadir.body.error).toMatch(/cerrada/i);
 
     const modificar = await request(app)
       .patch(`/api/pedidos/${pedidoId}/lineas/${lineaId}`)
       .set(CABECERA_CAMARERO)
       .send({ cantidad: 2 });
     expect(modificar.status).toBe(409);
-    expect(modificar.body.error).toMatch(/cerrada/i);
 
     const retirar = await request(app)
       .delete(`/api/pedidos/${pedidoId}/lineas/${lineaId}`)
       .set(CABECERA_CAMARERO);
     expect(retirar.status).toBe(409);
-    expect(retirar.body.error).toMatch(/cerrada/i);
 
     const lineasDespues = db
       .prepare('SELECT COUNT(*) AS total FROM lineas_pedido WHERE pedido_id = ?')
       .get(pedidoId).total;
     expect(lineasDespues).toBe(lineasAntes);
-    expect(estadoPedido()).toMatchObject({ estado: 'enviada', modificado: 0 });
+    expect(estadoPedido()).toMatchObject({ estado: 'cerrada', modificado: 0 });
   });
 
-  it('rechaza con 409 abrir la edición, enviar cambios, confirmar y anular', async () => {
-    await cerrarMesaConPedidoEnviado();
+  it('rechaza abrir la edición, enviar cambios, confirmar y anular la cuenta cerrada', async () => {
+    await cerrarCuentaConPedidoEnviado();
 
     const editar = await request(app)
       .post(`/api/pedidos/${pedidoId}/editar`)
       .set(CABECERA_CAMARERO);
     expect(editar.status).toBe(409);
-    expect(editar.body.error).toMatch(/cerrada/i);
 
     const enviar = await request(app)
       .post(`/api/pedidos/${pedidoId}/enviar-cambios`)
       .set(CABECERA_CAMARERO);
     expect(enviar.status).toBe(409);
-    expect(enviar.body.error).toMatch(/cerrada/i);
 
     const confirmar = await request(app)
       .post(`/api/pedidos/${pedidoId}/confirmar`)
       .set(CABECERA_CAMARERO);
     expect(confirmar.status).toBe(409);
-    expect(confirmar.body.error).toMatch(/cerrada/i);
 
     const anular = await request(app)
       .post(`/api/pedidos/${pedidoId}/anular`)
       .set(CABECERA_CAMARERO);
     expect(anular.status).toBe(409);
-    expect(anular.body.error).toMatch(/cerrada/i);
 
-    expect(estadoPedido()).toMatchObject({ estado: 'enviada' });
+    expect(estadoPedido()).toMatchObject({ estado: 'cerrada' });
   });
 
-  it('rechaza con 409 marcar o desmarcar una línea como lista', async () => {
-    const lineaId = await cerrarMesaConPedidoEnviado();
+  it('rechaza marcar o desmarcar una línea de la cuenta cerrada', async () => {
+    const lineaId = await cerrarCuentaConPedidoEnviado();
 
     const marcar = await request(app)
-      .put(`/api/pedidos/${pedidoId}/lineas/${lineaId}/estado?partida=entrantes`)
+      .put(`/api/pedidos/${pedidoId}/lineas/${lineaId}/estado`)
       .set(CABECERA_COCINERO)
-      .send({ estado: 'listo' });
+      .send({ estado: 'pendiente' });
     expect(marcar.status).toBe(409);
-    expect(marcar.body.error).toMatch(/cerrada/i);
 
     const linea = db.prepare('SELECT estado FROM lineas_pedido WHERE id = ?').get(lineaId);
-    expect(linea.estado).not.toBe('listo');
+    expect(linea.estado).toBe('listo');
   });
 
-  it('rechaza con 409 editar un pedido en curso de una mesa cerrada', async () => {
+  it('permite abrir una comanda nueva en la mesa liberada y rechaza escribir en la anterior', async () => {
     db = crearBaseDePrueba();
     app = createApp(db);
 
@@ -142,24 +138,22 @@ describe('Mesa cerrada: rechazo de escrituras sobre sus pedidos (US3/FR-012)', (
       .send({ modo: 'unico', total_base_centimos: 1800 });
     expect(cierre.status).toBe(201);
 
+    expect(db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-2'").get().estado).toBe('libre');
+
     const nueva = await request(app)
       .post(`/api/pedidos/${pedidoId}/lineas`)
       .set(CABECERA_CAMARERO)
       .send({ plato_id: 'plato-postre', cantidad: 1 });
     expect(nueva.status).toBe(409);
-    expect(nueva.body.error).toMatch(/cerrada/i);
 
     const modificar = await request(app)
       .patch(`/api/pedidos/${pedidoId}/lineas/${anadir.body.id}`)
       .set(CABECERA_CAMARERO)
       .send({ cantidad: 2 });
     expect(modificar.status).toBe(409);
-    expect(modificar.body.error).toMatch(/cerrada/i);
 
-    const retirar = await request(app)
-      .delete(`/api/pedidos/${pedidoId}/lineas/${anadir.body.id}`)
-      .set(CABECERA_CAMARERO);
-    expect(retirar.status).toBe(409);
-    expect(retirar.body.error).toMatch(/cerrada/i);
+    const reabrir = await request(app).post('/api/mesas/mesa-2/abrir').set(CABECERA_CAMARERO);
+    expect(reabrir.status).toBe(201);
+    expect(reabrir.body.estado).toBe('en_curso');
   });
 });

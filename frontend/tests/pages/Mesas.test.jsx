@@ -67,13 +67,23 @@ describe('Mesas (sala)', () => {
 
     renderizar();
 
-    expect(await screen.findByText(/No hay mesas abiertas/i)).toBeInTheDocument();
+    expect(await screen.findByText(/No hay mesas para mostrar/i)).toBeInTheDocument();
     expect(screen.queryByText('Mesa 3')).not.toBeInTheDocument();
   });
 
   it('recarga la lista y retira la mesa al recibir mesa-cerrada', async () => {
-    const ocupada = { id: 'mesa-1', identificador: 'Mesa 1', estado: 'ocupada', pedido_en_curso_id: null };
-    const libre = { id: 'mesa-2', identificador: 'Mesa 2', estado: 'libre', pedido_en_curso_id: null };
+    const ocupada = {
+      id: 'mesa-1',
+      identificador: 'Mesa 1',
+      estado: 'ocupada',
+      pedido_en_curso_id: null,
+    };
+    const libre = {
+      id: 'mesa-2',
+      identificador: 'Mesa 2',
+      estado: 'libre',
+      pedido_en_curso_id: null,
+    };
     listarMesas.mockResolvedValue([ocupada, libre]);
     listarPlatos.mockResolvedValue([]);
 

@@ -2,7 +2,12 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
-import { CABECERA_CAMARERO, crearBaseDePrueba, crearPedidoEnviado } from '../ayuda.js';
+import {
+  CABECERA_CAMARERO,
+  crearBaseDePrueba,
+  crearPedidoEnviado,
+  marcarPedidoListo,
+} from '../ayuda.js';
 
 describe('División de la cuenta (US2)', () => {
   let db;
@@ -51,14 +56,51 @@ describe('División de la cuenta (US2)', () => {
     ]);
     expect(partes.reduce((suma, parte) => suma + parte.importe_centimos, 0)).toBe(3250);
 
-    const cuenta = await request(app)
-      .get('/api/sala/mesas/mesa-1/cuenta')
-      .set(CABECERA_CAMARERO);
+    const cuenta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
     expect(cuenta.body.division.partes.map((parte) => parte.comensal)).toEqual([
       'Ana',
       'Luis',
       'Marta',
     ]);
+  });
+
+  it('divide una comanda nueva sin mezclarla con la cuenta histórica de la mesa', async () => {
+    await preparar();
+    await marcarPedidoListo(app, pedidoId);
+    const cierre = await request(app)
+      .post('/api/sala/mesas/mesa-1/cuenta/cierre')
+      .set(CABECERA_CAMARERO)
+      .send({ modo: 'unico', total_base_centimos: 3250 });
+    expect(cierre.status).toBe(201);
+
+    const abierta = await request(app).post('/api/mesas/mesa-1/abrir').set(CABECERA_CAMARERO);
+    expect(abierta.status).toBe(201);
+    const nuevaLinea = await request(app)
+      .post(`/api/pedidos/${abierta.body.id}/lineas`)
+      .set(CABECERA_CAMARERO)
+      .send({ plato_id: 'plato-principal', cantidad: 1 });
+    expect(nuevaLinea.status).toBe(201);
+    await request(app).post(`/api/pedidos/${abierta.body.id}/confirmar`).set(CABECERA_CAMARERO);
+
+    const division = await request(app)
+      .post('/api/sala/mesas/mesa-1/cuenta/division')
+      .set(CABECERA_CAMARERO)
+      .send({
+        modo: 'iguales',
+        total_base_centimos: 1800,
+        partes: [
+          { orden: 1, comensal: 'Ana', importe_centimos: 900 },
+          { orden: 2, comensal: 'Luis', importe_centimos: 900 },
+        ],
+      });
+
+    expect(division.status).toBe(201);
+    expect(division.body.cuenta.pedido_id).toBe(abierta.body.id);
+    const cuentas = db
+      .prepare("SELECT estado, pedido_id FROM cuentas WHERE mesa_id = 'mesa-1' ORDER BY abierta_en")
+      .all();
+    expect(cuentas.some((cuenta) => cuenta.estado === 'cerrada')).toBe(true);
+    expect(cuentas.some((cuenta) => cuenta.estado === 'abierta')).toBe(true);
   });
 
   it('divide por consumo con porciones y persiste cada asignación', async () => {
@@ -147,14 +189,11 @@ describe('División de la cuenta (US2)', () => {
       .prepare("SELECT COUNT(*) AS total FROM cuentas WHERE mesa_id = 'mesa-1'")
       .get();
     expect(cuentas.total).toBe(1);
-    expect(
-      db
-        .prepare('SELECT COUNT(*) AS total FROM cuentas_partes')
-        .get().total,
-    ).toBe(2);
-    expect(
-      db.prepare('SELECT comensal FROM cuentas_partes ORDER BY orden').all(),
-    ).toEqual([{ comensal: 'Marta' }, { comensal: 'Pablo' }]);
+    expect(db.prepare('SELECT COUNT(*) AS total FROM cuentas_partes').get().total).toBe(2);
+    expect(db.prepare('SELECT comensal FROM cuentas_partes ORDER BY orden').all()).toEqual([
+      { comensal: 'Marta' },
+      { comensal: 'Pablo' },
+    ]);
   });
 
   async function dividirIgualesYBloquear() {
@@ -180,9 +219,7 @@ describe('División de la cuenta (US2)', () => {
     return {
       cuentas: db.prepare('SELECT COUNT(*) AS total FROM cuentas').get().total,
       partes: db.prepare('SELECT COUNT(*) AS total FROM cuentas_partes').get().total,
-      asignaciones: db
-        .prepare('SELECT COUNT(*) AS total FROM cuentas_parte_consumos')
-        .get().total,
+      asignaciones: db.prepare('SELECT COUNT(*) AS total FROM cuentas_parte_consumos').get().total,
     };
   }
 
@@ -195,9 +232,7 @@ describe('División de la cuenta (US2)', () => {
       .send({ plato_id: 'plato-postre', cantidad: 1 });
     expect(anadir.status).toBe(201);
 
-    const cuenta = await request(app)
-      .get('/api/sala/mesas/mesa-1/cuenta')
-      .set(CABECERA_CAMARERO);
+    const cuenta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
     expect(cuenta.status).toBe(200);
     expect(cuenta.body.total_centimos).toBe(3850);
     expect(cuenta.body.division).toBeNull();
@@ -221,9 +256,7 @@ describe('División de la cuenta (US2)', () => {
       .send({ cantidad: 2 });
     expect(modificar.status).toBe(200);
 
-    const cuenta = await request(app)
-      .get('/api/sala/mesas/mesa-1/cuenta')
-      .set(CABECERA_CAMARERO);
+    const cuenta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
     expect(cuenta.body.total_centimos).toBe(4100);
     expect(cuenta.body.division).toBeNull();
     expect(contarDivision()).toEqual({ cuentas: 0, partes: 0, asignaciones: 0 });
@@ -267,9 +300,7 @@ describe('División de la cuenta (US2)', () => {
       .set(CABECERA_CAMARERO);
     expect(retirar.status).toBe(204);
 
-    const cuenta = await request(app)
-      .get('/api/sala/mesas/mesa-1/cuenta')
-      .set(CABECERA_CAMARERO);
+    const cuenta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
     expect(cuenta.body.total_centimos).toBe(2400);
     expect(cuenta.body.division).toBeNull();
     expect(contarDivision()).toEqual({ cuentas: 0, partes: 0, asignaciones: 0 });
@@ -291,9 +322,7 @@ describe('División de la cuenta (US2)', () => {
       "UPDATE lineas_pedido SET cantidad = cantidad + 1 WHERE plato_id = 'plato-entrante'",
     ).run();
 
-    const cuenta = await request(app)
-      .get('/api/sala/mesas/mesa-1/cuenta')
-      .set(CABECERA_CAMARERO);
+    const cuenta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
     expect(cuenta.status).toBe(200);
     expect(cuenta.body.total_centimos).toBe(4100);
     expect(cuenta.body.division).toBeNull();
@@ -304,9 +333,7 @@ describe('División de la cuenta (US2)', () => {
     db = crearBaseDePrueba();
     app = createApp(db);
 
-    const abrir = await request(app)
-      .post('/api/mesas/mesa-2/abrir')
-      .set(CABECERA_CAMARERO);
+    const abrir = await request(app).post('/api/mesas/mesa-2/abrir').set(CABECERA_CAMARERO);
     expect(abrir.status).toBe(201);
     pedidoId = abrir.body.id;
 
