@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import { config } from './config.js';
 import { manejadorErrores, noEncontrado } from './middleware/error.js';
+import { crearReportsRouter } from './api/reportsRouter.js';
 import { cocinerosRouter } from './routes/cocineros.js';
 import { eventsRouter } from './routes/events.js';
 import { healthRouter } from './routes/health.js';
@@ -27,6 +28,7 @@ export function createApp(db) {
   app.use('/api/mesas', mesasRouter(db));
   app.use('/api/platos', platosRouter(db));
   app.use('/api/pedidos', pedidosRouter(db));
+  app.use('/api/reports', crearReportsRouter(db));
 
   app.use(noEncontrado);
   app.use(manejadorErrores);
