@@ -124,34 +124,34 @@ mesas y las líneas de pedido (consumos) de las historias 01–04.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T037 [P] [US3] Test unitario de `ticketService` (total y desglose de partes) en `backend/tests/unit/ticketService.test.js`
-- [ ] T038 [P] [US3] Test de contrato de `GET .../cuenta/ticket` (409 `ticket_no_emitido` antes de la última parte) y de `POST .../cuenta/cierre` con división o partes pendientes (409, 422) en `backend/tests/contract/ticket-cierre.test.js`
-- [ ] T039 [P] [US3] Test de componente de `TicketFinal` (total y desglose de cada parte) en `frontend/tests/components/TicketFinal.test.jsx`
-- [ ] T040 [P] [US3] Test de contrato del marcado y reversión de pagos y de la emisión única del ticket (marcar parte: `200`, `404`, `409` con mesa cerrada; partes intermedias con `ticketEstado = no_emitido` y `ticket = null`; ticket único al pagar la última; `200` al deshacer con mesa abierta y `409` con mesa cerrada) en `backend/tests/contract/ticket-reversion.test.js`
-- [ ] T041 [P] [US3] Test de componente de `ParteCuenta` (deshacer el pago con confirmación, vuelta a `pendiente` y mesa abierta) en `frontend/tests/components/ParteCuenta.test.jsx`
-- [ ] T042 [US3] Test de componente del aviso «sin ticket hasta el pago completo» (cuenta abierta con partes pagadas y `ticketEstado = no_emitido`) en `frontend/tests/components/TicketFinal.test.jsx`
+- [x] T037 [P] [US3] Test unitario de `ticketService` (total y desglose de partes) en `backend/tests/unit/ticketService.test.js`
+- [x] T038 [P] [US3] Test de contrato de `GET .../cuenta/ticket` (409 `ticket_no_emitido` antes de la última parte) y del cierre único con división pendiente (409 `cuenta_dividida`) y total cambiado (422) en `backend/tests/contract/ticket-cierre.test.js`
+- [x] T039 [P] [US3] Test de componente de `TicketFinal` (total y desglose de cada parte) en `frontend/tests/components/TicketFinal.test.jsx`
+- [x] T040 [P] [US3] Test de contrato del marcado y reversión de pagos y de la emisión única del ticket (marcar parte: `200`, `404`, `409` con mesa cerrada; partes intermedias con `ticket_estado = no_emitido` y `ticket = null`; ticket único al pagar la última; `200` al deshacer con mesa abierta y `409` con mesa cerrada) en `backend/tests/contract/ticket-reversion.test.js`
+- [x] T041 [P] [US3] Test de componente de `ParteCuenta` (deshacer el pago con confirmación, vuelta a `pendiente` y mesa abierta) en `frontend/tests/components/ParteCuenta.test.jsx`
+- [x] T042 [US3] Test de componente del aviso «sin ticket hasta el pago completo» (cuenta abierta con partes pagadas y `ticket_estado = no_emitido`) en `frontend/tests/components/TicketFinal.test.jsx`
 
 ### Implementation for User Story 3
 
-- [ ] T043 [US3] Implementar `ticketService` (composición del ticket con el total y las partes) en `backend/src/services/ticketService.js`
-- [ ] T044 [US3] Implementar el estado derivado del ticket (`no_emitido`/`emitido`) y su exposición en la cuenta, el pago y la reversión en `backend/src/services/ticketService.js`
-- [ ] T045 [US3] Implementar `POST /api/sala/mesas/:mesaId/cuenta/partes/:parteId/pago` (200, 404, 409 si la mesa está cerrada) y exigir que todas las partes estén pagadas para cerrar la mesa (el cierre de una cuenta dividida solo se produce al pagar la última parte), devolviendo el ticket único en `backend/src/routes/cuentas.js` y `backend/src/services/cuentasService.js`
-- [ ] T046 [US3] Implementar `GET /api/sala/mesas/:mesaId/cuenta/ticket` (200 solo si la cuenta está cerrada y el ticket emitido; `404` y `409` con `ticketEstado = no_emitido` en caso contrario) en `backend/src/routes/cuentas.js`
-- [ ] T047 [US3] Marcar la mesa como cerrada (`abierta = false`) dentro de la transacción de cierre y rechazar nuevas operaciones sobre una mesa cerrada (`409`) en `backend/src/services/cuentasService.js` y `backend/src/routes/cuentas.js`
-- [ ] T048 [US3] Emitir el ticket dentro de la misma transacción que marca la última parte pendiente como pagada, sin emitirlo en partes intermedias, en `backend/src/services/cuentasService.js`
-- [ ] T049 [US3] Emitir el evento `mesa-cerrada` por el hub SSE al confirmar el cierre en `backend/src/routes/cuentas.js` y `backend/src/realtime/eventos.js`
-- [ ] T050 [US3] Implementar `DELETE /api/sala/mesas/:mesaId/cuenta/partes/:parteId/pago` para devolver una parte pagada a pendiente (200, 404, 409 con mesa cerrada, 422) en `backend/src/routes/cuentas.js` y `backend/src/services/cuentasService.js`
-- [ ] T051 [US3] Recalcular el estado de la mesa al deshacer un pago (sigue abierta si quedan partes pendientes) y emitir, si procede, el evento de actualización en `backend/src/services/cuentasService.js` y `backend/src/realtime/eventos.js`
-- [ ] T052 [P] [US3] Implementar el componente `TicketFinal` (total y desglose de partes) en `frontend/src/components/TicketFinal.jsx`
-- [ ] T053 [US3] Añadir el marcado de pago por parte llamando a `POST .../partes/:parteId/pago` en `frontend/src/components/ParteCuenta.jsx` y `frontend/src/services/api.js`
-- [ ] T054 [P] [US3] Añadir la llamada `DELETE` de deshacer el pago de una parte en `frontend/src/services/api.js`
-- [ ] T055 [US3] Implementar en `ParteCuenta` la acción de deshacer el pago con confirmación y el paso a `pendiente` en `frontend/src/components/ParteCuenta.jsx`
-- [ ] T056 [US3] Extender `useCuenta` para deshacer el pago de una parte y recalcular el estado de la mesa en `frontend/src/hooks/useCuenta.js`
-- [ ] T057 [US3] Mostrar el aviso «sin ticket hasta el pago completo» mientras la cuenta siga abierta en `frontend/src/components/TicketFinal.jsx`
-- [ ] T058 [US3] Extender `useCuenta` y la página `CierreCuenta` (pago por partes, impedir el cierre con partes pendientes, mostrar el ticket único y reflejar el estado de la mesa) en `frontend/src/hooks/useCuenta.js` y `frontend/src/pages/CierreCuenta.jsx`
-- [ ] T059 [US3] Test de integración del cierre con pago por partes, ticket y mesa cerrada en `backend/tests/integration/cierre-ticket.test.js`
-- [ ] T060 [US3] Test de integración de la emisión única del ticket y de la reversión de partes (intermedias sin ticket, ticket único al pagar la última, 409 al deshacer con mesa cerrada y reversión válida con mesa abierta) en `backend/tests/integration/ticket-unico-reversion.test.js`
-- [ ] T061 [US3] Test de integración del flujo de cierre en el frontend (total → división → pago → ticket) en `frontend/tests/integration/cierre-cuenta.test.jsx`
+- [x] T043 [US3] Implementar `ticketService` (composición del ticket con el total y las partes) en `backend/src/services/ticketService.js`
+- [x] T044 [US3] Implementar el estado derivado del ticket (`no_emitido`/`emitido`) y su exposición en la cuenta, el pago y la reversión en `backend/src/services/ticketService.js`
+- [x] T045 [US3] Implementar `POST /api/sala/mesas/:mesaId/cuenta/partes/:parteId/pago` (200, 404, 409 si la mesa está cerrada) y exigir que todas las partes estén pagadas para cerrar la mesa (el cierre de una cuenta dividida solo se produce al pagar la última parte), devolviendo el ticket único en `backend/src/routes/cuentas.js` y `backend/src/services/cuentasService.js`
+- [x] T046 [US3] Implementar `GET /api/sala/mesas/:mesaId/cuenta/ticket` (200 solo si la cuenta está cerrada y el ticket emitido; `404` y `409` con `ticket_estado = no_emitido` en caso contrario) en `backend/src/routes/cuentas.js`
+- [x] T047 [US3] Marcar la mesa como cerrada (`mesas.estado = 'cerrada'`) dentro de la transacción de cierre y rechazar nuevas operaciones sobre una mesa cerrada (`409`) en `backend/src/services/cuentasService.js`, `backend/src/domain/pedidos.js` y `backend/src/routes/mesas.js`
+- [x] T048 [US3] Emitir el ticket dentro de la misma transacción que marca la última parte pendiente como pagada, sin emitirlo en partes intermedias, en `backend/src/services/cuentasService.js`
+- [x] T049 [US3] Emitir el evento `mesa-cerrada` por el hub SSE al confirmar el cierre en `backend/src/services/cuentasService.js` y `backend/src/realtime/emit.js`
+- [x] T050 [US3] Implementar `DELETE /api/sala/mesas/:mesaId/cuenta/partes/:parteId/pago` para devolver una parte pagada a pendiente (200, 404, 409 con mesa cerrada, 422) en `backend/src/routes/cuentas.js` y `backend/src/services/cuentasService.js`
+- [x] T051 [US3] Mantener la mesa abierta al deshacer un pago y devolver el estado `no_emitido` del ticket en `backend/src/services/cuentasService.js`
+- [x] T052 [P] [US3] Implementar el componente `TicketFinal` (total y desglose de partes) en `frontend/src/components/TicketFinal.jsx`
+- [x] T053 [US3] Añadir el marcado de pago por parte llamando a `POST .../partes/:parteId/pago` en `frontend/src/components/ParteCuenta.jsx` y `frontend/src/services/api.js`
+- [x] T054 [P] [US3] Añadir la llamada `DELETE` de deshacer el pago de una parte en `frontend/src/services/api.js`
+- [x] T055 [US3] Implementar en `ParteCuenta` la acción de deshacer el pago con confirmación y el paso a `pendiente` en `frontend/src/components/ParteCuenta.jsx`
+- [x] T056 [US3] Extender `useCuenta` para deshacer el pago de una parte y recalcular el estado de la mesa en `frontend/src/hooks/useCuenta.js`
+- [x] T057 [US3] Mostrar el aviso «sin ticket hasta el pago completo» mientras la cuenta siga abierta en `frontend/src/components/TicketFinal.jsx`
+- [x] T058 [US3] Extender `useCuenta` y la página `CierreCuenta` (pago por partes, impedir el cierre con partes pendientes, mostrar el ticket único y reflejar el estado de la mesa) en `frontend/src/hooks/useCuenta.js` y `frontend/src/pages/CierreCuenta.jsx`
+- [x] T059 [US3] Test de integración del cierre con pago por partes, ticket y mesa cerrada en `backend/tests/integration/cierre-ticket.test.js`
+- [x] T060 [US3] Test de integración de la emisión única del ticket y de la reversión de partes (intermedias sin ticket, ticket único al pagar la última, 409 al deshacer con mesa cerrada y reversión válida con mesa abierta) en `backend/tests/integration/ticket-unico-reversion.test.js`
+- [x] T061 [US3] Test de integración del flujo de cierre en el frontend (total → división → pago → ticket) en `frontend/tests/integration/cierre-cuenta.test.jsx`
 
 **Checkpoint**: Las tres historias funcionan de forma independiente
 

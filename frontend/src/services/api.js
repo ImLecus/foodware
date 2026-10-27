@@ -157,3 +157,21 @@ export function cerrarCuentaUnica(mesaId, totalBaseCentimos) {
 export function dividirCuenta(mesaId, division) {
   return apiEnviar(`/sala/mesas/${encodeURIComponent(mesaId)}/cuenta/division`, 'POST', division);
 }
+
+export function pagarParte(mesaId, parteId) {
+  return apiEnviar(
+    `/sala/mesas/${encodeURIComponent(mesaId)}/cuenta/partes/${encodeURIComponent(parteId)}/pago`,
+    'POST',
+  );
+}
+
+export function deshacerPagoParte(mesaId, parteId) {
+  return apiEnviar(
+    `/sala/mesas/${encodeURIComponent(mesaId)}/cuenta/partes/${encodeURIComponent(parteId)}/pago`,
+    'DELETE',
+  );
+}
+
+export function obtenerTicket(mesaId) {
+  return apiGet(`/sala/mesas/${encodeURIComponent(mesaId)}/cuenta/ticket`);
+}

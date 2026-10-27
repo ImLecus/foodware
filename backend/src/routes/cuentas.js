@@ -4,7 +4,10 @@ import { validarCierreUnico, validarDivision } from '../schemas/cuentas.js';
 import {
   cerrarCuentaUnica,
   confirmarDivision,
+  deshacerPagoParte,
   obtenerCuenta,
+  obtenerTicket,
+  pagarParte,
 } from '../services/cuentasService.js';
 
 export function cuentasRouter(db) {
@@ -16,6 +19,22 @@ export function cuentasRouter(db) {
     try {
       res.json(obtenerCuenta(db, req.params.mesaId));
     } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/mesas/:mesaId/cuenta/ticket', (req, res, next) => {
+    try {
+      res.json(obtenerTicket(db, req.params.mesaId));
+    } catch (error) {
+      if (error.codigo === 'ticket_no_emitido') {
+        res.status(409).json({
+          error: error.message,
+          codigo: error.codigo,
+          ticket_estado: 'no_emitido',
+        });
+        return;
+      }
       next(error);
     }
   });
@@ -42,6 +61,22 @@ export function cuentasRouter(db) {
         asignaciones: datos.asignaciones,
       });
       res.status(201).json(resultado);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/mesas/:mesaId/cuenta/partes/:parteId/pago', (req, res, next) => {
+    try {
+      res.json(pagarParte(db, req.params.mesaId, req.params.parteId));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.delete('/mesas/:mesaId/cuenta/partes/:parteId/pago', (req, res, next) => {
+    try {
+      res.json(deshacerPagoParte(db, req.params.mesaId, req.params.parteId));
     } catch (error) {
       next(error);
     }

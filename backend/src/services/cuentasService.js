@@ -5,6 +5,7 @@ import { ErrorHttp } from '../middleware/error.js';
 import { emitirMesaCerrada } from '../realtime/emit.js';
 import { aISO } from '../utils/fechas.js';
 import { validarDivisionIguales, validarDivisionPorConsumo } from './divisionService.js';
+import { componerTicket, estadoTicket } from './ticketService.js';
 
 const CONSUMOS_DE_MESA = `
   SELECT l.id AS linea_id,
@@ -56,14 +57,7 @@ function obtenerDivision(db, cuenta) {
         ORDER BY orden`,
     )
     .all(cuenta.id)
-    .map((parte) => ({
-      id: parte.id,
-      orden: parte.orden,
-      comensal: parte.comensal,
-      importe_centimos: parte.importe_centimos,
-      estado: parte.estado,
-      pagada_en: aISO(parte.pagada_en),
-    }));
+    .map(serializarParte);
 
   const asignaciones = db
     .prepare(
@@ -78,14 +72,79 @@ function obtenerDivision(db, cuenta) {
   return { modo: cuenta.modo_division, partes, asignaciones };
 }
 
+function serializarParte(parte) {
+  return {
+    id: parte.id,
+    orden: parte.orden,
+    comensal: parte.comensal,
+    importe_centimos: parte.importe_centimos,
+    estado: parte.estado,
+    pagada_en: aISO(parte.pagada_en),
+  };
+}
+
+function exigirCuentaAbierta(mesa, cuenta) {
+  if (mesa.estado === 'cerrada' || cuenta?.estado === 'cerrada') {
+    throw new ErrorHttp(409, 'La cuenta ya está cerrada');
+  }
+}
+
+function obtenerCuentaDividida(db, mesaId) {
+  const cuenta = obtenerCuentaPersistida(db, mesaId);
+  if (!cuenta?.modo_division) {
+    throw new ErrorHttp(404, 'La cuenta no tiene una división confirmada');
+  }
+  return cuenta;
+}
+
+function obtenerParte(db, cuenta, parteId) {
+  const parte = db
+    .prepare(
+      `SELECT id, orden, comensal, importe_centimos, estado, pagada_en
+         FROM cuentas_partes
+        WHERE id = ? AND cuenta_id = ?`,
+    )
+    .get(parteId, cuenta.id);
+
+  if (!parte) {
+    throw new ErrorHttp(404, 'Parte de la cuenta no encontrada');
+  }
+  return parte;
+}
+
+/**
+ * Comprueba que los consumos siguen sumando el total de la división. Si la
+ * cuenta cambió, descarta la división para que el camarero la rehaga (FR-017).
+ */
+function exigirTotalVigente(db, mesaId, cuenta) {
+  const total = calcularTotal(listarConsumos(db, mesaId));
+  if (total !== cuenta.total_centimos) {
+    db.prepare('DELETE FROM cuentas WHERE id = ?').run(cuenta.id);
+    throw new ErrorHttp(
+      422,
+      'El total de la cuenta ha cambiado: hay que rehacer la división',
+      'total_desactualizado',
+    );
+  }
+  return total;
+}
+
+function leerCuenta(db, cuentaId) {
+  return db
+    .prepare(
+      `SELECT id, mesa_id, estado, total_centimos, modo_division, cerrada_en
+         FROM cuentas
+        WHERE id = ?`,
+    )
+    .get(cuentaId);
+}
+
 /** Cuenta abierta derivada de los consumos, con la división ya confirmada si existe. */
 export function obtenerCuenta(db, mesaId) {
   const mesa = exigirMesa(obtenerMesa(db, mesaId));
   const persistida = obtenerCuentaPersistida(db, mesaId);
 
-  if (mesa.estado === 'cerrada' || persistida?.estado === 'cerrada') {
-    throw new ErrorHttp(409, 'La cuenta ya está cerrada');
-  }
+  exigirCuentaAbierta(mesa, persistida);
 
   const consumos = listarConsumos(db, mesaId);
 
@@ -96,17 +155,7 @@ export function obtenerCuenta(db, mesaId) {
     total_centimos: calcularTotal(consumos),
     consumos,
     division: obtenerDivision(db, persistida),
-    ticket_estado: 'no_emitido',
-  };
-}
-
-function componerTicket(cuenta) {
-  return {
-    estado: 'emitido',
-    mesa_id: cuenta.mesa_id,
-    total_centimos: cuenta.total_centimos,
-    generado_en: aISO(cuenta.cerrada_en),
-    partes: [],
+    ticket_estado: estadoTicket(persistida),
   };
 }
 
@@ -118,9 +167,8 @@ export function cerrarCuentaUnica(db, mesaId, { totalBaseCentimos }) {
   const mesa = exigirMesa(obtenerMesa(db, mesaId));
   const persistida = obtenerCuentaPersistida(db, mesaId);
 
-  if (mesa.estado === 'cerrada' || persistida?.estado === 'cerrada') {
-    throw new ErrorHttp(409, 'La cuenta ya está cerrada');
-  }
+  exigirCuentaAbierta(mesa, persistida);
+
   if (persistida?.modo_division) {
     throw new ErrorHttp(
       409,
@@ -151,13 +199,7 @@ export function cerrarCuentaUnica(db, mesaId, { totalBaseCentimos }) {
   });
   cerrar();
 
-  const cuenta = db
-    .prepare(
-      `SELECT id, mesa_id, estado, total_centimos, cerrada_en
-         FROM cuentas
-        WHERE id = ?`,
-    )
-    .get(id);
+  const cuenta = leerCuenta(db, id);
 
   emitirMesaCerrada({ mesaId, cuentaId: cuenta.id, cerradaEn: aISO(cuenta.cerrada_en) });
 
@@ -170,7 +212,7 @@ export function cerrarCuentaUnica(db, mesaId, { totalBaseCentimos }) {
       cerrada_en: aISO(cuenta.cerrada_en),
     },
     ticket_estado: 'emitido',
-    ticket: componerTicket(cuenta),
+    ticket: componerTicket(db, cuenta),
   };
 }
 
@@ -183,9 +225,7 @@ export function confirmarDivision(db, mesaId, datos) {
   const mesa = exigirMesa(obtenerMesa(db, mesaId));
   const persistida = obtenerCuentaPersistida(db, mesaId);
 
-  if (mesa.estado === 'cerrada' || persistida?.estado === 'cerrada') {
-    throw new ErrorHttp(409, 'La cuenta ya está cerrada');
-  }
+  exigirCuentaAbierta(mesa, persistida);
 
   if (persistida?.modo_division) {
     const pagadas = db
@@ -261,13 +301,7 @@ export function confirmarDivision(db, mesaId, datos) {
   });
   guardar();
 
-  const cuenta = db
-    .prepare(
-      `SELECT id, mesa_id, estado, total_centimos, modo_division
-         FROM cuentas
-        WHERE id = ?`,
-    )
-    .get(cuentaId);
+  const cuenta = leerCuenta(db, cuentaId);
 
   return {
     cuenta: {
@@ -280,4 +314,103 @@ export function confirmarDivision(db, mesaId, datos) {
     },
     division: obtenerDivision(db, cuenta),
   };
+}
+
+/**
+ * Marca una parte como pagada. Si era la última pendiente, cierra la cuenta y la
+ * mesa en la misma transacción y emite el único ticket final.
+ */
+export function pagarParte(db, mesaId, parteId) {
+  const mesa = exigirMesa(obtenerMesa(db, mesaId));
+  const cuenta = obtenerCuentaDividida(db, mesaId);
+
+  exigirCuentaAbierta(mesa, cuenta);
+  const parte = obtenerParte(db, cuenta, parteId);
+
+  if (parte.estado === 'pagada') {
+    throw new ErrorHttp(409, 'La parte ya está pagada', 'parte_pagada');
+  }
+
+  exigirTotalVigente(db, mesaId, cuenta);
+
+  const marcar = db.transaction(() => {
+    db.prepare(
+      "UPDATE cuentas_partes SET estado = 'pagada', pagada_en = datetime('now') WHERE id = ?",
+    ).run(parte.id);
+
+    const pendientes = db
+      .prepare(
+        "SELECT COUNT(*) AS total FROM cuentas_partes WHERE cuenta_id = ? AND estado = 'pendiente'",
+      )
+      .get(cuenta.id).total;
+
+    if (pendientes === 0) {
+      db.prepare(
+        "UPDATE cuentas SET estado = 'cerrada', cerrada_en = datetime('now') WHERE id = ?",
+      ).run(cuenta.id);
+      db.prepare("UPDATE mesas SET estado = 'cerrada' WHERE id = ?").run(mesaId);
+    }
+
+    return pendientes;
+  });
+  marcar();
+
+  const cuentaFinal = leerCuenta(db, cuenta.id);
+  const parteFinal = obtenerParte(db, cuentaFinal, parte.id);
+  const ticket = componerTicket(db, cuentaFinal);
+
+  if (cuentaFinal.estado === 'cerrada') {
+    emitirMesaCerrada({
+      mesaId,
+      cuentaId: cuentaFinal.id,
+      cerradaEn: aISO(cuentaFinal.cerrada_en),
+    });
+  }
+
+  return {
+    parte: serializarParte(parteFinal),
+    ticket_estado: estadoTicket(cuentaFinal),
+    ticket,
+    mesa_abierta: cuentaFinal.estado !== 'cerrada',
+  };
+}
+
+/** Deshace el pago de una parte mientras la mesa siga abierta. */
+export function deshacerPagoParte(db, mesaId, parteId) {
+  const mesa = exigirMesa(obtenerMesa(db, mesaId));
+  const cuenta = obtenerCuentaDividida(db, mesaId);
+
+  exigirCuentaAbierta(mesa, cuenta);
+  const parte = obtenerParte(db, cuenta, parteId);
+
+  if (parte.estado !== 'pagada') {
+    throw new ErrorHttp(409, 'La parte ya está pendiente', 'parte_pendiente');
+  }
+
+  exigirTotalVigente(db, mesaId, cuenta);
+
+  db.prepare(
+    "UPDATE cuentas_partes SET estado = 'pendiente', pagada_en = NULL WHERE id = ?",
+  ).run(parte.id);
+
+  const parteFinal = obtenerParte(db, cuenta, parte.id);
+
+  return {
+    parte: serializarParte(parteFinal),
+    ticket_estado: 'no_emitido',
+    ticket: null,
+    mesa_abierta: true,
+  };
+}
+
+/** Ticket de una cuenta ya cerrada; antes de la última parte no existe. */
+export function obtenerTicket(db, mesaId) {
+  exigirMesa(obtenerMesa(db, mesaId));
+  const cuenta = obtenerCuentaPersistida(db, mesaId);
+
+  if (!cuenta || cuenta.estado !== 'cerrada') {
+    throw new ErrorHttp(409, 'El ticket aún no se ha emitido', 'ticket_no_emitido');
+  }
+
+  return componerTicket(db, cuenta);
 }

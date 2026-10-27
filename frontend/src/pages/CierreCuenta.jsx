@@ -16,7 +16,9 @@ import {
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import DivisionCuenta from '../components/DivisionCuenta.jsx';
+import ParteCuenta from '../components/ParteCuenta.jsx';
 import ResumenCuenta from '../components/ResumenCuenta.jsx';
+import TicketFinal from '../components/TicketFinal.jsx';
 import { useCuenta } from '../hooks/useCuenta.js';
 import { listarMesas } from '../services/api.js';
 import { formatearEuros } from '../utils/formato.js';
@@ -38,8 +40,13 @@ export default function CierreCuenta() {
     sinConexion,
     cerrando,
     confirmandoDivision,
+    pagandoParteId,
+    ticket: ticketPartes,
+    ticketEstado,
     cerrar,
     dividir,
+    pagarParte,
+    deshacerPago,
   } = useCuenta(mesaId);
 
   useEffect(() => {
@@ -97,6 +104,24 @@ export default function CierreCuenta() {
     try {
       await dividir(datos);
       setAviso({ tipo: 'success', texto: 'División confirmada. Ya puedes cobrar cada parte.' });
+    } catch {
+      // El error de la API se muestra en el aviso superior.
+    }
+  }
+
+  async function cobrarParte(parteId) {
+    try {
+      await pagarParte(parteId);
+      setAviso(null);
+    } catch {
+      // El error de la API se muestra en el aviso superior.
+    }
+  }
+
+  async function deshacerParte(parteId) {
+    try {
+      await deshacerPago(parteId);
+      setAviso(null);
     } catch {
       // El error de la API se muestra en el aviso superior.
     }
@@ -218,14 +243,47 @@ export default function CierreCuenta() {
             )}
 
             {!cargando && cuenta?.division && (
-              <Alert status="info" borderRadius="md" mt={4}>
-                <AlertIcon />
-                <AlertDescription>
-                  Cuenta dividida en {cuenta.division.partes.length} parte(s) con{' '}
-                  {cuenta.division.modo === 'iguales' ? 'partes iguales' : 'consumos asignados'}.
-                  El cobro se realiza parte a parte.
-                </AlertDescription>
-              </Alert>
+              <Box mt={4}>
+                <Alert status="info" borderRadius="md">
+                  <AlertIcon />
+                  <AlertDescription>
+                    Cuenta dividida en {cuenta.division.partes.length} parte(s) con{' '}
+                    {cuenta.division.modo === 'iguales'
+                      ? 'partes iguales'
+                      : 'consumos asignados'}
+                    .{' '}
+                    {cuenta.estado === 'cerrada'
+                      ? 'La mesa está cerrada y este es el ticket final.'
+                      : 'El cobro se realiza parte a parte.'}
+                  </AlertDescription>
+                </Alert>
+
+                <Heading size="sm" mt={4} mb={2}>
+                  Partes de la cuenta
+                </Heading>
+
+                <Stack spacing={2}>
+                  {cuenta.division.partes.map((parte) => (
+                    <ParteCuenta
+                      key={parte.id}
+                      parte={parte}
+                      editable={false}
+                      onPagar={() => cobrarParte(parte.id)}
+                      onDeshacer={() => deshacerParte(parte.id)}
+                      pagando={pagandoParteId === parte.id}
+                      deshabilitado={sinConexion || cuenta.estado === 'cerrada'}
+                    />
+                  ))}
+                </Stack>
+
+                <Box mt={4}>
+                  <TicketFinal
+                    ticket={ticketPartes}
+                    ticketEstado={ticketEstado}
+                    hayDivision
+                  />
+                </Box>
+              </Box>
             )}
 
             {ticket && (

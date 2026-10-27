@@ -1,7 +1,7 @@
 import express from 'express';
 import { listarMesas, obtenerMesa } from '../db/mesas.js';
 import { crearPedido, obtenerPedidoEnCursoPorMesa } from '../db/pedidos.js';
-import { exigirMesa, exigirSinPedidoEnCurso, serializarPedido } from '../domain/pedidos.js';
+import { exigirMesa, exigirMesaAbierta, exigirSinPedidoEnCurso, serializarPedido } from '../domain/pedidos.js';
 import { identificarCamarero } from '../middleware/camarero.js';
 import { ErrorHttp } from '../middleware/error.js';
 import { listarLineasDeMesa } from '../models/lineaPedido.js';
@@ -31,7 +31,7 @@ export function mesasRouter(db) {
 
   router.post('/:mesaId/abrir', (req, res, next) => {
     try {
-      const mesa = exigirMesa(obtenerMesa(db, req.params.mesaId));
+      const mesa = exigirMesaAbierta(exigirMesa(obtenerMesa(db, req.params.mesaId)));
       exigirSinPedidoEnCurso(obtenerPedidoEnCursoPorMesa(db, mesa.id));
 
       const pedido = crearPedido(db, { mesaId: mesa.id, camareroId: req.camarero.id });
