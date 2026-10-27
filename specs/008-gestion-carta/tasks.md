@@ -95,16 +95,16 @@ de sala.
 
 ### Pruebas de la US2 ⚠️
 
-- [ ] T028 [P] [US2] Prueba de contrato de `PATCH /api/admin/platos/:id` (`activo`) y `GET /api/carta` en `backend/tests/contract/carta-disponibilidad.test.js`
-- [ ] T029 [P] [US2] Prueba de integración de baja/alta manual sobre datos sembrados en `backend/tests/integration/disponibilidad-manual.test.js`
-- [ ] T030 [P] [US2] Prueba de componente del control de disponibilidad en `frontend/tests/components/TablaPlatos.test.jsx`
+- [X] T028 [P] [US2] Prueba de contrato de `PATCH /api/admin/platos/:id` (`activo`) y `GET /api/carta` en `backend/tests/contract/carta-disponibilidad.test.js`
+- [X] T029 [P] [US2] Prueba de integración de baja/alta manual sobre datos sembrados en `backend/tests/integration/disponibilidad-manual.test.js`
+- [X] T030 [P] [US2] Prueba de componente del control de disponibilidad en `frontend/tests/components/TablaPlatos.test.jsx`
 
 ### Implementación de la US2
 
-- [ ] T031 [US2] Implementar el cambio de disponibilidad manual (`cambiarActivo`) en `backend/src/services/cartaService.js`
-- [ ] T032 [US2] Implementar el endpoint `GET /api/carta` (solo platos ofrecibles, agrupados por partida) en `backend/src/api/cartaRouter.js`
-- [ ] T033 [US2] Añadir el control activar/desactivar por fila en `frontend/src/components/TablaPlatos.jsx`
-- [ ] T034 [US2] Refrescar la disponibilidad en la página tras guardar un cambio en `frontend/src/pages/PaginaGestionCarta.jsx`
+- [X] T031 [US2] Implementar el cambio de disponibilidad manual (`cambiarActivo`) en `backend/src/services/cartaService.js`
+- [X] T032 [US2] Implementar el endpoint `GET /api/carta` (solo platos ofrecibles, agrupados por partida) en `backend/src/api/cartaRouter.js`
+- [X] T033 [US2] Añadir el control activar/desactivar por fila en `frontend/src/components/TablaPlatos.jsx`
+- [X] T034 [US2] Refrescar la disponibilidad en la página tras guardar un cambio en `frontend/src/pages/PaginaGestionCarta.jsx`
 
 **Punto de control**: US1 y US2 funcionan de forma independiente.
 
@@ -121,29 +121,29 @@ comprobar que el plato desaparece de la carta de sala sin que el administrador l
 
 ### Pruebas de la US3 ⚠️
 
-- [ ] T035 [P] [US3] Prueba de integración de agotamiento de ingrediente en `backend/tests/integration/ingrediente-agotado.test.js`
-- [ ] T036 [P] [US3] Prueba unitaria de la regla combinada (`activo` AND ingredientes disponibles) en `backend/tests/unit/disponibilidad-combinada.test.js`
-- [ ] T037 [P] [US3] Prueba de componente del panel de ingredientes y el estado combinado en `frontend/tests/components/PanelIngredientes.test.jsx`
-- [ ] T038 [P] [US3] Prueba de contrato de alta y edición de ingredientes y rechazo de estado inválido en `backend/tests/contract/ingredientes-admin.test.js`
-- [ ] T039 [P] [US3] Prueba de integración de asociación `ingredienteIds`, ingrediente compartido que oculta todos sus platos y restauración según disponibilidad manual en `backend/tests/integration/ingrediente-compartido.test.js`
-- [ ] T040 [P] [US3] Prueba de componente de alta, edición y estado de ingrediente en `frontend/tests/components/FormularioIngrediente.test.jsx`
-- [ ] T041 [P] [US3] Prueba de componente del selector de asociación de ingredientes en `frontend/tests/components/SelectorIngredientes.test.jsx`
+- [X] T035 [P] [US3] Prueba de integración de agotamiento de ingrediente en `backend/tests/integration/ingrediente-agotado.test.js`
+- [X] T036 [P] [US3] Prueba unitaria de la regla combinada (`activo` AND ingredientes disponibles) en `backend/tests/unit/disponibilidad-combinada.test.js`
+- [X] T037 [P] [US3] Prueba de componente del panel de ingredientes y el estado combinado en `frontend/tests/components/PanelIngredientes.test.jsx`
+- [X] T038 [P] [US3] Prueba de contrato de alta y edición de ingredientes y rechazo de estado inválido en `backend/tests/contract/ingredientes-admin.test.js`
+- [X] T039 [P] [US3] Prueba de integración de asociación `ingredienteIds`, ingrediente compartido que oculta todos sus platos y restauración según disponibilidad manual en `backend/tests/integration/ingrediente-compartido.test.js`
+- [X] T040 [P] [US3] Prueba de componente de alta, edición y estado de ingrediente en `frontend/tests/components/FormularioIngrediente.test.jsx`
+- [X] T041 [P] [US3] Prueba de componente del selector de asociación de ingredientes en `frontend/tests/components/SelectorIngredientes.test.jsx`
 
 ### Implementación de la US3
 
 - [ ] T042 [US3] Ampliar los esquemas zod con nombre/estado de ingrediente e `ingredienteIds` (existencia y sin duplicados) en `backend/src/api/cartaSchemas.js`
 - [ ] T043 [US3] Implementar el alta y la edición de ingredientes (`crearIngrediente`, `actualizarIngrediente`) en `backend/src/services/cartaService.js`
-- [ ] T044 [US3] Implementar la asociación N:M mediante `ingredienteIds` (sustitución del conjunto completo) en `backend/src/services/cartaService.js`
-- [ ] T045 [US3] Implementar los endpoints `GET/PATCH /api/admin/ingredientes` en `backend/src/api/cartaAdminRouter.js`
-- [ ] T046 [US3] Implementar el endpoint `POST /api/admin/ingredientes` y completar `PATCH` con nombre y estado en `backend/src/api/cartaAdminRouter.js`
-- [ ] T047 [US3] Extender la disponibilidad derivada para asociaciones e ingrediente compartido en `backend/src/services/cartaService.js`
-- [ ] T048 [US3] Implementar el cálculo de `motivo` por ingredientes agotados en `backend/src/services/cartaService.js`
-- [ ] T049 [US3] Crear el componente `PanelIngredientes` (estado disponible/agotado) en `frontend/src/components/PanelIngredientes.jsx`
-- [ ] T050 [US3] Crear el componente `FormularioIngrediente` (alta/edición de nombre y estado) en `frontend/src/components/FormularioIngrediente.jsx`
-- [ ] T051 [US3] Ampliar `PanelIngredientes` con las acciones de alta y edición y conectarlas en `PaginaGestionCarta` en `frontend/src/components/PanelIngredientes.jsx` y `frontend/src/pages/PaginaGestionCarta.jsx`
-- [ ] T052 [US3] Crear el componente `SelectorIngredientes` (selección múltiple de ingredientes) en `frontend/src/components/SelectorIngredientes.jsx`
-- [ ] T053 [US3] Integrar `SelectorIngredientes` en el formulario de plato para enviar `ingredienteIds` en `frontend/src/components/FormularioPlato.jsx`
-- [ ] T054 [US3] Mostrar el motivo de no disponibilidad e integrar el panel en `frontend/src/pages/PaginaGestionCarta.jsx`
+- [X] T044 [US3] Implementar la asociación N:M mediante `ingredienteIds` (sustitución del conjunto completo) en `backend/src/services/cartaService.js`
+- [X] T045 [US3] Implementar los endpoints `GET/PATCH /api/admin/ingredientes` en `backend/src/api/cartaAdminRouter.js`
+- [X] T046 [US3] Implementar el endpoint `POST /api/admin/ingredientes` y completar `PATCH` con nombre y estado en `backend/src/api/cartaAdminRouter.js`
+- [X] T047 [US3] Extender la disponibilidad derivada para asociaciones e ingrediente compartido en `backend/src/services/cartaService.js`
+- [X] T048 [US3] Implementar el cálculo de `motivo` por ingredientes agotados en `backend/src/services/cartaService.js`
+- [X] T049 [US3] Crear el componente `PanelIngredientes` (estado disponible/agotado) en `frontend/src/components/PanelIngredientes.jsx`
+- [X] T050 [US3] Crear el componente `FormularioIngrediente` (alta/edición de nombre y estado) en `frontend/src/components/FormularioIngrediente.jsx`
+- [X] T051 [US3] Ampliar `PanelIngredientes` con las acciones de alta y edición y conectarlas en `PaginaGestionCarta` en `frontend/src/components/PanelIngredientes.jsx` y `frontend/src/pages/PaginaGestionCarta.jsx`
+- [X] T052 [US3] Crear el componente `SelectorIngredientes` (selección múltiple de ingredientes) en `frontend/src/components/SelectorIngredientes.jsx`
+- [X] T053 [US3] Integrar `SelectorIngredientes` en el formulario de plato para enviar `ingredienteIds` en `frontend/src/components/FormularioPlato.jsx`
+- [X] T054 [US3] Mostrar el motivo de no disponibilidad e integrar el panel en `frontend/src/pages/PaginaGestionCarta.jsx`
 
 **Punto de control**: las tres historias funcionan de forma independiente.
 
