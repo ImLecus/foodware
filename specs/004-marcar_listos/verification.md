@@ -37,7 +37,7 @@ otra partida sin impedir el aviso de esta.
 | SC-006 Sin duplicados ni pérdidas | `unit/marcar-listo-service.test.js` (transacción y doble marcado) |
 | SC-007 Distinción accesible | `components/LineaPlato.test.jsx` |
 | SC-008 Deshacer reaparece en ≤5 s | `contract/desmarcar-completado.test.js`, `pages/CocinaPage.test.jsx` |
-| SC-009 Aviso «Deshacer» ≥10 s | `components/AvisoPedidoCompletado.test.jsx` |
+| SC-009 Aviso «Deshacer» ≥10 s | `components/AvisoPedidoCompletado.test.jsx`, `pages/CocinaPage.test.jsx` (dos completados consecutivos) |
 
 ## Escenarios manuales del quickstart
 

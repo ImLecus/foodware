@@ -1,5 +1,5 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CocinaPage from '../../src/pages/CocinaPage.jsx';
 import { marcarEstado, obtenerCocinero, obtenerPedidosPendientes } from '../../src/services/api.js';
@@ -214,6 +214,45 @@ describe('CocinaPage (US1)', () => {
 
     await waitFor(() =>
       expect(marcarEstado).toHaveBeenCalledWith('pedido-1', 'linea-1', 'listo', 'entrantes'),
+    );
+  });
+
+  it('mantiene dos avisos de completado consecutivos sin cerrar el primero', async () => {
+    const segundoPedido = {
+      ...pedido,
+      id: 'pedido-2',
+      mesa: 2,
+      lineas: [{ ...pedido.lineas[0], id: 'linea-2' }],
+    };
+    obtenerCocinero.mockResolvedValue({
+      id: 'cocinero-entrantes',
+      nombre: 'Marta',
+      partida: 'entrantes',
+    });
+    obtenerPedidosPendientes
+      .mockResolvedValueOnce([pedido, segundoPedido])
+      .mockResolvedValueOnce([segundoPedido])
+      .mockResolvedValueOnce([]);
+    marcarEstado.mockResolvedValue({ pedidoCompletado: true });
+
+    renderizar();
+    await screen.findByTestId('pedido-pedido-1');
+
+    fireEvent.click(
+      within(screen.getByTestId('pedido-pedido-1')).getByRole('button', {
+        name: 'Marcar listo',
+      }),
+    );
+    await screen.findByText('Pedido completado');
+
+    fireEvent.click(
+      within(screen.getByTestId('pedido-pedido-2')).getByRole('button', {
+        name: 'Marcar listo',
+      }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getAllByText('Pedido completado')).toHaveLength(2),
     );
   });
 

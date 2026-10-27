@@ -265,4 +265,4 @@ Task: "Build kitchen page and components in frontend/src/pages/CocinaPage.jsx, f
 ## Phase 8: Convergence
 
 - [X] T057 Documentar en `specs/004-marcar_listos/contracts/openapi.yaml` el parámetro obligatorio `partida` de `PUT /pedidos/{pedidoId}/lineas/{lineaId}/estado`, la respuesta `400 partida_requerida` y ejemplos actualizados; verificar el contrato con una prueba per T049, FR-002, FR-003 (`contradicts`)
-- [ ] T058 Reiniciar el plazo de 10 s del aviso al cambiar de pedido/línea —o encolar los avisos— para que dos completados consecutivos sin cerrar el aviso conserven la acción «Deshacer» durante al menos 10 s cada uno; añadir una prueba de dos completados consecutivos sin pulsar antes «Deshacer» per FR-014, SC-009, T025, T026, T045, T051 (`partial`)
+- [X] T058 Reiniciar el plazo de 10 s del aviso al cambiar de pedido/línea —o encolar los avisos— para que dos completados consecutivos sin cerrar el aviso conserven la acción «Deshacer» durante al menos 10 s cada uno; añadir una prueba de dos completados consecutivos sin pulsar antes «Deshacer» per FR-014, SC-009, T025, T026, T045, T051 (`partial`)
