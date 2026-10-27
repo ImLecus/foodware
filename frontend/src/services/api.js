@@ -55,3 +55,75 @@ export function obtenerCocinero(cocineroId) {
 export function obtenerPedidosPendientes(partidaId) {
   return apiGet(`/partidas/${encodeURIComponent(partidaId)}/pedidos-pendientes`);
 }
+
+export function marcarEstado(pedidoId, lineaId, estado, partidaId) {
+  const consulta = partidaId ? `?partida=${encodeURIComponent(partidaId)}` : '';
+  return apiEnviar(
+    `/pedidos/${encodeURIComponent(pedidoId)}/lineas/${encodeURIComponent(lineaId)}/estado${consulta}`,
+    'PUT',
+    { estado },
+  );
+}
+
+export function obtenerEstadoPlatos(mesaId) {
+  return apiGet(`/mesas/${encodeURIComponent(mesaId)}/estado-platos`);
+}
+
+/* Sala: mesas, carta y pedidos (historia 001) */
+
+export function listarMesas() {
+  return apiGet('/mesas');
+}
+
+export function abrirMesa(mesaId) {
+  return apiEnviar(`/mesas/${mesaId}/abrir`, 'POST');
+}
+
+export function listarPlatos() {
+  return apiGet('/platos');
+}
+
+export function obtenerPedido(pedidoId) {
+  return apiGet(`/pedidos/${pedidoId}`);
+}
+
+export function anadirLinea(pedidoId, platoId, cantidad = 1) {
+  return apiEnviar(`/pedidos/${pedidoId}/lineas`, 'POST', {
+    plato_id: platoId,
+    cantidad,
+  });
+}
+
+export function modificarLinea(pedidoId, lineaId, cambios) {
+  return apiEnviar(`/pedidos/${pedidoId}/lineas/${lineaId}`, 'PATCH', cambios);
+}
+
+export function retirarLinea(pedidoId, lineaId) {
+  return apiEnviar(`/pedidos/${pedidoId}/lineas/${lineaId}`, 'DELETE');
+}
+
+export function confirmarPedido(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/confirmar`, 'POST');
+}
+
+export function anularPedido(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/anular`, 'POST');
+}
+
+/* Edición de pedidos enviados (historia 002) */
+
+export function abrirEdicion(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/editar`, 'POST');
+}
+
+export function estadoEdicion(pedidoId) {
+  return apiGet(`/pedidos/${pedidoId}/editar`);
+}
+
+export function cerrarEdicion(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/editar`, 'DELETE');
+}
+
+export function enviarCambios(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/enviar-cambios`, 'POST');
+}
