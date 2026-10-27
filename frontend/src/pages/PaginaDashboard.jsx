@@ -2,6 +2,7 @@ import { Alert, AlertIcon, Box, Heading, Spinner, Stack, Td, Text } from '@chakr
 import { useEffect, useState } from 'react';
 import { formatearEuros, formatearFechaLarga } from '../utils/format.js';
 import { obtenerInformeDiario } from '../services/reports.js';
+import IndicadorTendencia from '../components/IndicadorTendencia.jsx';
 import TablaDesglose from '../components/TablaDesglose.jsx';
 
 function EstadoCargando() {
@@ -73,6 +74,35 @@ function EstadoDatos({ informe }) {
           {informe.numeroCuentas === 1 ? '' : 's'}
         </Text>
       </Box>
+
+      {informe.comparacion ? (
+        <Box mb={8} p={4} bg="gray.50" borderRadius="md">
+          <Heading size="md" mb={2}>
+            Comparación con el día anterior
+          </Heading>
+          {informe.comparacion.diaAnterior === null ? (
+            <Text color="gray.600">Sin datos anteriores para comparar</Text>
+          ) : (
+            <>
+              <Text mb={2}>
+                Día actual: {formatearEuros(Math.round((informe.comparacion.importeActual || 0) * 100))} ·
+                Día anterior: {formatearEuros(Math.round((informe.comparacion.importeAnterior || 0) * 100))}
+              </Text>
+              <Text mb={2}>
+                Diferencia:{' '}
+                {informe.comparacion.sinBaseComparacion
+                  ? `${formatearEuros(Math.round(Math.abs(informe.comparacion.diferenciaImporte || 0) * 100))} (sin base de comparación)`
+                  : `${informe.comparacion.diferenciaImporte >= 0 ? '+' : ''}${formatearEuros(Math.round((informe.comparacion.diferenciaImporte || 0) * 100))}`}
+              </Text>
+              <IndicadorTendencia
+                tendencia={informe.comparacion.tendencia}
+                diferenciaPorcentaje={informe.comparacion.diferenciaPorcentaje}
+                sinBaseComparacion={informe.comparacion.sinBaseComparacion}
+              />
+            </>
+          )}
+        </Box>
+      ) : null}
 
       {Array.isArray(informe.porCamarero) && informe.porCamarero.length > 0 ? (
         <TablaDesglose
