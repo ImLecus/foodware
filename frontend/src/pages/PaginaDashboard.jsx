@@ -2,6 +2,7 @@ import { Alert, AlertIcon, Box, Heading, Spinner, Stack, Text } from '@chakra-ui
 import { useEffect, useState } from 'react';
 import { formatearEuros, formatearFechaLarga } from '../utils/format.js';
 import { obtenerInformeDiario } from '../services/reports.js';
+import TablaDesglose from '../components/TablaDesglose.jsx';
 
 function EstadoCargando() {
   return (
@@ -72,6 +73,37 @@ function EstadoDatos({ informe }) {
           {informe.numeroCuentas === 1 ? '' : 's'}
         </Text>
       </Box>
+
+      {Array.isArray(informe.porCamarero) && informe.porCamarero.length > 0 ? (
+        <TablaDesglose
+          titulo="Ventas por camarero"
+          encabezados={['Camarero', 'Cuentas', 'Importe']}
+          filas={informe.porCamarero}
+          renderFila={(fila) => (
+            <>
+              <Td>{fila.nombre || fila.camareroId}</Td>
+              <Td isNumeric>{fila.numeroCuentas}</Td>
+              <Td isNumeric>{formatearEuros(Math.round((fila.importe || 0) * 100))}</Td>
+            </>
+          )}
+        />
+      ) : null}
+
+      {Array.isArray(informe.porPlato) && informe.porPlato.length > 0 ? (
+        <TablaDesglose
+          titulo="Ventas por plato"
+          encabezados={['Plato', 'Partida', 'Cantidad', 'Importe']}
+          filas={informe.porPlato}
+          renderFila={(fila) => (
+            <>
+              <Td>{fila.nombre || fila.platoId}</Td>
+              <Td>{fila.partida || ''}</Td>
+              <Td isNumeric>{fila.cantidad || 0}</Td>
+              <Td isNumeric>{formatearEuros(Math.round((fila.importe || 0) * 100))}</Td>
+            </>
+          )}
+        />
+      ) : null}
     </Box>
   );
 }
