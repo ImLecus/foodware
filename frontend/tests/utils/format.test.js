@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { formatearEuros, formatearFecha, formatearFechaLarga } from '../../src/utils/format.js';
+import {
+  formatearEuros,
+  formatearFecha,
+  formatearFechaLarga,
+  formatearPorcentaje,
+} from '../../src/utils/format.js';
 
 describe('format.es-ES', () => {
   it('formatea euros en es-ES con €', () => {
@@ -15,5 +20,12 @@ describe('format.es-ES', () => {
     const larga = formatearFechaLarga('2026-10-19');
     expect(larga).toContain('octubre');
     expect(larga).toContain('2026');
+  });
+
+  it('formatea porcentajes en es-ES con coma decimal y espacio antes del símbolo', () => {
+    expect(formatearPorcentaje(9.11)).toBe('9,11 %');
+    expect(formatearPorcentaje(-4.76)).toBe('-4,76 %');
+    expect(formatearPorcentaje(0)).toBe('0 %');
+    expect(formatearPorcentaje(null)).toBe('');
   });
 });

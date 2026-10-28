@@ -181,4 +181,58 @@ describe('PaginaDashboard - comparación US3', () => {
     expect(filasPlato[1]).toHaveTextContent('sin base de comparación');
     expect(filasPlato[1]).not.toHaveTextContent('%');
   });
+
+  it('formatea los porcentajes con coma decimal en el total y por fila', async () => {
+    obtenerInformeDiario.mockResolvedValue({
+      fecha: '2026-10-19',
+      totalVendido: 120,
+      numeroCuentas: 2,
+      porCamarero: [],
+      porPlato: [],
+      comparacion: {
+        diaActual: '2026-10-19',
+        diaAnterior: '2026-10-18',
+        importeActual: 120,
+        importeAnterior: 110,
+        diferenciaImporte: 10,
+        diferenciaPorcentaje: 9.11,
+        sinBaseComparacion: false,
+        tendencia: 'subida',
+        porCamarero: [
+          {
+            camareroId: 'camarero-1',
+            nombre: 'Ana',
+            importeActual: 120,
+            importeAnterior: 110,
+            diferenciaImporte: 10,
+            diferenciaPorcentaje: 9.11,
+            sinBaseComparacion: false,
+            tendencia: 'subida',
+          },
+        ],
+        porPlato: [
+          {
+            platoId: 'plato-1',
+            nombre: 'Croquetas',
+            importeActual: 120,
+            importeAnterior: 125,
+            diferenciaImporte: -5,
+            diferenciaPorcentaje: -4.76,
+            sinBaseComparacion: false,
+            tendencia: 'bajada',
+          },
+        ],
+      },
+    });
+
+    renderizarComponente();
+    await waitFor(() => {
+      expect(screen.getByText(/Comparación con el día anterior/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText(/\+9,11 %/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/-4,76 %/)).toBeInTheDocument();
+    expect(screen.queryByText(/9\.11/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/-4\.76/)).not.toBeInTheDocument();
+  });
 });

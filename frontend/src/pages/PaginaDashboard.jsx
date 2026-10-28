@@ -1,6 +1,6 @@
 import { Alert, AlertIcon, Box, Heading, Spinner, Stack, Td, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
-import { formatearEuros, formatearFechaLarga } from '../utils/format.js';
+import { formatearEuros, formatearFechaLarga, formatearPorcentaje } from '../utils/format.js';
 import { obtenerInformeDiario } from '../services/reports.js';
 import IndicadorTendencia from '../components/IndicadorTendencia.jsx';
 import TablaDesglose from '../components/TablaDesglose.jsx';
@@ -82,7 +82,7 @@ function DiferenciaFila({ fila }) {
       {fila.diferenciaImporte >= 0 ? '+' : ''}
       {formatearEuros(Math.round((fila.diferenciaImporte || 0) * 100))} · {fila.tendencia}
       {porcentaje !== null && porcentaje !== undefined
-        ? ` (${porcentaje >= 0 ? '+' : ''}${porcentaje}%)`
+        ? ` (${porcentaje >= 0 ? '+' : ''}${formatearPorcentaje(porcentaje)})`
         : ''}
     </Td>
   );

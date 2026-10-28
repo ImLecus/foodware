@@ -1,4 +1,5 @@
 import { Box, Icon, Text } from '@chakra-ui/react';
+import { formatearPorcentaje } from '../utils/format.js';
 
 export default function IndicadorTendencia({ tendencia, diferenciaPorcentaje, sinBaseComparacion }) {
   if (tendencia === 'sin_variacion') {
@@ -15,7 +16,7 @@ export default function IndicadorTendencia({ tendencia, diferenciaPorcentaje, si
         <Text aria-label="subida">▲</Text>
         <Text>Subida</Text>
         {!sinBaseComparacion && diferenciaPorcentaje !== null ? (
-          <Text>({diferenciaPorcentaje >= 0 ? '+' : ''}{diferenciaPorcentaje}%)</Text>
+          <Text>({diferenciaPorcentaje >= 0 ? '+' : ''}{formatearPorcentaje(diferenciaPorcentaje)})</Text>
         ) : null}
       </Box>
     );
@@ -26,7 +27,7 @@ export default function IndicadorTendencia({ tendencia, diferenciaPorcentaje, si
         <Text aria-label="bajada">▼</Text>
         <Text>Bajada</Text>
         {!sinBaseComparacion && diferenciaPorcentaje !== null ? (
-          <Text>({diferenciaPorcentaje}%)</Text>
+          <Text>({formatearPorcentaje(diferenciaPorcentaje)})</Text>
         ) : null}
       </Box>
     );
