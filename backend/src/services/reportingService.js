@@ -197,26 +197,34 @@ export function obtenerComparacion(db, fecha) {
     tendencia,
     porCamarero: actualPorCamarero.map((fila) => {
       const previa = compararCamareros.get(fila.camareroId);
-      const diferencia = fila.importe - (previa?.importe || 0);
+      const importeAnterior = previa?.importe || 0;
+      const diferencia = fila.importe - importeAnterior;
       return {
         camareroId: fila.camareroId,
         nombre: fila.nombre,
         importeActual: fila.importe,
-        importeAnterior: previa?.importe || 0,
+        importeAnterior,
         diferenciaImporte: diferencia,
+        diferenciaPorcentaje:
+          importeAnterior > 0 ? Number(((diferencia / importeAnterior) * 100).toFixed(2)) : null,
+        sinBaseComparacion: importeAnterior === 0 && fila.importe > 0,
         tendencia: diferencia > 0 ? 'subida' : diferencia < 0 ? 'bajada' : 'sin_variacion',
       };
     }),
     porPlato: actualPorPlato.map((fila) => {
       const previa = compararPlatos.get(fila.platoId);
-      const diferencia = fila.importe - (previa?.importe || 0);
+      const importeAnterior = previa?.importe || 0;
+      const diferencia = fila.importe - importeAnterior;
       return {
         platoId: fila.platoId,
         nombre: fila.nombre,
         partida: fila.partida,
         importeActual: fila.importe,
-        importeAnterior: previa?.importe || 0,
+        importeAnterior,
         diferenciaImporte: diferencia,
+        diferenciaPorcentaje:
+          importeAnterior > 0 ? Number(((diferencia / importeAnterior) * 100).toFixed(2)) : null,
+        sinBaseComparacion: importeAnterior === 0 && fila.importe > 0,
         tendencia: diferencia > 0 ? 'subida' : diferencia < 0 ? 'bajada' : 'sin_variacion',
       };
     }),
