@@ -1,10 +1,19 @@
 import { ChakraProvider } from '@chakra-ui/react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import App from '../src/App.jsx';
 import { tema } from '../src/theme/index.js';
 import { ProveedorSesion, USUARIO_ADMIN, USUARIO_CAMARERO } from './helpers/auth.jsx';
+
+vi.mock('../src/services/cartaClient.js', () => ({
+  obtenerCartaAdmin: vi.fn(() => Promise.resolve([])),
+  crearPlato: vi.fn(),
+  actualizarPlato: vi.fn(),
+  obtenerIngredientes: vi.fn(() => Promise.resolve([])),
+  crearIngrediente: vi.fn(),
+  actualizarIngrediente: vi.fn(),
+}));
 
 function renderizar(ruta = '/', usuario = USUARIO_CAMARERO) {
   return render(
@@ -28,8 +37,10 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: 'Cuentas' })).toBeInTheDocument();
   });
 
-  it('muestra una página provisional en los módulos aún no implementados', () => {
+  it('muestra una página provisional en los módulos aún no implementados', async () => {
     renderizar('/admin', USUARIO_ADMIN);
 
-    expect(screen.getByRole('heading', { name: /gestión de la carta/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: /gestión de la carta/i }),
+    ).toBeInTheDocument();
   });});

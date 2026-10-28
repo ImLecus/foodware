@@ -34,11 +34,15 @@ líneas de una cuenta coincide con su `importeTotal`.
 - `id`: identificador único.
 - `nombre`: nombre mostrado en el desglose.
 - `rol`: incluye `encargado` (acceso al dashboard) y `camarero`.
+- Participa en el desglose todo usuario con rol `camarero`; en v1 no existe estado de alta/baja de
+  personal. También se incluye cualquier camarero con ventas ese día aunque ya no tenga el rol.
 
 ### Plato
 - `id`: identificador único.
 - `nombre`: nombre mostrado en el desglose.
 - `partida`: entrantes | principales | postres.
+- Participa en el desglose todo plato de la carta vigente (activo y con ingredientes disponibles,
+  historia 008); además, se incluye cualquier plato vendido ese día aunque ya no esté en la carta.
 
 ## Modelos derivados (no persistidos)
 
@@ -56,15 +60,22 @@ Resultado completo que devuelve el endpoint para un día natural.
 - `camareroId`, `nombre`.
 - `importe`: total facturado por ese camarero en el día (0,00 € si no vendió).
 - `numeroCuentas`: cuentas cerradas por ese camarero.
+- Incluye a todos los camareros activos, hayan vendido o no, y a cualquier camarero con ventas ese
+  día aunque ya no esté activo.
 
 ### DesglosePlato
 - `platoId`, `nombre`, `partida`.
 - `cantidad`: unidades vendidas del plato en el día (0 si no se vendió).
 - `importe`: importe facturado del plato en el día (0,00 € si no se vendió).
+- Incluye todos los platos de la carta vigente, se hayan vendido o no, y cualquier plato vendido
+  ese día aunque ya no esté en la carta.
 
-**Regla de presentación**: los desgloses incluyen a todos los camareros y platos con al menos una
-venta histórica relevante, mostrando `0,00 €` cuando no tuvieron ventas en el día (FR-003/FR-004 y
-escenario 3 de la US2), en lugar de omitirlos.
+**Regla de presentación**: los desgloses incluyen a todos los camareros activos y a todos los
+platos de la carta vigente, mostrando `0,00 €` (y `cantidad = 0` en platos) cuando no tuvieron
+ventas en el día (FR-003/FR-004 y escenario 3 de la US2), en lugar de omitirlos. Se mantienen
+además las filas con ventas de ese día aunque el camarero o el plato ya no estén activos o en la
+carta, para que la suma de los desgloses cuadre con el total. Ambos desgloses se ordenan por
+`importe` descendente y, a igualdad, por nombre alfabético (FR-013).
 
 ### ComparacionDia
 - `diaActual`: `YYYY-MM-DD`.
@@ -78,17 +89,30 @@ escenario 3 de la US2), en lugar de omitirlos.
   `importeActual > 0` (FR-011).
 - `tendencia`: `subida` | `bajada` | `sin_variacion`.
 - `porCamarero` y `porPlato`: diferencia del día actual frente al anterior en cada desglose
-  (FR-010), con la misma forma que los desgloses del informe.
+  (FR-010), con la forma de `ComparacionFila` y la regla de base cero aplicada fila a fila
+  (FR-011). Se ordenan igual que los desgloses (importe actual descendente y nombre).
+
+### ComparacionFila (camarero o plato)
+- `camareroId`/`platoId`, `nombre` (y `partida` en platos).
+- `importeActual`, `importeAnterior`.
+- `diferenciaImporte`: `importeActual − importeAnterior`.
+- `diferenciaPorcentaje`: `null` si `importeAnterior = 0`; nunca divide entre cero.
+- `sinBaseComparacion`: `true` cuando `importeAnterior = 0` e `importeActual > 0` (FR-011).
+- `tendencia`: `subida` | `bajada` | `sin_variacion` según `diferenciaImporte`.
 
 **Regla de tendencia**: `sin_variacion` cuando `diferenciaImporte = 0`; `subida` si > 0; `bajada`
 si < 0. Si no hay día anterior, se indica "sin datos anteriores" (FR-007).
 
 **Regla de base cero**: si `importeAnterior = 0` e `importeActual > 0`, se mantiene
 `diferenciaImporte = importeActual` (diferencia absoluta en euros), `diferenciaPorcentaje = null` y
-`sinBaseComparacion = true`. La presentación muestra la diferencia en euros con la indicación
-«sin base de comparación» y no muestra porcentaje (FR-011, SC-006). Si `importeAnterior = 0` e
-`importeActual = 0`, `diferenciaImporte = 0`, `sinBaseComparacion = false` y la tendencia es
-`sin_variacion`. En ningún caso se calcula un porcentaje con denominador cero.
+`sinBaseComparacion = true`. La misma regla se aplica a cada `ComparacionFila` (camarero o plato).
+La presentación muestra la diferencia en euros con la indicación «sin base de comparación» y no
+muestra porcentaje (FR-011, SC-006). Si `importeAnterior = 0` e `importeActual = 0`,
+`diferenciaImporte = 0`, `sinBaseComparacion = false` y la tendencia es `sin_variacion`. En ningún
+caso se calcula un porcentaje con denominador cero.
+
+**Regla de fecha visible**: la presentación muestra siempre el campo `fecha` del `InformeDiario`
+junto al total, con formato español, para identificar el día natural consultado (FR-012).
 
 ## Relaciones
 
@@ -97,7 +121,7 @@ Cuenta (cerrada) 1 ── * Consumo * ── 1 Plato
    │                                  │
    └── 1 Camarero (fechaCierre)       └── partida
 
-InformeDiario ── 1 ComparacionDia ── * DesgloseCamarero / DesglosePlato
+InformeDiario ── 1 ComparacionDia ── * ComparacionFila (camarero o plato)
 ```
 
 ## Transiciones de estado

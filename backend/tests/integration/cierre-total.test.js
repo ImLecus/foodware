@@ -1,6 +1,11 @@
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
+import { fechaEnMadrid } from '../../src/services/dayTime.js';
+import {
+  obtenerDesglosePorCamarero,
+  obtenerTotalDiario,
+} from '../../src/services/reportingService.js';
 import {
   CABECERA_CAMARERO,
   crearBaseDePrueba,
@@ -47,6 +52,19 @@ describe('Cierre de cuenta con pago único (US1)', () => {
       estado: 'cerrada',
       total_centimos: 3250,
     });
+    const cuentaGuardada = db
+      .prepare('SELECT camarero_id FROM cuentas WHERE id = ?')
+      .get(cierre.body.cuenta.id);
+    expect(cuentaGuardada.camarero_id).toBe('camarero-1');
+
+    const hoy = fechaEnMadrid();
+    const totalHoy = obtenerTotalDiario(db, hoy);
+    const desgloseHoy = obtenerDesglosePorCamarero(db, hoy);
+    expect(desgloseHoy.find((fila) => fila.camareroId === 'camarero-1').importe).toBe(32.5);
+    expect(desgloseHoy.reduce((suma, fila) => suma + fila.importe, 0)).toBeCloseTo(
+      totalHoy.totalCentimos / 100,
+      2,
+    );
     expect(cierre.body.cuenta.cerrada_en).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(cierre.body.ticket_estado).toBe('emitido');
     expect(cierre.body.ticket).toMatchObject({

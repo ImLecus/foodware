@@ -71,6 +71,11 @@ describe('Cierre de la cuenta con pago por partes (US3)', () => {
     expect(segundo.body.ticket.partes).toHaveLength(2);
     expect(segundo.body.ticket.total_centimos).toBe(3250);
 
+    const cuentaGuardada = db
+      .prepare("SELECT camarero_id FROM cuentas WHERE mesa_id = 'mesa-1' AND estado = 'cerrada'")
+      .get();
+    expect(cuentaGuardada.camarero_id).toBe('camarero-1');
+
     const mesa = db.prepare("SELECT estado FROM mesas WHERE id = 'mesa-1'").get();
     expect(mesa.estado).toBe('libre');
 

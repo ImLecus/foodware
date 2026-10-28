@@ -112,4 +112,53 @@ describe('GET /api/reports/daily - comparación US3', () => {
     expect(respuesta.body.comparacion.sinBaseComparacion).toBe(true);
     expect(respuesta.body.comparacion.tendencia).toBe('subida');
   });
+
+  it('aplica la base cero en cada fila de la comparación por camarero y por plato', async () => {
+    db.prepare(
+      'INSERT INTO platos (id, nombre, partida_codigo, precio_centimos) VALUES (?, ?, ?, ?)',
+    ).run('plato-1', 'Croquetas', 'entrantes', 700);
+    db.prepare(
+      `INSERT INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+       VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
+    ).run('c-ante', 'mesa-1', 'camarero-1', 0, `${anteayer} 12:00:00`, `${anteayer} 12:00:00`);
+    db.prepare(
+      `INSERT INTO pedidos (id, mesa_id, camarero_id, estado, enviado_en)
+       VALUES ('pedido-ayer', 'mesa-1', 'camarero-1', 'enviada', ?)`,
+    ).run(`${ayer} 11:00:00`);
+    db.prepare(
+      `INSERT INTO lineas_pedido (id, pedido_id, plato_id, cantidad, precio_centimos)
+       VALUES ('linea-ayer', 'pedido-ayer', 'plato-1', 2, 700)`,
+    ).run();
+    db.prepare(
+      `INSERT INTO cuentas (id, mesa_id, pedido_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+       VALUES ('c-ayer', 'mesa-1', 'pedido-ayer', 'camarero-1', 'cerrada', 1400, ?, ?)`,
+    ).run(`${ayer} 11:00:00`, `${ayer} 12:00:00`);
+
+    const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_ENCARGADO);
+
+    expect(respuesta.status).toBe(200);
+    expect(respuesta.body.comparacion.sinBaseComparacion).toBe(true);
+    expect(respuesta.body.comparacion.porCamarero).toHaveLength(1);
+    expect(respuesta.body.comparacion.porCamarero[0]).toMatchObject({
+      camareroId: 'camarero-1',
+      nombre: 'Ana',
+      importeActual: 14,
+      importeAnterior: 0,
+      diferenciaImporte: 14,
+      diferenciaPorcentaje: null,
+      sinBaseComparacion: true,
+      tendencia: 'subida',
+    });
+    expect(respuesta.body.comparacion.porPlato).toHaveLength(1);
+    expect(respuesta.body.comparacion.porPlato[0]).toMatchObject({
+      platoId: 'plato-1',
+      nombre: 'Croquetas',
+      importeActual: 14,
+      importeAnterior: 0,
+      diferenciaImporte: 14,
+      diferenciaPorcentaje: null,
+      sinBaseComparacion: true,
+      tendencia: 'subida',
+    });
+  });
 });

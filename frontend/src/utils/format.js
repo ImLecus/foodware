@@ -12,6 +12,12 @@ export function formatearNumero(numero) {
   return Number(numero).toLocaleString('es-ES');
 }
 
+export function formatearPorcentaje(valor) {
+  if (valor === null || valor === undefined) return '';
+  const numero = Number(valor).toLocaleString('es-ES', { maximumFractionDigits: 2 });
+  return `${numero} %`;
+}
+
 export function formatearFecha(isoFecha) {
   if (!isoFecha) return '';
   const fecha = new Date(`${isoFecha}T00:00:00`);
