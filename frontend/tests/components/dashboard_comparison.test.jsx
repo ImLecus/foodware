@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import PaginaDashboard from '../../src/pages/PaginaDashboard.jsx';
@@ -117,5 +117,68 @@ describe('PaginaDashboard - comparación US3', () => {
       expect(screen.getByText(/sin base de comparación/i)).toBeInTheDocument();
     });
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();
+  });
+
+  it('muestra sin base de comparación en cada fila sin ventas el día anterior', async () => {
+    obtenerInformeDiario.mockResolvedValue({
+      fecha: '2026-10-19',
+      totalVendido: 35,
+      numeroCuentas: 1,
+      porCamarero: [],
+      porPlato: [],
+      comparacion: {
+        diaActual: '2026-10-19',
+        diaAnterior: '2026-10-18',
+        importeActual: 35,
+        importeAnterior: 0,
+        diferenciaImporte: 35,
+        diferenciaPorcentaje: null,
+        sinBaseComparacion: true,
+        tendencia: 'subida',
+        porCamarero: [
+          {
+            camareroId: 'camarero-1',
+            nombre: 'Ana',
+            importeActual: 35,
+            importeAnterior: 0,
+            diferenciaImporte: 35,
+            diferenciaPorcentaje: null,
+            sinBaseComparacion: true,
+            tendencia: 'subida',
+          },
+        ],
+        porPlato: [
+          {
+            platoId: 'plato-1',
+            nombre: 'Croquetas',
+            importeActual: 35,
+            importeAnterior: 0,
+            diferenciaImporte: 35,
+            diferenciaPorcentaje: null,
+            sinBaseComparacion: true,
+            tendencia: 'subida',
+          },
+        ],
+      },
+    });
+
+    renderizarComponente();
+    await waitFor(() => {
+      expect(screen.getByText('Diferencia por camarero')).toBeInTheDocument();
+    });
+
+    const filasCamarero = within(
+      screen.getByText('Diferencia por camarero').parentElement,
+    ).getAllByRole('row');
+    expect(filasCamarero[1]).toHaveTextContent('Ana');
+    expect(filasCamarero[1]).toHaveTextContent('sin base de comparación');
+    expect(filasCamarero[1]).not.toHaveTextContent('%');
+
+    const filasPlato = within(
+      screen.getByText('Diferencia por plato').parentElement,
+    ).getAllByRole('row');
+    expect(filasPlato[1]).toHaveTextContent('Croquetas');
+    expect(filasPlato[1]).toHaveTextContent('sin base de comparación');
+    expect(filasPlato[1]).not.toHaveTextContent('%');
   });
 });

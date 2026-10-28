@@ -228,7 +228,7 @@ cada prueba antes de su implementación y comprobar que falla.
 ### Tests for User Story 3
 
 - [x] T037 [P] [US3] Añadir en `backend/tests/contract/reports_comparison.test.js` el caso de comparación por fila sin base (camarero y plato sin ventas el día anterior y con ventas el día actual), comprobando `importeActual`, `importeAnterior`, `diferenciaPorcentaje = null`, `sinBaseComparacion = true` y `tendencia = "subida"`, per FR-011/US3/AC7
-- [ ] T038 [P] [US3] Añadir en `frontend/tests/components/dashboard_comparison.test.jsx` la comprobación de que una fila sin base muestra la diferencia en euros con «sin base de comparación» y ningún porcentaje, per FR-011/US3/AC7
+- [x] T038 [P] [US3] Añadir en `frontend/tests/components/dashboard_comparison.test.jsx` la comprobación de que una fila sin base muestra la diferencia en euros con «sin base de comparación» y ningún porcentaje, per FR-011/US3/AC7
 
 ### Implementation for User Story 3
 
