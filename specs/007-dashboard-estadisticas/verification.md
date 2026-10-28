@@ -1,13 +1,16 @@
 # Verificación — Dashboard de estadísticas (007)
 
-Actualizado el 2026-10-28 con las clarificaciones de la sesión: universo de los desgloses, base cero
-por fila, fecha visible junto al total y orden estable. Se mantiene la clarificación del 2026-10-27
-sobre la fecha por defecto y la distinción entre error de red y error del servidor.
+Actualizado el 2026-10-28 con las clarificaciones de la sesión (universo de los desgloses, base cero
+por fila, fecha visible junto al total y orden estable) y con las correcciones de la convergencia:
+formato es-ES de porcentajes, atribución de la cuenta al camarero que la cierra, día sin ventas con
+desgloses y comparación, indicador visual por fila y atribución histórica desde el pedido. Se
+mantiene la clarificación del 2026-10-27 sobre la fecha por defecto y la distinción entre error de
+red y error del servidor.
 
 ## Resultado de las suites
 
-- Backend: **76 ficheros, 318 pruebas**, todas correctas.
-- Frontend: **43 ficheros, 153 pruebas**, todas correctas.
+- Backend: **76 ficheros, 319 pruebas**, todas correctas.
+- Frontend: **43 ficheros, 156 pruebas**, todas correctas.
 - ESLint backend y frontend: correcto.
 - Build de producción del frontend: correcto (aviso no bloqueante de tamaño de chunk).
 
@@ -49,6 +52,23 @@ Evidencia:
     `frontend/tests/components/dashboard_breakdowns.test.jsx` → orden por importe descendente y, a
     igualdad, por nombre.
 
+## Correcciones de convergencia — 2026-10-28
+
+- **Porcentajes en es-ES**: `frontend/tests/utils/format.test.js` comprueba `9,11 %` (coma decimal);
+  `frontend/tests/components/dashboard_comparison.test.jsx` comprueba que el total y las filas usan
+  ese formato y no el punto decimal.
+- **Atribución al camarero que cierra**: `backend/tests/integration/cierre-total.test.js` y
+  `backend/tests/integration/cierre-ticket.test.js` comprueban que `cuentas.camarero_id` se guarda
+  al cerrar una cuenta única y al pagar la última parte, y que la suma de `porCamarero` coincide con
+  el total.
+- **Día sin ventas**: `frontend/tests/components/dashboard_total.test.jsx` y
+  `frontend/tests/components/dashboard_comparison.test.jsx` comprueban que se muestran los
+  desgloses a `0,00 €` y la comparación (bajada o sin variación), además del aviso.
+- **Tendencia por fila**: `frontend/tests/components/dashboard_comparison.test.jsx` comprueba que
+  cada fila muestra icono y texto de tendencia, y que «sin base de comparación» no lleva porcentaje.
+- **Atribución histórica**: `backend/tests/contract/reports_breakdowns.test.js` comprueba que una
+  cuenta sin `camarero_id` se atribuye al camarero del pedido y que la suma reconcilia con el total.
+
 ## Comparación y desgloses
 
 - `backend/tests/contract/reports_comparison.test.js` comprueba `diaAnterior = null`, la comparación por camarero y la ausencia de comparación cuando no hay día anterior.
@@ -63,14 +83,20 @@ Se mantienen cubiertos por:
 - `backend/tests/contract/reports_daily.test.js`
 - `backend/tests/contract/reports_breakdowns.test.js`
 - `backend/tests/contract/reports_comparison.test.js`
-- `backend/tests/integration/reporting_zero_base.test.js`
+- `backend/tests/integration/cierre-total.test.js`
+- `backend/tests/integration/cierre-ticket.test.js`
+- `backend/tests/integration/reporting_fecha.test.js`
 - `backend/tests/unit/reporting_total.test.js`
-- `backend/tests/unit/reporting_breakdowns.test.js`
-- `backend/tests/unit/reporting_comparison.test.js`
+- `backend/tests/unit/reporting_fecha.test.js`
 - `frontend/tests/components/dashboard_total.test.jsx`
 - `frontend/tests/components/dashboard_breakdowns.test.jsx`
 - `frontend/tests/components/dashboard_comparison.test.jsx`
-- `frontend/tests/components/dashboard_comparison_zero_base.test.jsx`
+- `frontend/tests/utils/format.test.js`
+
+## Nota sobre pruebas ajenas
+
+- `frontend/tests/App.test.jsx` se ajustó para esperar la carga asíncrona de la página de carta de
+  la historia 008; el fallo era previo a la 007 y el cambio afecta solo a la prueba.
 
 ## Comprobaciones manuales
 
