@@ -218,7 +218,7 @@ cada prueba antes de su implementación y comprobar que falla.
 ### Tests for User Story 2
 
 - [x] T033 [P] [US2] Añadir en `backend/tests/contract/reports_breakdowns.test.js` los casos del universo de desgloses: camarero con rol `camarero` sin ventas, plato de la carta vigente sin ventas, y camarero/plato con ventas ese día aunque ya no esté activo o en la carta; comprobar `0,00 €` y orden por importe descendente y nombre, per FR-003/FR-004/FR-013/US2/AC3-AC4
-- [ ] T034 [P] [US2] Añadir en `frontend/tests/components/dashboard_breakdowns.test.jsx` la comprobación de filas sin ventas a `0,00 €` y del orden recibido por importe descendente y nombre, per FR-003/FR-004/FR-013/US2/AC3-AC4
+- [x] T034 [P] [US2] Añadir en `frontend/tests/components/dashboard_breakdowns.test.jsx` la comprobación de filas sin ventas a `0,00 €` y del orden recibido por importe descendente y nombre, per FR-003/FR-004/FR-013/US2/AC3-AC4
 
 ### Implementation for User Story 2
 
