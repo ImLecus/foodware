@@ -50,10 +50,7 @@ function EstadoSinVentas({ fecha }) {
       <Heading size="lg" mb={2}>
         Dashboard de estadísticas
       </Heading>
-      <Text color="gray.600" mb={6}>
-        {formatearFechaLarga(fecha)}
-      </Text>
-      <Alert status="info">
+      <Alert status="info" mt={6}>
         <AlertIcon />
         No hay ventas registradas para este día.
       </Alert>
@@ -62,6 +59,9 @@ function EstadoSinVentas({ fecha }) {
           Total del día
         </Text>
         <Heading size="2xl">{formatearEuros(0)}</Heading>
+        <Text color="gray.600" mt={1}>
+          Día consultado: {formatearFechaLarga(fecha)}
+        </Text>
       </Box>
     </Box>
   );
@@ -73,14 +73,14 @@ function EstadoDatos({ informe }) {
       <Heading size="lg" mb={2}>
         Dashboard de estadísticas
       </Heading>
-      <Text color="gray.600" mb={6}>
-        {formatearFechaLarga(informe.fecha)}
-      </Text>
       <Box mb={8}>
         <Text fontSize="sm" color="gray.500">
           Total del día
         </Text>
         <Heading size="2xl">{formatearEuros(Math.round(informe.totalVendido * 100))}</Heading>
+        <Text color="gray.600" mt={1}>
+          Día consultado: {formatearFechaLarga(informe.fecha)}
+        </Text>
         <Text color="gray.600" mt={1}>
           {informe.numeroCuentas} cuenta{informe.numeroCuentas === 1 ? '' : 's'} cerrada
           {informe.numeroCuentas === 1 ? '' : 's'}

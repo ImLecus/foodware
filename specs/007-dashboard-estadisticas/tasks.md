@@ -213,7 +213,7 @@ cada prueba antes de su implementación y comprobar que falla.
 
 ### Implementation for User Story 1
 
-- [ ] T032 [US1] Revisar la cabecera del total en `frontend/src/pages/PaginaDashboard.jsx` y ajustar el formateo para que muestre siempre la `fecha` del informe junto al total en `es-ES`, per FR-012/US1/AC4
+- [x] T032 [US1] Revisar la cabecera del total en `frontend/src/pages/PaginaDashboard.jsx` y ajustar el formateo para que muestre siempre la `fecha` del informe junto al total en `es-ES`, per FR-012/US1/AC4
 
 ### Tests for User Story 2
 
