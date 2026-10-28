@@ -64,6 +64,11 @@ describe('PaginaDashboard - comparación US3', () => {
     expect(screen.getByText('Diferencia por plato')).toBeInTheDocument();
     expect(screen.getByText('Ana')).toBeInTheDocument();
     expect(screen.getByText('Croquetas')).toBeInTheDocument();
+
+    const filaAna = within(
+      screen.getByText('Diferencia por camarero').parentElement,
+    ).getAllByRole('row')[1];
+    expect(within(filaAna).getByLabelText('subida')).toBeInTheDocument();
   });
 
   it('muestra sin datos anteriores cuando no existe día anterior', async () => {
@@ -173,6 +178,7 @@ describe('PaginaDashboard - comparación US3', () => {
     expect(filasCamarero[1]).toHaveTextContent('Ana');
     expect(filasCamarero[1]).toHaveTextContent('sin base de comparación');
     expect(filasCamarero[1]).not.toHaveTextContent('%');
+    expect(within(filasCamarero[1]).getByLabelText('subida')).toBeInTheDocument();
 
     const filasPlato = within(
       screen.getByText('Diferencia por plato').parentElement,
@@ -180,6 +186,7 @@ describe('PaginaDashboard - comparación US3', () => {
     expect(filasPlato[1]).toHaveTextContent('Croquetas');
     expect(filasPlato[1]).toHaveTextContent('sin base de comparación');
     expect(filasPlato[1]).not.toHaveTextContent('%');
+    expect(within(filasPlato[1]).getByLabelText('subida')).toBeInTheDocument();
   });
 
   it('formatea los porcentajes con coma decimal en el total y por fila', async () => {

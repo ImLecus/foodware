@@ -1,6 +1,6 @@
 import { Alert, AlertIcon, Box, Heading, Spinner, Stack, Td, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
-import { formatearEuros, formatearFechaLarga, formatearPorcentaje } from '../utils/format.js';
+import { formatearEuros, formatearFechaLarga } from '../utils/format.js';
 import { obtenerInformeDiario } from '../services/reports.js';
 import IndicadorTendencia from '../components/IndicadorTendencia.jsx';
 import TablaDesglose from '../components/TablaDesglose.jsx';
@@ -45,22 +45,21 @@ function EstadoError({ mensaje }) {
 }
 
 function DiferenciaFila({ fila }) {
-  if (fila.sinBaseComparacion) {
-    return (
-      <Td isNumeric>
-        {formatearEuros(Math.round(Math.abs(fila.diferenciaImporte || 0) * 100))} · sin base de
-        comparación
-      </Td>
-    );
-  }
-  const porcentaje = fila.diferenciaPorcentaje;
+  const importe = fila.sinBaseComparacion
+    ? formatearEuros(Math.round(Math.abs(fila.diferenciaImporte || 0) * 100))
+    : `${fila.diferenciaImporte >= 0 ? '+' : ''}${formatearEuros(
+        Math.round((fila.diferenciaImporte || 0) * 100),
+      )}`;
   return (
     <Td isNumeric>
-      {fila.diferenciaImporte >= 0 ? '+' : ''}
-      {formatearEuros(Math.round((fila.diferenciaImporte || 0) * 100))} · {fila.tendencia}
-      {porcentaje !== null && porcentaje !== undefined
-        ? ` (${porcentaje >= 0 ? '+' : ''}${formatearPorcentaje(porcentaje)})`
-        : ''}
+      {importe} ·{' '}
+      <IndicadorTendencia
+        tendencia={fila.tendencia}
+        diferenciaPorcentaje={fila.sinBaseComparacion ? null : fila.diferenciaPorcentaje}
+        sinBaseComparacion={fila.sinBaseComparacion}
+        compacto
+      />
+      {fila.sinBaseComparacion ? ' · sin base de comparación' : ''}
     </Td>
   );
 }
