@@ -233,7 +233,7 @@ cada prueba antes de su implementación y comprobar que falla.
 ### Implementation for User Story 3
 
 - [x] T039 [US3] Extender `obtenerComparacion` en `backend/src/services/reportingService.js` para devolver por cada fila `importeActual`, `importeAnterior`, `diferenciaImporte`, `diferenciaPorcentaje`, `sinBaseComparacion` y `tendencia`, aplicando la regla de base cero por camarero/plato sin dividir entre cero, per FR-011
-- [ ] T040 [US3] Actualizar el bloque de comparación por fila en `frontend/src/pages/PaginaDashboard.jsx` (y `frontend/src/components/IndicadorTendencia.jsx` si aplica) para mostrar la etiqueta «sin base de comparación» y ocultar el porcentaje cuando `sinBaseComparacion` sea `true`, per FR-011
+- [x] T040 [US3] Actualizar el bloque de comparación por fila en `frontend/src/pages/PaginaDashboard.jsx` (y `frontend/src/components/IndicadorTendencia.jsx` si aplica) para mostrar la etiqueta «sin base de comparación» y ocultar el porcentaje cuando `sinBaseComparacion` sea `true`, per FR-011
 
 ### Polish for the clarification
 

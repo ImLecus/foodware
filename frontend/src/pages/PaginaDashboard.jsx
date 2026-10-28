@@ -67,6 +67,27 @@ function EstadoSinVentas({ fecha }) {
   );
 }
 
+function DiferenciaFila({ fila }) {
+  if (fila.sinBaseComparacion) {
+    return (
+      <Td isNumeric>
+        {formatearEuros(Math.round(Math.abs(fila.diferenciaImporte || 0) * 100))} · sin base de
+        comparación
+      </Td>
+    );
+  }
+  const porcentaje = fila.diferenciaPorcentaje;
+  return (
+    <Td isNumeric>
+      {fila.diferenciaImporte >= 0 ? '+' : ''}
+      {formatearEuros(Math.round((fila.diferenciaImporte || 0) * 100))} · {fila.tendencia}
+      {porcentaje !== null && porcentaje !== undefined
+        ? ` (${porcentaje >= 0 ? '+' : ''}${porcentaje}%)`
+        : ''}
+    </Td>
+  );
+}
+
 function EstadoDatos({ informe }) {
   return (
     <Box>
@@ -123,10 +144,7 @@ function EstadoDatos({ informe }) {
                   renderFila={(fila) => (
                     <>
                       <Td>{fila.nombre || fila.camareroId}</Td>
-                      <Td isNumeric>
-                        {formatearEuros(Math.round((fila.diferenciaImporte || 0) * 100))} ·{' '}
-                        {fila.tendencia}
-                      </Td>
+                      <DiferenciaFila fila={fila} />
                     </>
                   )}
                 />
@@ -141,10 +159,7 @@ function EstadoDatos({ informe }) {
                   renderFila={(fila) => (
                     <>
                       <Td>{fila.nombre || fila.platoId}</Td>
-                      <Td isNumeric>
-                        {formatearEuros(Math.round((fila.diferenciaImporte || 0) * 100))} ·{' '}
-                        {fila.tendencia}
-                      </Td>
+                      <DiferenciaFila fila={fila} />
                     </>
                   )}
                 />
