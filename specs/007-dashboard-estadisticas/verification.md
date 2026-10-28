@@ -6,10 +6,10 @@ sobre la fecha por defecto y la distinción entre error de red y error del servi
 
 ## Resultado de las suites
 
-- Backend: **73 ficheros, 311 pruebas**, todas correctas.
-- Frontend: **41 ficheros, 148 pruebas**, todas correctas.
+- Backend: **76 ficheros, 318 pruebas**, todas correctas.
+- Frontend: **43 ficheros, 153 pruebas**, todas correctas.
 - ESLint backend y frontend: correcto.
-- Build de producción del frontend: correcto.
+- Build de producción del frontend: correcto (aviso no bloqueante de tamaño de chunk).
 
 ## Escenario E11 — cerrar una cuenta hoy
 
