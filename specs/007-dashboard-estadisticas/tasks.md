@@ -223,7 +223,7 @@ cada prueba antes de su implementación y comprobar que falla.
 ### Implementation for User Story 2
 
 - [x] T035 [US2] Ajustar `obtenerDesglosePorCamarero` y `obtenerDesglosePorPlato` en `backend/src/services/reportingService.js` para devolver la unión de activos/carta vigente sin ventas y de cualquier camarero o plato con ventas ese día, sin duplicados y con el orden `importe` descendente y `nombre`, per FR-003/FR-004/FR-013
-- [ ] T036 [US2] Asegurar que la tabla de desgloses de `frontend/src/pages/PaginaDashboard.jsx` conserva el orden recibido y muestra `0,00 €` (y `0` unidades en platos) para las filas sin ventas, per FR-003/FR-004/FR-013
+- [x] T036 [US2] Asegurar que la tabla de desgloses de `frontend/src/pages/PaginaDashboard.jsx` conserva el orden recibido y muestra `0,00 €` (y `0` unidades en platos) para las filas sin ventas, per FR-003/FR-004/FR-013
 
 ### Tests for User Story 3
 
