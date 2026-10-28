@@ -209,7 +209,7 @@ cada prueba antes de su implementación y comprobar que falla.
 
 ### Tests for User Story 1
 
-- [ ] T031 [P] [US1] Añadir en `frontend/tests/components/dashboard_total.test.jsx` la comprobación de que la fecha del día consultado se muestra junto al total en formato español, per FR-012/US1/AC4
+- [x] T031 [P] [US1] Añadir en `frontend/tests/components/dashboard_total.test.jsx` la comprobación de que la fecha del día consultado se muestra junto al total en formato español, per FR-012/US1/AC4
 
 ### Implementation for User Story 1
 

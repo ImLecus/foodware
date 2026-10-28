@@ -53,6 +53,34 @@ describe('PaginaDashboard - total', () => {
     });
   });
 
+  it('muestra la fecha del día consultado junto al total', async () => {
+    obtenerInformeDiario.mockResolvedValue({
+      fecha: '2026-10-19',
+      totalVendido: 25.5,
+      numeroCuentas: 2,
+      porCamarero: [],
+      porPlato: [],
+      comparacion: {
+        diaActual: '2026-10-19',
+        diaAnterior: null,
+        importeActual: 25.5,
+        importeAnterior: null,
+        diferenciaImporte: null,
+        diferenciaPorcentaje: null,
+        sinBaseComparacion: false,
+        tendencia: 'sin_variacion',
+        porCamarero: [],
+        porPlato: [],
+      },
+    });
+    renderizarComponente();
+    await waitFor(() => {
+      expect(screen.getByText(/25,50 €/)).toBeInTheDocument();
+    });
+    expect(screen.getByText(/día consultado/i)).toBeInTheDocument();
+    expect(screen.getByText(/19 de octubre de 2026/i)).toBeInTheDocument();
+  });
+
   it('muestra 0,00 € cuando no hay ventas', async () => {
     obtenerInformeDiario.mockResolvedValue({
       fecha: '2026-10-19',
