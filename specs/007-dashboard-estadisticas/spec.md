@@ -26,6 +26,13 @@
 
 - Q: Cuando se cierra una cuenta del día en curso y el día todavía no ha terminado, ¿qué día debe mostrar el dashboard? → A: Mantener el último día natural completado anterior a hoy; el día en curso no aparece hasta que termine, aunque ya existan cuentas cerradas hoy.
 
+### Session 2026-10-28
+
+- Q: En los desgloses por camarero y por plato, ¿qué elementos deben aparecer con 0,00 € cuando no tuvieron ventas ese día? → A: Todos los camareros activos y todos los platos de la carta vigente, aunque no hayan vendido nunca.
+- Q: Cuando un camarero o un plato no tuvo ventas el día anterior pero sí las tiene el día consultado, ¿cómo debe mostrarse su comparación individual? → A: Diferencia en euros y la indicación «sin base de comparación», sin porcentaje, igual que en el total.
+- Q: ¿El dashboard debe mostrar de forma visible la fecha del día natural cuyos datos se están viendo? → A: Sí, siempre junto al total del día.
+- Q: ¿En qué orden deben aparecer las filas de los desgloses por camarero y por plato? → A: Por importe descendente y, a igualdad de importe, por nombre alfabético.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Visión global de las ventas del servicio (Priority: P1)
@@ -51,6 +58,9 @@ servicio.
 3. **Given** cuentas cerradas durante el día en curso y el día aún no ha terminado, **When** el
    encargado abre el dashboard, **Then** ve el último día natural completado anterior a hoy y no
    los datos parciales del día en curso.
+4. **Given** que el dashboard muestra un día natural concreto, **When** el encargado lo consulta,
+   **Then** ve junto al total la fecha de ese día en formato español, para no confundirla con el
+   día en curso.
 
 ---
 
@@ -75,9 +85,12 @@ cuentas el dashboard muestra la cifra agrupada por cada camarero y por cada plat
    las ventas por camarero, **Then** ve la cifra total de cada camarero de ese servicio.
 2. **Given** que se han vendido platos del servicio, **When** el encargado consulta las ventas
    por plato, **Then** ve la cantidad y el importe de cada plato vendido.
-3. **Given** que un camarero o un plato no ha tenido ninguna venta en el servicio, **When** se
-   consultan los desgloses, **Then** ese camarero o plato aparece sin ventas (0,00 €) en lugar de
-   omitirse sin explicación.
+3. **Given** que un camarero activo o un plato de la carta vigente no ha tenido ninguna venta en
+   el servicio, **When** se consultan los desgloses, **Then** ese camarero o plato aparece sin
+   ventas (0,00 €), aunque no haya vendido nunca, en lugar de omitirse sin explicación.
+4. **Given** un desglose con varios camareros o platos, **When** el encargado lo consulta,
+   **Then** las filas aparecen de mayor a menor importe y, a igualdad de importe, por nombre
+   alfabético.
 
 ---
 
@@ -110,6 +123,9 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
 6. **Given** que el día anterior no registró ventas y el día actual sí, **When** se muestra la
    comparación, **Then** se indica la diferencia en euros y «sin base de comparación», sin
    porcentaje.
+7. **Given** que un camarero o un plato no tuvo ventas el día anterior y sí las tiene el día
+   actual, **When** se consulta su comparación individual, **Then** se muestra la diferencia en
+   euros con «sin base de comparación» y sin porcentaje.
 
 ---
 
@@ -120,10 +136,13 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
   con diferencia 0,00 € y sin porcentaje.
 - No existen días anteriores registrados: la sección de comparación muestra un aviso en lugar
   de un error o de datos vacíos sin explicación.
-- Un camarero o un plato sin ventas en el servicio: aparece con 0,00 € en los desgloses.
+- Un camarero activo o un plato de la carta vigente sin ventas en el servicio: aparece con 0,00 €
+  en los desgloses, aunque no haya vendido nunca.
 - El día anterior comparado no tiene ventas o tiene ventas parciales: la comparación se
   muestra igualmente con la diferencia real frente a ese día; si el día anterior no tuvo ventas,
   se muestra la diferencia en euros con la indicación «sin base de comparación» y sin porcentaje.
+- Un camarero o un plato con ventas hoy pero sin ventas el día anterior: su comparación individual
+  muestra la diferencia en euros con «sin base de comparación» y sin porcentaje.
 - Dos servicios con idénticas ventas, incluido el caso de 0,00 € en ambos: la comparación se
   indica como «sin variación», con diferencia 0,00 € y sin porcentaje.
 - El encargado consulta el dashboard antes de terminar el día en curso, incluso si ya se han
@@ -140,9 +159,11 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
   ya existan cuentas cerradas hoy (aclarado en la sesión de clarificación).
 - **FR-002**: El sistema MUST mostrar el importe total en euros vendido durante el servicio.
 - **FR-003**: El sistema MUST desglosar las ventas por camarero, mostrando el importe de cada
-  camarero.
+  camarero, incluidos los camareros activos que no hayan tenido ninguna venta en el servicio
+  (aclarado en la sesión de clarificación).
 - **FR-004**: El sistema MUST desglosar las ventas por plato, mostrando la cantidad y el importe
-  de cada plato.
+  de cada plato, incluidos todos los platos de la carta vigente que no se hayan vendido en el
+  servicio (aclarado en la sesión de clarificación).
 - **FR-005**: El sistema MUST comparar el total del servicio con el del día natural anterior.
 - **FR-006**: El sistema MUST indicar de forma inequívoca si la comparación refleja una subida,
   una bajada o una situación sin variación.
@@ -156,7 +177,13 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
   por camarero y por plato (aclarado en la sesión de clarificación).
 - **FR-011**: Cuando el día anterior no tenga ventas registradas y el día actual sí, la
   comparación MUST mostrar la diferencia en euros con la indicación «sin base de comparación» y
-  MUST NOT mostrar un porcentaje.
+  MUST NOT mostrar un porcentaje. La misma regla MUST aplicarse a la comparación individual de
+  cada camarero y de cada plato que no tuvo ventas el día anterior y sí las tiene el día actual
+  (aclarado en la sesión de clarificación).
+- **FR-012**: El dashboard MUST mostrar de forma visible, junto al total, la fecha del día natural
+  cuyos datos se están presentando, con formato español (aclarado en la sesión de clarificación).
+- **FR-013**: Las filas de ambos desgloses MUST ordenarse por importe descendente y, a igualdad de
+  importe, por nombre alfabético (aclarado en la sesión de clarificación).
 
 ### Key Entities *(include if feature involves data)*
 
@@ -164,9 +191,10 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
   referencia al día anterior para la comparación.
 - **Venta**: importe registrado por cada cuenta cerrada, asociada a un camarero y compuesta por
   platos con cantidades y precios.
-- **Camarero**: perfil que cierra cuentas y del que se agregan las ventas en el desglose.
-- **Plato**: elemento de la carta vendido, con su precio, del que se agrega cantidad e importe en
-  el desglose.
+- **Camarero**: perfil activo que cierra cuentas y del que se agregan las ventas en el desglose;
+  aparece con 0,00 € si no vendió en el servicio.
+- **Plato**: elemento de la carta vigente, con su precio, del que se agrega cantidad e importe en
+  el desglose; aparece con 0,00 € si no se vendió en el servicio.
 
 ## Success Criteria *(mandatory)*
 
@@ -183,8 +211,9 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
   del servicio (verificable por una persona no técnica desde la interfaz, sin leer código).
 - **SC-005**: La consulta del dashboard se realiza en menos de 3 segundos desde que el encargado
   la solicita, con los datos del servicio cargados.
-- **SC-006**: En el 100 % de las comparaciones cuyo día anterior no tuvo ventas, el dashboard
-  muestra la diferencia en euros con «sin base de comparación» y ningún porcentaje.
+- **SC-006**: En el 100 % de las comparaciones cuyo día anterior no tuvo ventas (tanto en el total
+  como en cada fila de los desgloses), el dashboard muestra la diferencia en euros con «sin base de
+  comparación» y ningún porcentaje.
 
 ## Assumptions
 
@@ -201,3 +230,7 @@ muestra la diferencia porcentual del servicio actual frente al día anterior.
   España (constitución del proyecto).
 - La comparación se realiza contra el día natural anterior (el turno/servicio corresponde al día
   natural); ofrecer más histórico queda fuera de alcance para esta versión.
+- «Carta vigente» se refiere a los platos ofrecidos según la historia 008 (platos activos con
+  ingredientes disponibles); esta spec no gestiona la carta ni su disponibilidad.
+- No existe un estado de alta/baja de personal en la versión 1: «camarero activo» equivale a un
+  usuario con rol camarero existente en el sistema.
