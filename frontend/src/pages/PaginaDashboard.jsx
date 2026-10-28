@@ -44,29 +44,6 @@ function EstadoError({ mensaje }) {
   );
 }
 
-function EstadoSinVentas({ fecha }) {
-  return (
-    <Box>
-      <Heading size="lg" mb={2}>
-        Dashboard de estadísticas
-      </Heading>
-      <Alert status="info" mt={6}>
-        <AlertIcon />
-        No hay ventas registradas para este día.
-      </Alert>
-      <Box mt={8}>
-        <Text fontSize="sm" color="gray.500">
-          Total del día
-        </Text>
-        <Heading size="2xl">{formatearEuros(0)}</Heading>
-        <Text color="gray.600" mt={1}>
-          Día consultado: {formatearFechaLarga(fecha)}
-        </Text>
-      </Box>
-    </Box>
-  );
-}
-
 function DiferenciaFila({ fila }) {
   if (fila.sinBaseComparacion) {
     return (
@@ -94,6 +71,12 @@ function EstadoDatos({ informe }) {
       <Heading size="lg" mb={2}>
         Dashboard de estadísticas
       </Heading>
+      {informe.totalVendido === 0 && informe.numeroCuentas === 0 ? (
+        <Alert status="info" mb={6}>
+          <AlertIcon />
+          No hay ventas registradas para este día.
+        </Alert>
+      ) : null}
       <Box mb={8}>
         <Text fontSize="sm" color="gray.500">
           Total del día
@@ -245,9 +228,6 @@ export default function PaginaDashboard() {
   }
   if (estado === 'error') {
     return <EstadoError mensaje={mensajeError} />;
-  }
-  if (estado === 'datos' && informe && informe.totalVendido === 0 && informe.numeroCuentas === 0) {
-    return <EstadoSinVentas fecha={informe.fecha} />;
   }
   if (estado === 'datos' && informe) {
     return <EstadoDatos informe={informe} />;

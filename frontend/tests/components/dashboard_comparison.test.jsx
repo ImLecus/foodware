@@ -235,4 +235,67 @@ describe('PaginaDashboard - comparación US3', () => {
     expect(screen.queryByText(/9\.11/)).not.toBeInTheDocument();
     expect(screen.queryByText(/-4\.76/)).not.toBeInTheDocument();
   });
+
+  it('muestra la comparación en un día sin ventas', async () => {
+    obtenerInformeDiario.mockResolvedValue({
+      fecha: '2026-10-19',
+      totalVendido: 0,
+      numeroCuentas: 0,
+      porCamarero: [
+        { camareroId: 'camarero-1', nombre: 'Ana', importe: 0, numeroCuentas: 0 },
+      ],
+      porPlato: [
+        {
+          platoId: 'plato-1',
+          nombre: 'Croquetas',
+          partida: 'entrantes',
+          cantidad: 0,
+          importe: 0,
+        },
+      ],
+      comparacion: {
+        diaActual: '2026-10-19',
+        diaAnterior: '2026-10-18',
+        importeActual: 0,
+        importeAnterior: 35,
+        diferenciaImporte: -35,
+        diferenciaPorcentaje: -100,
+        sinBaseComparacion: false,
+        tendencia: 'bajada',
+        porCamarero: [
+          {
+            camareroId: 'camarero-1',
+            nombre: 'Ana',
+            importeActual: 0,
+            importeAnterior: 35,
+            diferenciaImporte: -35,
+            diferenciaPorcentaje: -100,
+            sinBaseComparacion: false,
+            tendencia: 'bajada',
+          },
+        ],
+        porPlato: [
+          {
+            platoId: 'plato-1',
+            nombre: 'Croquetas',
+            importeActual: 0,
+            importeAnterior: 35,
+            diferenciaImporte: -35,
+            diferenciaPorcentaje: -100,
+            sinBaseComparacion: false,
+            tendencia: 'bajada',
+          },
+        ],
+      },
+    });
+
+    renderizarComponente();
+    await waitFor(() => {
+      expect(screen.getByText(/Comparación con el día anterior/i)).toBeInTheDocument();
+    });
+    expect(screen.getByText(/no hay ventas registradas/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/bajada/i).length).toBeGreaterThan(0);
+    expect(screen.getByText('Ventas por camarero')).toBeInTheDocument();
+    expect(screen.getByText('Ventas por plato')).toBeInTheDocument();
+  });
 });

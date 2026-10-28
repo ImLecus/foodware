@@ -86,8 +86,18 @@ describe('PaginaDashboard - total', () => {
       fecha: '2026-10-19',
       totalVendido: 0,
       numeroCuentas: 0,
-      porCamarero: [],
-      porPlato: [],
+      porCamarero: [
+        { camareroId: 'camarero-1', nombre: 'Ana', importe: 0, numeroCuentas: 0 },
+      ],
+      porPlato: [
+        {
+          platoId: 'plato-1',
+          nombre: 'Croquetas',
+          partida: 'entrantes',
+          cantidad: 0,
+          importe: 0,
+        },
+      ],
       comparacion: {
         diaActual: '2026-10-19',
         diaAnterior: null,
@@ -103,9 +113,13 @@ describe('PaginaDashboard - total', () => {
     });
     renderizarComponente();
     await waitFor(() => {
-      expect(screen.getByText(/0,00 €/)).toBeInTheDocument();
+      expect(screen.getAllByText(/0,00 €/).length).toBeGreaterThan(0);
     });
     expect(screen.getByText(/no hay ventas registradas/i)).toBeInTheDocument();
+    expect(screen.getByText('Ventas por camarero')).toBeInTheDocument();
+    expect(screen.getByText('Ventas por plato')).toBeInTheDocument();
+    expect(screen.getByText('Ana')).toBeInTheDocument();
+    expect(screen.getByText('Croquetas')).toBeInTheDocument();
   });
 
   it('muestra el error real del servidor y no lo confunde con falta de conexión', async () => {
