@@ -40,16 +40,20 @@ contrato del endpoint; estados de la página).
 
 ### E1. Visión global del total (US1, SC-001, FR-002)
 1. Iniciar sesión como **encargado** y abrir `/dashboard`.
-2. **Esperado**: se ve el total del último día completado **anterior a hoy** en euros en primer plano (`1.287,50 €`). Si hoy ya se cerró una cuenta, hoy sigue sin aparecer hasta que termine el día.
+2. **Esperado**: se ve el total del último día completado **anterior a hoy** en euros en primer plano (`1.287,50 €`), junto a la fecha visible del día mostrado (`13/10/2026`). Si hoy ya se cerró una cuenta, hoy sigue sin aparecer hasta que termine el día.
 
-### E2. Desglose por camarero (US2, FR-003)
+### E2. Desglose por camarero (US2, FR-003, FR-013)
 1. En el mismo dashboard, mirar la tabla "por camarero".
-2. **Esperado**: cada camarero del día con su número de cuentas e importe; los que no vendieron
-   aparecen con `0,00 €` (no se omiten).
+2. **Esperado**: aparecen **todos los camareros activos** (no solo los que vendieron) con su número
+   de cuentas e importe; los que no vendieron aparecen con `0,00 €`, las filas van de mayor a menor
+   importe (a igualdad, por nombre) y se mantiene cualquier camarero que vendiera ese día aunque ya
+   no esté activo.
 
-### E3. Desglose por plato (US2, FR-004)
+### E3. Desglose por plato (US2, FR-004, FR-013)
 1. Mirar la tabla "por plato".
-2. **Esperado**: cada plato vendido con partida, cantidad e importe.
+2. **Esperado**: aparecen **todos los platos de la carta vigente**, vendidos o no, con partida,
+   cantidad e importe (`0,00 €` y `0` unidades si no se vendió), de mayor a menor importe; se
+   mantiene cualquier plato vendido ese día aunque ya no esté en la carta.
 
 ### E4. Comparación con el día anterior (US3, FR-005/FR-006/FR-010, SC-003)
 1. Observar el bloque de comparación.
@@ -97,6 +101,23 @@ contrato del endpoint; estados de la página).
    «sin base de comparación»; **no** aparece ningún porcentaje.
 4. **Comprobación de API**: `GET /api/reports/daily?date=<día actual>` devuelve
    `comparacion.sinBaseComparacion = true` y `comparacion.diferenciaPorcentaje = null`.
+5. **Comprobación por fila**: si un camarero o un plato no vendió ayer y sí hoy, su fila de
+   comparación muestra la diferencia en euros y «sin base de comparación», sin porcentaje
+   (`diferenciaPorcentaje = null`, `sinBaseComparacion = true`).
+
+### E12. Universo de los desgloses sin ventas (FR-003, FR-004)
+1. Disponer de un camarero activo que no haya cerrado ninguna cuenta en el día mostrado y de un
+   plato de la carta vigente que no se haya vendido.
+2. Abrir el dashboard del día.
+3. **Esperado**: ambos aparecen en sus tablas con `0,00 €` (y `0` unidades en el plato), sin
+   omitirse aunque nunca hayan vendido.
+4. **Caso inverso**: un camarero o plato con ventas ese día que ya no esté activo o haya salido de
+   la carta sigue apareciendo con su importe, para que el desglose cuadre con el total.
+
+### E13. Fecha visible y orden de las tablas (FR-012, FR-013)
+1. Abrir el dashboard de un día con varios camareros y platos vendidos.
+2. **Esperado**: la fecha del día consultado aparece junto al total; las filas de ambas tablas van
+   de mayor a menor importe y, a igualdad, por nombre alfabético.
 
 ## Comprobación del contrato de la API
 

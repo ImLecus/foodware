@@ -1,8 +1,8 @@
 # Plan de Implementación: Dashboard de estadísticas del servicio
 
-**Rama**: `feature/007-dashboard-estadisticas` | **Fecha**: 2026-10-27 | **Spec**: [spec.md](./spec.md)
+**Rama**: `feature/007-dashboard-estadisticas` | **Fecha**: 2026-10-28 | **Spec**: [spec.md](./spec.md)
 
-**Entrada**: Especificación de la funcionalidad en `specs/007-dashboard-estadisticas/spec.md`, incluidas las clarificaciones del 2026-10-27.
+**Entrada**: Especificación de la funcionalidad en `specs/007-dashboard-estadisticas/spec.md`, incluidas las clarificaciones del 2026-10-27 y del 2026-10-28.
 
 ## Resumen
 
@@ -15,6 +15,12 @@ Cuando el día anterior no registró ventas y el día actual sí, la comparació
 en euros con la indicación «sin base de comparación» y sin porcentaje (FR-011, SC-006).
 La funcionalidad es de solo lectura: agrega las cuentas cerradas del día a partir de los datos que
 generan las historias de pedidos (01) y cierre de cuenta (06), sin modificarlos.
+
+Los desgloses incluyen a **todos los camareros activos** (usuarios con rol `camarero`) y a **todos
+los platos de la carta vigente**, aunque no hayan vendido, además de cualquier camarero o plato con
+ventas ese día aunque ya no esté activo o en la carta; se ordenan por importe descendente y nombre
+alfabético en caso de empate (FR-003, FR-004, FR-013). El total se acompaña siempre de la fecha
+visible del día consultado (FR-012).
 
 El enfoque técnico es una **agregación bajo demanda** sobre los datos de cuentas cerradas,
 expuesta por un único endpoint HTTP de solo lectura protegido por sesión y rol de encargado, y
@@ -29,6 +35,11 @@ día anterior existe pero su importe es 0 y el actual es mayor que 0, devuelve
 `sinBaseComparacion = true`; nunca divide entre cero. La UI presenta ese caso con la diferencia en
 euros y la etiqueta «sin base de comparación», sin porcentaje (FR-011, SC-006).
 
+**Comparación por fila**: la misma regla se aplica a cada camarero y a cada plato del bloque de
+comparación. Si una fila no tuvo ventas el día anterior y sí las tiene el día consultado, devuelve
+`importeAnterior = 0`, `diferenciaImporte = importeActual`, `diferenciaPorcentaje = null`,
+`sinBaseComparacion = true` y `tendencia = subida`, sin calcular porcentaje (FR-011).
+
 ## Decisión sobre la fecha por defecto y errores de carga
 
 - La consulta sin `date` debe resolver el **último día natural completado anterior a hoy**. No debe
@@ -42,6 +53,24 @@ euros y la etiqueta «sin base de comparación», sin porcentaje (FR-011, SC-006
 - La regresión de cerrar una cuenta hoy y abrir `/dashboard` debe cubrirse con prueba de API y de
   página.
 
+## Decisiones de la clarificación 2026-10-28
+
+- **Universo de los desgloses**: `porCamarero` incluye a todos los usuarios con rol `camarero`
+  (no existe estado de alta/baja de personal en v1) y `porPlato` incluye todos los platos de la
+  carta vigente (activos y con ingredientes disponibles, según la historia 008). Además, se
+  conserva cualquier camarero o plato con ventas ese día aunque ya no esté activo o haya salido de
+  la carta, para que los desgloses sigan cuadrando con el total (SC-004). Los que no vendieron
+  aparecen con `0,00 €` y `cantidad = 0`, sin omitirse (FR-003, FR-004).
+- **Comparación por fila**: además del total, cada fila de `comparacion.porCamarero` y
+  `comparacion.porPlato` expone `importeActual`, `importeAnterior`, `diferenciaImporte`,
+  `diferenciaPorcentaje`, `sinBaseComparacion` y `tendencia`; cuando no hay base, el porcentaje es
+  `null` y la UI muestra «sin base de comparación» (FR-011).
+- **Fecha visible**: la cabecera del dashboard muestra siempre la fecha del día consultado junto al
+  total, en formato español, para no confundirla con el día en curso (FR-012).
+- **Orden estable**: ambos desgloses se ordenan por `importe` descendente y, a igualdad, por nombre
+  alfabético; el orden se aplica igual en los desgloses del informe y en los de comparación
+  (FR-013).
+
 ## Contexto Técnico
 
 **Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 22 LTS (backend) y React 18 con JavaScript y
@@ -50,8 +79,9 @@ Vite (frontend).
 **Dependencias principales**:
 - Backend: Express 4 (API HTTP), better-sqlite3 (acceso a datos), zod (validación de parámetros).
 - Frontend: React 18, Chakra UI (única librería de componentes, según constitución), React Router.
-- Sin librería de gráficas: los desgloses se muestran en tablas y las tendencias con badges/iconos
-  y color (Chakra UI), evitando dependencias extra.
+- Sin librería de gráficas: los desgloses se muestran en tablas ordenadas por importe descendente y
+  las tendencias con badges/iconos y color (Chakra UI), evitando dependencias extra. La fecha del
+  día consultado se muestra junto al total.
 
 **Almacenamiento**: SQLite (archivo persistente, reproducible en Docker). El dashboard solo lee;
 no introduce escrituras ni un almacén de agregados propios en v1.
@@ -70,7 +100,9 @@ agregación diaria (SUM/GROUP BY sobre un día de cuentas) por debajo de 1 s en 
 
 **Restricciones**: moneda euro y convenciones españolas de número/fecha; solo el rol *encargado*
 puede acceder mediante sesión real (historia 000); los precios usados son los fijados en el
-momento de pedir; el día natural es la unidad de servicio (Europe/Madrid).
+momento de pedir; el día natural es la unidad de servicio (Europe/Madrid); los desgloses incluyen
+todos los camareros activos y los platos de la carta vigente con `0,00 €` si no vendieron, además
+de cualquier actor con ventas ese día aunque ya no esté activo o en la carta.
 
 **Alcance/Escala**: restaurante medio; consulta de un día concreto; histórico mínimo limitado al
 día anterior; pocos usuarios encargados y varias cuentas por día.
@@ -83,7 +115,7 @@ día anterior; pocos usuarios encargados y varias cuentas por día.
 |-------------------|--------------|--------|
 | I. Simplicidad | Agregación bajo demanda con SQL; sin capa de caché ni agregados precalculados; sin librería de gráficas | Pasa |
 | II. Español de España y euro | Formato `Intl` es-ES y €; día natural Europe/Madrid | Pasa |
-| III. Cero alcance fantasma | Solo los FR-001…FR-011 de la spec: lectura + visualización del dashboard, incluida la comparación sin base cuando el día anterior no tuvo ventas; no se implementan pedidos, cierre ni gestión de carta | Pasa |
+| III. Cero alcance fantasma | Solo los FR-001…FR-013 de la spec: lectura + visualización del dashboard, incluida la comparación sin base cuando el día anterior no tuvo ventas, el universo de camareros activos y carta vigente, la fecha visible y el orden por importe; no se implementan pedidos, cierre ni gestión de carta | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` con escenarios de comprobación desde la interfaz | Pasa |
 | V. Datos con respeto | Solo se leen ventas, camarero y plato; sin datos personales innecesarios ni secretos | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |

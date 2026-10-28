@@ -58,10 +58,13 @@ su justificación.
 
 ## D6. Visualización de desgloses y comparación
 
-- **Decisión**: tablas de desglose (camarero y plato) y badges de tendencia (icono + color + texto)
-  sobre Chakra UI. Sin librería de gráficas.
+- **Decisión**: tablas de desglose (camarero y plato), ordenadas por importe descendente y, a
+  igualdad, por nombre alfabético; badges de tendencia (icono + color + texto) sobre Chakra UI y la
+  fecha del día consultado visible junto al total. Sin librería de gráficas.
 - **Razón**: los desgloses y la tendencia se comunican con tablas y badges de forma accesible y
-  verificable; evita una dependencia extra (simplicidad, I) y facilita las pruebas de componente.
+  verificable; el orden descendente responde a la pregunta «qué se vende más» y la fecha evita
+  confundir el último día completado con el día en curso (FR-012, FR-013). Evita una dependencia
+  extra (simplicidad, I) y facilita las pruebas de componente.
 - **Alternativas consideradas**: gráficas con Recharts (dependencia no justificada por la spec).
 
 ## D7. Estrategia de pruebas
@@ -113,8 +116,38 @@ su justificación.
 
 - **Decisión**: representar el caso con `sinBaseComparacion = true`, `diferenciaImporte` igual a la
   diferencia absoluta en euros y `diferenciaPorcentaje = null`; la UI muestra la diferencia y la
-  etiqueta «sin base de comparación», sin porcentaje.
+  etiqueta «sin base de comparación», sin porcentaje. La misma regla se aplica fila a fila en
+  `comparacion.porCamarero` y `comparacion.porPlato` cuando ese camarero o plato no vendió el día
+  anterior y sí el día consultado (FR-011).
 - **Razón**: cumple FR-011 y SC-006 sin dividir entre cero ni inventar una variación relativa; la
-  diferencia absoluta sigue aportando información real frente al día anterior.
+  diferencia absoluta sigue aportando información real frente al día anterior. Aplicarlo por fila
+  mantiene coherencia con el total y evita porcentajes engañosos en los desgloses.
 - **Alternativas consideradas**: mostrar un porcentaje del 100 % (engañoso e incorrecto); ocultar
-  la comparación (pierde un dato válido y la diferencia en euros exigida).
+  la comparación (pierde un dato válido y la diferencia en euros exigida); aplicar la regla solo al
+  total (incoherente con los desgloses).
+
+## D13. Universo de los desgloses sin ventas
+
+- **Decisión**: `porCamarero` incluye a todos los usuarios con rol `camarero` y `porPlato` a todos
+  los platos de la carta vigente (activos y con ingredientes disponibles, historia 008), aunque no
+  hayan vendido en el día; se muestran con `0,00 €` y `cantidad = 0`, sin omitirlos. Además, se
+  incluye a cualquier camarero o plato con ventas ese día aunque ya no esté activo o haya salido de
+  la carta, para no perder importes cobrados ni romper la suma de los desgloses (SC-004).
+- **Razón**: cumple el escenario 3 de la US2 y evita que la ausencia de filas se interprete como un
+  error; el conjunto de referencia para las filas a cero es el personal y la carta existentes, no
+  solo los vendedores del día, pero las ventas históricas siempre deben aparecer. En v1 no hay
+  estado de alta/baja de personal, por lo que «camarero activo» equivale a un usuario con ese rol.
+- **Alternativas consideradas**: mostrar solo a quien vendió (contradice la spec y oculta lo que no
+  se vende); incluir platos retirados del catálogo (ruido sin valor); inventar un estado de baja de
+  personal (alcance no solicitado).
+
+## D14. Orden y fecha visible
+
+- **Decisión**: los desgloses y sus comparaciones se ordenan por importe descendente y, a igualdad,
+  por nombre alfabético; la fecha del día consultado se muestra en la cabecera junto al total.
+- **Razón**: el orden descendente responde a «qué se vende más y qué se queda rezagado» (US2) y da
+  un resultado determinista para las pruebas; la fecha evita confundir el día mostrado con el día
+  en curso (FR-012, aclaración 2026-10-28).
+- **Alternativas consideradas**: orden alfabético (no responde a la pregunta de negocio); orden de
+  carta por partida (útil para la comanda, no para estadísticas); ocultar la fecha (riesgo de
+  interpretar ayer como hoy).

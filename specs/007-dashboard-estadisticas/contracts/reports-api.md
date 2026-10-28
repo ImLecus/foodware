@@ -46,12 +46,12 @@ Validación: si `date` no tiene formato `YYYY-MM-DD`, no es una fecha válida, e
     "sinBaseComparacion": false,
     "tendencia": "subida",
     "porCamarero": [
-      { "camareroId": "c1", "diferenciaImporte": 40.00, "tendencia": "subida" },
-      { "camareroId": "c2", "diferenciaImporte": 67.50, "tendencia": "subida" }
+      { "camareroId": "c1", "nombre": "Marta", "importeActual": 720.00, "importeAnterior": 680.00, "diferenciaImporte": 40.00, "diferenciaPorcentaje": 5.88, "sinBaseComparacion": false, "tendencia": "subida" },
+      { "camareroId": "c2", "nombre": "Luis", "importeActual": 567.50, "importeAnterior": 500.00, "diferenciaImporte": 67.50, "diferenciaPorcentaje": 13.50, "sinBaseComparacion": false, "tendencia": "subida" }
     ],
     "porPlato": [
-      { "platoId": "p1", "diferenciaImporte": 25.00, "tendencia": "subida" },
-      { "platoId": "p2", "diferenciaImporte": -12.00, "tendencia": "bajada" }
+      { "platoId": "p1", "nombre": "Croquetas", "partida": "entrantes", "importeActual": 210.00, "importeAnterior": 185.00, "diferenciaImporte": 25.00, "diferenciaPorcentaje": 13.51, "sinBaseComparacion": false, "tendencia": "subida" },
+      { "platoId": "p2", "nombre": "Entrecot", "partida": "principales", "importeActual": 240.00, "importeAnterior": 252.00, "diferenciaImporte": -12.00, "diferenciaPorcentaje": -4.76, "sinBaseComparacion": false, "tendencia": "bajada" }
     ]
   }
 }
@@ -59,17 +59,27 @@ Validación: si `date` no tiene formato `YYYY-MM-DD`, no es una fecha válida, e
 
 Reglas del cuerpo:
 - `totalVendido` = suma de `importeTotal` de las cuentas cerradas del día.
-- `porCamarero` incluye a los camareros que cerraron cuentas ese día; `importe` puede ser `0.00`.
-- `porPlato` incluye los platos vendidos ese día con su `cantidad` e `importe`.
+- `porCamarero` incluye a **todos los usuarios con rol `camarero`** (no existe estado de alta/baja
+  de personal en v1), hayan cerrado cuentas o no; además, conserva a cualquier camarero con ventas
+  ese día aunque ya no esté activo. `importe = 0.00` y `numeroCuentas = 0` si no vendió.
+- `porPlato` incluye **todos los platos de la carta vigente** (activos y con ingredientes
+  disponibles, historia 008), se hayan vendido o no; además, conserva cualquier plato vendido ese
+  día aunque ya no esté en la carta. `cantidad = 0` e `importe = 0.00` si no se vendió.
+- `porCamarero` y `porPlato` se ordenan por `importe` descendente y, a igualdad, por `nombre`
+  alfabético (FR-013).
 - `comparacion.tendencia` ∈ {`subida`, `bajada`, `sin_variacion`}.
 - `comparacion.sinBaseComparacion` es `true` cuando `diaAnterior` existe, `importeAnterior = 0` e
   `importeActual > 0`; en ese caso `diferenciaImporte = importeActual`,
   `diferenciaPorcentaje = null` y la UI muestra la diferencia en euros con «sin base de
   comparación», sin porcentaje (FR-011, SC-006).
+- Cada fila de `comparacion.porCamarero` y `comparacion.porPlato` incluye `importeActual`,
+  `importeAnterior`, `diferenciaImporte`, `diferenciaPorcentaje`, `sinBaseComparacion` y
+  `tendencia`, con la misma regla de base cero aplicada fila a fila (FR-011).
 - Si no hay día anterior con datos: `diaAnterior = null`, `diferenciaPorcentaje = null`,
-  `sinBaseComparacion = false`, `tendencia = "sin_variacion"` y `porCamarero`/`porPlato` vacíos
-  (la UI muestra "sin datos anteriores").
-- Importes numéricos en euros (el formateo `es-ES`/€ se realiza en la presentación).
+  `sinBaseComparacion = false`, `tendencia = "sin_variacion"` y `comparacion.porCamarero` /
+  `comparacion.porPlato` vacíos (la UI muestra "sin datos anteriores").
+- Importes numéricos en euros (el formateo `es-ES`/€ y la fecha visible junto al total se realizan
+  en la presentación, FR-012).
 
 ### Respuesta `200 OK` con día anterior sin ventas
 
@@ -94,10 +104,10 @@ Reglas del cuerpo:
     "sinBaseComparacion": true,
     "tendencia": "subida",
     "porCamarero": [
-      { "camareroId": "c1", "diferenciaImporte": 350.00, "tendencia": "subida" }
+      { "camareroId": "c1", "nombre": "Marta", "importeActual": 350.00, "importeAnterior": 0.00, "diferenciaImporte": 350.00, "diferenciaPorcentaje": null, "sinBaseComparacion": true, "tendencia": "subida" }
     ],
     "porPlato": [
-      { "platoId": "p1", "diferenciaImporte": 140.00, "tendencia": "subida" }
+      { "platoId": "p1", "nombre": "Croquetas", "partida": "entrantes", "importeActual": 140.00, "importeAnterior": 0.00, "diferenciaImporte": 140.00, "diferenciaPorcentaje": null, "sinBaseComparacion": true, "tendencia": "subida" }
     ]
   }
 }
@@ -113,11 +123,20 @@ En este caso el porcentaje no se calcula (división por cero evitada); la presen
   "fecha": "2026-10-13",
   "totalVendido": 0.00,
   "numeroCuentas": 0,
-  "porCamarero": [],
-  "porPlato": [],
+  "porCamarero": [
+    { "camareroId": "c1", "nombre": "Marta", "importe": 0.00, "numeroCuentas": 0 },
+    { "camareroId": "c2", "nombre": "Luis",  "importe": 0.00, "numeroCuentas": 0 }
+  ],
+  "porPlato": [
+    { "platoId": "p1", "nombre": "Croquetas", "partida": "entrantes",   "cantidad": 0, "importe": 0.00 },
+    { "platoId": "p2", "nombre": "Entrecot",  "partida": "principales", "cantidad": 0, "importe": 0.00 }
+  ],
   "comparacion": { "diaActual": "2026-10-13", "diaAnterior": null, "importeActual": 0.00, "importeAnterior": null, "diferenciaImporte": null, "diferenciaPorcentaje": null, "sinBaseComparacion": false, "tendencia": "sin_variacion", "porCamarero": [], "porPlato": [] }
 }
 ```
+
+Los desgloses del informe mantienen las filas con `0,00 €` aunque el día no tenga ventas; los
+desgloses de la comparación quedan vacíos cuando no existe día anterior.
 
 ### Errores
 
