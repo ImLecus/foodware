@@ -237,7 +237,7 @@ cada prueba antes de su implementación y comprobar que falla.
 
 ### Polish for the clarification
 
-- [ ] T041 [P] Actualizar `specs/007-dashboard-estadisticas/verification.md` con el resultado de los escenarios E10, E12 y E13 de `specs/007-dashboard-estadisticas/quickstart.md`
+- [x] T041 [P] Actualizar `specs/007-dashboard-estadisticas/verification.md` con el resultado de los escenarios E10, E12 y E13 de `specs/007-dashboard-estadisticas/quickstart.md`
 - [ ] T042 Ejecutar las suites completas de `backend/tests/` y `frontend/tests/` y corregir regresiones, registrando el resultado en `specs/007-dashboard-estadisticas/verification.md`
 
 **Dependencies**: T032 depende de T031; T035 de T033 y T034; T036 de T035; T039 de T037 y T038; T040 de T039; T041 y T042 se ejecutan al final, con T042 después de T041.
