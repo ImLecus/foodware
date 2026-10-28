@@ -253,7 +253,7 @@ export function obtenerCuenta(db, mesaId) {
  * Cobro único: cierra la cuenta y libera la mesa en una transacción. El importe
  * debe coincidir con el total actual y no puede haber platos pendientes.
  */
-export function cerrarCuentaUnica(db, mesaId, { totalBaseCentimos }) {
+export function cerrarCuentaUnica(db, mesaId, { totalBaseCentimos, camareroId = null }) {
   const mesa = exigirMesa(obtenerMesa(db, mesaId));
   const pedido = obtenerPedidoActual(db, mesaId);
 
@@ -293,9 +293,9 @@ export function cerrarCuentaUnica(db, mesaId, { totalBaseCentimos }) {
   const id = randomUUID();
   const cerrar = db.transaction(() => {
     db.prepare(
-      `INSERT INTO cuentas (id, mesa_id, pedido_id, estado, total_centimos, modo_division, cerrada_en)
-       VALUES (?, ?, ?, 'cerrada', ?, 'unico', datetime('now'))`,
-    ).run(id, mesaId, pedido.id, total);
+      `INSERT INTO cuentas (id, mesa_id, pedido_id, camarero_id, estado, total_centimos, modo_division, cerrada_en)
+       VALUES (?, ?, ?, ?, 'cerrada', ?, 'unico', datetime('now'))`,
+    ).run(id, mesaId, pedido.id, camareroId, total);
     db.prepare("UPDATE mesas SET estado = 'libre' WHERE id = ?").run(mesaId);
     db.prepare("UPDATE pedidos SET estado = 'cerrada' WHERE id = ?").run(pedido.id);
   });
@@ -430,7 +430,7 @@ export function confirmarDivision(db, mesaId, datos) {
  * Marca una parte como pagada. Si era la última pendiente, cierra la cuenta y
  * libera la mesa en la misma transacción y emite el único ticket final.
  */
-export function pagarParte(db, mesaId, parteId) {
+export function pagarParte(db, mesaId, parteId, { camareroId = null } = {}) {
   const mesa = exigirMesa(obtenerMesa(db, mesaId));
   const { cuenta, pedido } = obtenerCuentaDividida(db, mesaId);
 
@@ -464,8 +464,8 @@ export function pagarParte(db, mesaId, parteId) {
 
     if (pendientes === 1) {
       db.prepare(
-        "UPDATE cuentas SET estado = 'cerrada', cerrada_en = datetime('now') WHERE id = ?",
-      ).run(cuenta.id);
+        "UPDATE cuentas SET estado = 'cerrada', cerrada_en = datetime('now'), camarero_id = COALESCE(?, camarero_id) WHERE id = ?",
+      ).run(camareroId, cuenta.id);
       db.prepare("UPDATE mesas SET estado = 'libre' WHERE id = ?").run(mesaId);
       db.prepare("UPDATE pedidos SET estado = 'cerrada' WHERE id = ?").run(pedido.id);
     }

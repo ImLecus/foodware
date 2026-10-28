@@ -45,6 +45,7 @@ export function cuentasRouter(db) {
       const datos = validarCierreUnico(req.body);
       const resultado = cerrarCuentaUnica(db, req.params.mesaId, {
         totalBaseCentimos: datos.total_base_centimos,
+        camareroId: req.camarero.id,
       });
       res.status(201).json(resultado);
     } catch (error) {
@@ -69,7 +70,9 @@ export function cuentasRouter(db) {
 
   router.post('/mesas/:mesaId/cuenta/partes/:parteId/pago', (req, res, next) => {
     try {
-      res.json(pagarParte(db, req.params.mesaId, req.params.parteId));
+      res.json(
+        pagarParte(db, req.params.mesaId, req.params.parteId, { camareroId: req.camarero.id }),
+      );
     } catch (error) {
       next(error);
     }
