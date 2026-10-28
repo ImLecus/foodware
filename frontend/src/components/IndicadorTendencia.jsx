@@ -22,7 +22,10 @@ export default function IndicadorTendencia({
         <Text aria-label="subida">▲</Text>
         <Text>Subida</Text>
         {!sinBaseComparacion && diferenciaPorcentaje !== null ? (
-          <Text>({diferenciaPorcentaje >= 0 ? '+' : ''}{formatearPorcentaje(diferenciaPorcentaje)})</Text>
+          <Text>
+            ({diferenciaPorcentaje >= 0 ? '+' : ''}
+            {formatearPorcentaje(diferenciaPorcentaje)})
+          </Text>
         ) : null}
       </Box>
     );
