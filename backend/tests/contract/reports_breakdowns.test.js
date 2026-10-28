@@ -244,4 +244,30 @@ describe('GET /api/reports/daily - desgloses US2', () => {
     const sumaDesglose = respuesta.body.porPlato.reduce((total, fila) => total + fila.importe, 0);
     expect(sumaDesglose).toBeCloseTo(respuesta.body.totalVendido, 2);
   });
+
+  it('atribuye las cuentas históricas sin camarero usando el pedido', async () => {
+    db.prepare(
+      `INSERT INTO pedidos (id, mesa_id, camarero_id, estado, enviado_en)
+       VALUES ('pedido-historico', 'mesa-1', 'camarero-1', 'enviada', ?)`,
+    ).run(`${ayer} 09:00:00`);
+    db.prepare(
+      `INSERT INTO lineas_pedido (id, pedido_id, plato_id, cantidad, precio_centimos)
+       VALUES ('linea-historica', 'pedido-historico', 'plato-1', 1, 850)`,
+    ).run();
+    db.prepare(
+      `INSERT INTO cuentas (id, mesa_id, pedido_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+       VALUES ('cuenta-historica', 'mesa-1', 'pedido-historico', NULL, 'cerrada', 850, ?, ?)`,
+    ).run(`${ayer} 10:00:00`, `${ayer} 12:00:00`);
+
+    const respuesta = await request(app).get('/api/reports/daily').set(CABECERA_ENCARGADO);
+
+    expect(respuesta.status).toBe(200);
+    const ana = respuesta.body.porCamarero.find((fila) => fila.camareroId === 'camarero-1');
+    expect(ana).toMatchObject({ importe: 8.5, numeroCuentas: 1 });
+    const sumaCamareros = respuesta.body.porCamarero.reduce(
+      (total, fila) => total + fila.importe,
+      0,
+    );
+    expect(sumaCamareros).toBeCloseTo(respuesta.body.totalVendido, 2);
+  });
 });
