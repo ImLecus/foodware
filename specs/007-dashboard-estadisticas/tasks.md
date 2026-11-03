@@ -224,7 +224,7 @@ Task: "Desgloses y comparación por fila en frontend/src/pages/PaginaDashboard.j
 - [X] T052 Excluir pedidos `cancelada` y cuentas no cerradas de la agregación en `backend/src/services/reportingService.js`; depende de 002 T041; cubrir en `backend/tests/integration/reports-cancelados.test.js` per FR-008.
 - [X] T053 [P] Ajustar `formatearPorcentaje` en `frontend/src/utils/format.js` y `IndicadorTendencia.jsx` para dos decimales, coma y signo negativo solo en bajadas; cubrir en `frontend/tests/utils/format.test.js` y `frontend/tests/components/dashboard_comparison.test.jsx` per FR-006/SC-007.
 - [X] T054 [US2] Actualizar `specs/007-dashboard-estadisticas/contracts/reports-api.md`, `contracts/dashboard-ui.md`, `quickstart.md` y `verification.md` con atribución, cuenta dividida, histórico y formato de porcentaje per FR-014/FR-002/FR-004/FR-006.
-- [ ] T055 [US2] Añadir una prueba de contrato que cubra la atribución al camarero que abrió el pedido y el respaldo al que cerró en `backend/tests/contract/reports_daily.test.js` per FR-014.
+- [X] T055 [US2] Añadir una prueba de contrato que cubra la atribución al camarero que abrió el pedido y el respaldo al que cerró en `backend/tests/contract/reports_daily.test.js` per FR-014.
 - [ ] T056 [US2] Añadir una prueba de integración de cuenta dividida y de histórico de nombre/partida en `backend/tests/integration/reports-cuenta-dividida.test.js` y `backend/tests/integration/reports-historico.test.js` per FR-002/FR-004.
 
 ---
