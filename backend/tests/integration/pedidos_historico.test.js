@@ -46,7 +46,7 @@ describe('Pedidos · indicaciones e instantánea histórica', () => {
   it('no altera la instantánea si después cambia la carta', async () => {
     preparar();
     const abierto = await request(app).post('/api/mesas/mesa-1/abrir').set(CABECERA_CAMARERO);
-    const creada = await request(app)
+    await request(app)
       .post(`/api/pedidos/${abierto.body.id}/lineas`)
       .set(CABECERA_CAMARERO)
       .send({ plato_id: 'plato-principal', cantidad: 1 });
