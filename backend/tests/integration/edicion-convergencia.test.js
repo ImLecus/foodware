@@ -52,6 +52,22 @@ describe('Edición · convergencia 2026-11-03', () => {
     expect(pendientes.body).toHaveLength(0);
   });
 
+  it('rechaza el marcado de cocina de un pedido cancelado', async () => {
+    preparar();
+    const pedidoId = await crearPedidoEnviado(app);
+    const linea = (await detalle(pedidoId)).body.lineas[0];
+    await abrirEdicion(pedidoId);
+    await request(app).post(`/api/pedidos/${pedidoId}/cancelar`).set(CABECERA_CAMARERO);
+
+    const respuesta = await request(app)
+      .put(`/api/pedidos/${pedidoId}/lineas/${linea.id}/estado`)
+      .set(cookieCocinero('entrantes'))
+      .send({ estado: 'listo' });
+
+    expect(respuesta.status).toBe(409);
+    expect(respuesta.body.codigo).toBe('pedido_cancelado');
+  });
+
   it('rechaza el marcado de cocina mientras el pedido está bloqueado', async () => {
     preparar();
     const pedidoId = await crearPedidoEnviado(app);
