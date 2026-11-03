@@ -32,6 +32,18 @@ Decisiones de UI y estado derivadas de las aclaraciones de 2026-10-20:
   espera de los pedidos ya mostrados sigue avanzando con el reloj local a partir de `enviadoEn`
   (FR-006, SC-003).
 
+## Decisiones de la clarificación 2026-11-03
+
+- **Pedido cancelado**: un pedido `cancelada` (historia 002) deja de ser pendiente y desaparece de
+  la vista de cocina; no se marca ningún plato y no se cuenta como completado (FR-019). La lista se
+  refresca con `pedido.pendientes-cambiado`.
+- **Aviso «Modificado»**: solo aparece cuando el camarero pulsa «enviar cambios» en 002; una edición
+  guardada pero no comunicada no altera la vista de cocina (FR-015/FR-018).
+- **Nombre y partida del plato**: la línea conserva la instantánea fijada al pedir; un cambio
+  posterior de la carta (008) no altera lo que ve cocina.
+- **Impacto técnico**: `lineas_pedido.nombre_plato` y `partida_codigo` son la fuente de la vista;
+  los pedidos `cancelada` se excluyen de la consulta. No se añade migración nueva en 003.
+
 ## Contexto Técnico
 
 **Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 22 (backend) y navegador moderno (frontend)
@@ -67,7 +79,7 @@ un puñado de pantallas de cocina concurrentes
 |-------------------|--------------|--------|
 | I. Simplicidad | Un backend, un frontend, SQLite y SSE; lista ordenada en servidor y temporizador en cliente | Pasa |
 | II. Español de España y euro | Vista y formato de tiempo en español; no maneja importes | Pasa |
-| III. Cero alcance fantasma | Solo FR-001…FR-018; carga/error, aviso «Modificado» y «sin conexión» proceden de clarificaciones aprobadas | Pasa |
+| III. Cero alcance fantasma | Solo FR-001…FR-019, incluida la retirada de pedidos cancelados y la instantánea de nombre/partida; carga/error, aviso «Modificado» y «sin conexión» proceden de clarificaciones aprobadas | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` demuestra cada escenario desde la aplicación | Pasa |
 | V. Datos con respeto | Solo datos operativos; sin login nuevo; sin secretos versionados | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |

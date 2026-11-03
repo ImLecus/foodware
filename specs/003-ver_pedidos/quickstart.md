@@ -49,6 +49,8 @@ pedidos enviados con distintas antigüedades y estados de plato.
 | 16 | Carga inicial (FR-017) | Abre la vista con el backend lento o pausado | Se muestra «Cargando pedidos…» hasta recibir datos; no aparece el estado vacío antes |
 | 17 | Fallo de carga y reintento (FR-017, SC-011) | Detén el backend, abre o recarga la vista y vuelve a arrancarlo; pulsa «Reintentar» | Se muestra «No se pudieron cargar los pedidos» con la acción «Reintentar», nunca el estado vacío; al reintentar aparece la lista |
 | 18 | Reloj sin conexión (FR-006, SC-003) | Con la vista abierta, corta la conexión y espera unos minutos | La lista queda marcada como «sin conexión / no actualizada», pero el tiempo de espera sigue avanzando con el reloj local |
+| 19 | Pedido cancelado (FR-019) | Cancela desde sala un pedido ya enviado (historia 002) | El pedido desaparece de la vista de cocina; sus platos no se pueden marcar ni cuentan como completados |
+| 20 | Nombre y partida históricos | Cambia el nombre o la partida de un plato en la carta (historia 008) y revisa un pedido anterior | Cocina sigue mostrando el nombre y la partida que tenía el plato al pedirse |
 
 ## Cómo ver las pruebas automatizadas
 
