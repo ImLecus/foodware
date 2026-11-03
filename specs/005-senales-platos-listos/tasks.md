@@ -265,3 +265,13 @@ Task: "Reutilizar el estado sin conexión en frontend/src/components/AvisoSinCon
 - **Parada por tarea (constitución)**: al implementar con `/speckit.implement`, el agente MUST detenerse tras cada tarea, resumir lo hecho y esperar la revisión y el commit del usuario antes de continuar
 - Commits en formato Conventional Commits (p. ej. `feat(005): ...`)
 - Commit tras cada tarea o grupo lógico
+
+## Matriz de trazabilidad (resumen)
+
+| Requisitos | Fase / tareas |
+|------------|---------------|
+| FR-001–FR-005 | US1: T12–T32 |
+| FR-005–FR-010 | US2: T33–T47 |
+| FR-009–FR-011 | US3: T48–T57 |
+| FR-010/FR-013/FR-016 | Convergencia: T64–T69 |
+| SC-001–SC-009 | US1–US3: T12–T57; convergencia: T64–T69 |

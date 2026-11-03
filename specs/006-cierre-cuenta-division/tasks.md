@@ -203,3 +203,13 @@ Task: "Componente de aviso de pendientes en frontend/tests/components/ResumenCue
 - Los errores de negocio (`409`, `422`, `403`) no deben mostrarse como «sin conexión».
 - No se cancela ni se marca automáticamente ningún plato: si hay pendientes, se bloquea el cierre.
 - **Parada por tarea (constitución)**: al implementar con `/speckit.implement`, el agente MUST detenerse tras cada tarea, resumir lo hecho y esperar la revisión y el commit del usuario antes de continuar.
+
+## Matriz de trazabilidad (resumen)
+
+| Requisitos | Fase / tareas |
+|------------|---------------|
+| FR-001–FR-004 / FR-011 / FR-019 | US1: T9–T16 |
+| FR-005–FR-009 / FR-015–FR-018 | US2: T17–T21 |
+| FR-010–FR-012 / FR-016 | US3: T22–T28 |
+| FR-002 / FR-008 / FR-017 | Convergencia: T34–T40 |
+| SC-001–SC-009 | US1–US3: T9–T28; convergencia: T34–T40 |

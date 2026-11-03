@@ -216,5 +216,15 @@ revise y haga el commit (Conventional Commits) antes de continuar con la siguien
 - Un commit por tarea (Conventional Commits).
 - La anulación solo aplica a pedidos en curso; un pedido ya `enviada` devuelve 409 (FR-019).
 - La edición de pedidos ya enviados pertenece a la historia 002 (no se incluye aquí).
+- **Fuente de verdad**: esta historia define la instantánea de nombre/partida/precio y las indicaciones por línea; las demás historias las referencian.
 - Fuera de alcance: cocina (003), marcar listos (004), señales (005), cierre de cuenta (006),
   dashboard (007) y gestión de carta (008).
+
+## Matriz de trazabilidad (resumen)
+
+| Requisitos | Fase / tareas |
+|------------|---------------|
+| FR-001–FR-005 (mesa y pedido) | US1: T15–T22 |
+| FR-006–FR-012 (líneas, cantidades e indicaciones) | US1: T23–T31; convergencia: T49–T53 |
+| FR-013–FR-019 (confirmación y anulación) | US1: T32–T44 |
+| SC-001–SC-008 | US1: T15–T44; convergencia: T49–T54 |

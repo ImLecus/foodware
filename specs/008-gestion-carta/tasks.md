@@ -245,3 +245,13 @@ Task: "Prueba de componente en frontend/tests/components/FormularioPlato.test.js
 - No hay `DELETE` de platos: la baja es `activo = false` (supuesto de la spec: preservar el historial de ventas).
 - No hay `DELETE` de ingredientes: esta historia cubre alta y edición (FR-015).
 - Evitar: tareas vagas, conflictos en el mismo fichero y dependencias cruzadas entre historias.
+
+## Matriz de trazabilidad (resumen)
+
+| Requisitos | Fase / tareas |
+|------------|---------------|
+| FR-001–FR-004 | US1: T18–T27 |
+| FR-005–FR-006 / FR-012–FR-014 | US2: T28–T34 |
+| FR-007–FR-010 / FR-015 | US3: T35–T54 |
+| FR-003 / FR-016 | Convergencia: T64–T69 |
+| SC-001–SC-006 | US1–US3: T18–T54; convergencia: T64–T69 |

@@ -124,61 +124,6 @@ description: "Task list for feature 007-dashboard-estadisticas"
 
 ---
 
-## Dependencies & Execution Order
-
-### Phase Dependencies
-
-- **Setup (Phase 1)**: sin dependencias.
-- **Foundational (Phase 2)**: depende de Setup y bloquea las historias.
-- **US1 (Phase 3)**: depende de Foundational; es el MVP.
-- **US2 (Phase 4)**: depende de Foundational y del total de US1.
-- **US3 (Phase 5)**: depende de Foundational y de los datos de US1/US2.
-- **Polish (Phase 6)**: depende de las historias implementadas.
-
-### User Story Dependencies
-
-- **US1**: independiente; entrega el total y el estado de error correcto.
-- **US2**: reutiliza la fecha resuelta por US1.
-- **US3**: reutiliza la fecha y los desgloses de US1/US2.
-
-### Parallel Opportunities
-
-- T001/T002, T003/T005, T007/T009/T010, T013/T014, T016/T017/T018 y T020/T021 pueden ir en paralelo.
-- No paralelizar tareas que modifiquen `backend/src/services/reportingService.js`, `backend/src/api/reportsRouter.js` o `frontend/src/pages/PaginaDashboard.jsx`.
-- Las pruebas de cada historia se escriben antes de su implementación.
-
-## Parallel Example: User Story 1
-
-```bash
-# Pruebas en paralelo:
-Task: "Integración de cierre de hoy y fecha por defecto en backend/tests/integration/reporting_fecha.test.js"
-Task: "Página de total y error en frontend/tests/components/dashboard_total.test.jsx"
-```
-
-## Implementation Strategy
-
-### MVP First (User Story 1)
-
-1. Completar Setup y Foundational.
-2. Corregir la fecha por defecto y el estado de error de la página.
-3. Validar el escenario E11: cerrar una cuenta hoy y comprobar que el dashboard muestra ayer.
-4. Continuar con US2 y US3.
-
-### Incremental Delivery
-
-1. Fecha por defecto y regresión de hoy.
-2. Total y estados de la página.
-3. Desgloses y comparación sobre la misma fecha.
-4. Documentación y validación E1–E11.
-5. Convergencia 2026-10-28: universo de desgloses, base cero por fila, fecha visible y orden; validar E10, E12 y E13.
-
-## Notes
-
-- El día en curso nunca se muestra como parcial.
-- `?date=hoy` sigue siendo `400`; solo la ausencia de `date` usa el día anterior completado.
-- No se debe mostrar «sin conexión» para un `400` o `500` del servidor.
-- No se modifica la lógica de cierre de cuentas de la historia 006.
-
 ## Phase 7: Convergence
 
 - [x] T025 Sustituir las agrupaciones `DATE(cerrada_en, 'localtime')` de `backend/src/services/reportingService.js` por una conversión explícita a Europe/Madrid basada en `limitesDelDia`, y añadir una prueba con `TZ=UTC` que cubra un cierre en la madrugada, per FR-001/plan D2 (partial)
@@ -283,6 +228,55 @@ Task: "Desgloses y comparación por fila en frontend/src/pages/PaginaDashboard.j
 - [ ] T056 [US2] Añadir una prueba de integración de cuenta dividida y de histórico de nombre/partida en `backend/tests/integration/reports-cuenta-dividida.test.js` y `backend/tests/integration/reports-historico.test.js` per FR-002/FR-004.
 
 ---
+
+
+## Dependencies & Execution Order
+
+### Phase Dependencies
+
+- **Setup (Phase 1)**: sin dependencias.
+- **Foundational (Phase 2)**: depende de Setup y bloquea las historias.
+- **US1 (Phase 3)**: depende de Foundational; es el MVP.
+- **US2 (Phase 4)**: depende de Foundational y del total de US1.
+- **US3 (Phase 5)**: depende de Foundational y de los datos de US1/US2.
+- **Polish (Phase 6)**: depende de las historias implementadas.
+
+### User Story Dependencies
+
+- **US1**: independiente; entrega el total y el estado de error correcto.
+- **US2**: reutiliza la fecha resuelta por US1.
+- **US3**: reutiliza la fecha y los desgloses de US1/US2.
+
+### Parallel Opportunities
+
+- T001/T002, T003/T005, T007/T009/T010, T013/T014, T016/T017/T018 y T020/T021 pueden ir en paralelo.
+- No paralelizar tareas que modifiquen `backend/src/services/reportingService.js`, `backend/src/api/reportsRouter.js` o `frontend/src/pages/PaginaDashboard.jsx`.
+- Las pruebas de cada historia se escriben antes de su implementación.
+
+## Parallel Example: User Story 1
+
+```bash
+# Pruebas en paralelo:
+Task: "Integración de cierre de hoy y fecha por defecto en backend/tests/integration/reporting_fecha.test.js"
+Task: "Página de total y error en frontend/tests/components/dashboard_total.test.jsx"
+```
+
+## Implementation Strategy
+
+### MVP First (User Story 1)
+
+1. Completar Setup y Foundational.
+2. Corregir la fecha por defecto y el estado de error de la página.
+3. Validar el escenario E11: cerrar una cuenta hoy y comprobar que el dashboard muestra ayer.
+4. Continuar con US2 y US3.
+
+### Incremental Delivery
+
+1. Fecha por defecto y regresión de hoy.
+2. Total y estados de la página.
+3. Desgloses y comparación sobre la misma fecha.
+4. Documentación y validación E1–E11.
+5. Convergencia 2026-10-28: universo de desgloses, base cero por fila, fecha visible y orden; validar E10, E12 y E13.
 
 ## Notes
 
