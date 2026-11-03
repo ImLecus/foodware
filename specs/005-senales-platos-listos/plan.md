@@ -52,6 +52,22 @@ deja de mostrarse en todas las pantallas, junto con la desaparición de la mesa 
 "mesa abierta" y la retirada del aviso preparados para que aquélla los use (mesa no abierta ⇒
 sin aviso), sin implementar aquí el cierre.
 
+## Decisiones de la clarificación 2026-11-03
+
+- **Cancelación de pedido (FR-010)**: si sala cancela el pedido completo (002), la mesa deja de
+  aparecer como abierta si no tiene otra comanda y su aviso activo se retira de todas las pantallas;
+  no se cobra.
+- **Cantidad de una línea ya lista (FR-013)**: si la cantidad baja o se mantiene, la línea sigue
+  `listo` y la mesa no cambia; si sube, vuelve a `pendiente`, la mesa deja de estar completa y su
+  aviso se retira hasta que se marque de nuevo.
+- **Disponibilidad de la carta**: si un plato deja de estar disponible pero ya está en un pedido
+  enviado, sigue apareciendo en la vista y en la mesa; la baja solo afecta a pedidos nuevos. Si no
+  se puede preparar, el camarero lo retira o cancela el pedido según 002.
+- **Nombre y partida**: la vista usa la instantánea fijada al pedir (001), no los datos actuales de
+  la carta (008).
+- **Impacto técnico**: se amplía el recálculo de completitud y la retirada del aviso para cubrir
+  cancelación, cambio de cantidad y disponibilidad; no se añaden entidades ni migraciones.
+
 ## Contexto Técnico
 
 **Lenguaje/Versión**: JavaScript (ES2022, módulos ES) sobre Node.js 22 LTS; frontend React 18 (JSX).
