@@ -273,11 +273,18 @@ Task: "Desgloses y comparación por fila en frontend/src/pages/PaginaDashboard.j
 
 ## Phase 12: Convergence — Clarificaciones 2026-11-03
 
-- [ ] T049 [P] Invertir el `COALESCE` de `obtenerDesglosePorCamarero` en `backend/src/services/reportingService.js` para priorizar `pedidos.camarero_id` y usar `cuentas.camarero_id` solo como respaldo; actualizar `backend/tests/contract/reports_breakdowns.test.js` per FR-014.
-- [ ] T050 [P] Asegurar que una cuenta dividida cuenta una sola vez por `cuentas.total_centimos` en `backend/src/services/reportingService.js` y no suma partes; cubrir en `backend/tests/integration/reports-cuenta-dividida.test.js` per FR-002.
-- [ ] T051 [P] Usar `lineas_pedido.nombre_plato` y `partida_codigo` en `obtenerDesglosePorPlato` de `backend/src/services/reportingService.js`; añadir prueba con plato renombrado en `backend/tests/integration/reports-historico.test.js` per FR-004.
-- [ ] T052 [P] Excluir pedidos `cancelada` y cuentas no cerradas de la agregación en `backend/src/services/reportingService.js`; cubrir en `backend/tests/integration/reports-cancelados.test.js` per FR-008.
+- [ ] T049 [P] Invertir el `COALESCE` de `obtenerDesglosePorCamarero` en `backend/src/services/reportingService.js` para priorizar `pedidos.camarero_id` y usar `cuentas.camarero_id` solo como respaldo; depende de 001 T051; actualizar `backend/tests/contract/reports_breakdowns.test.js` per FR-014.
+- [ ] T050 Asegurar que una cuenta dividida cuenta una sola vez por `cuentas.total_centimos` en `backend/src/services/reportingService.js` y no suma partes; depende de 006 T037; cubrir en `backend/tests/integration/reports-cuenta-dividida.test.js` per FR-002.
+- [ ] T051 Usar `lineas_pedido.nombre_plato` y `partida_codigo` en `obtenerDesglosePorPlato` de `backend/src/services/reportingService.js`; depende de 001 T050; añadir prueba con plato renombrado en `backend/tests/integration/reports-historico.test.js` per FR-004.
+- [ ] T052 Excluir pedidos `cancelada` y cuentas no cerradas de la agregación en `backend/src/services/reportingService.js`; depende de 002 T041; cubrir en `backend/tests/integration/reports-cancelados.test.js` per FR-008.
 - [ ] T053 [P] Ajustar `formatearPorcentaje` en `frontend/src/utils/format.js` y `IndicadorTendencia.jsx` para dos decimales, coma y signo negativo solo en bajadas; cubrir en `frontend/tests/utils/format.test.js` y `frontend/tests/components/dashboard_comparison.test.jsx` per FR-006/SC-007.
-- [ ] T054 [US2] Actualizar `specs/007-dashboard-estadisticas/contracts/reports-api.md`, `contracts/dashboard-ui.md`, `quickstart.md` y `verification.md` con atribución, cuenta dividida, histórico y formato de porcentaje.
-- [ ] T055 [US2] Añadir una prueba de contrato que cubra la atribución al camarero que abrió el pedido y el respaldo al que cerró en `backend/tests/contract/reports_daily.test.js`.
-- [ ] T056 [US2] Añadir una prueba de integración de cuenta dividida y de histórico de nombre/partida en `backend/tests/integration/reports-cuenta-dividida.test.js` y `backend/tests/integration/reports-historico.test.js`.
+- [ ] T054 [US2] Actualizar `specs/007-dashboard-estadisticas/contracts/reports-api.md`, `contracts/dashboard-ui.md`, `quickstart.md` y `verification.md` con atribución, cuenta dividida, histórico y formato de porcentaje per FR-014/FR-002/FR-004/FR-006.
+- [ ] T055 [US2] Añadir una prueba de contrato que cubra la atribución al camarero que abrió el pedido y el respaldo al que cerró en `backend/tests/contract/reports_daily.test.js` per FR-014.
+- [ ] T056 [US2] Añadir una prueba de integración de cuenta dividida y de histórico de nombre/partida en `backend/tests/integration/reports-cuenta-dividida.test.js` y `backend/tests/integration/reports-historico.test.js` per FR-002/FR-004.
+
+---
+
+## Notes
+
+- **Parada por tarea (constitución)**: al implementar con `/speckit.implement`, el agente MUST detenerse tras cada tarea, resumir lo hecho y esperar la revisión y el commit del usuario antes de continuar.
+- **Fuente de verdad**: cancelación en 002, disponibilidad en 008, instantánea histórica en 001; estas tareas solo consumen esas reglas.

@@ -251,6 +251,8 @@ Task: "Build loading and error components in frontend/src/components/EstadoCarga
 
 ## Notes
 
+- **Fuente de verdad**: cancelación en 002, disponibilidad en 008, instantánea histórica en 001; las tareas de convergencia solo consumen esas reglas.
+
 - [P] = ficheros distintos, sin dependencias
 - Cada historia es completable y probable por separado
 - La constitución exige pruebas automatizadas por funcionalidad, escritas junto al desarrollo
@@ -284,6 +286,6 @@ Task: "Build loading and error components in frontend/src/components/EstadoCarga
 
 - [ ] T065 [P] Excluir los pedidos `cancelada` de la consulta de pendientes en `backend/src/services/verPedidos.js` y de las consultas de `backend/src/db/pedidos.js`; cubrir con `backend/tests/integration/lista-en-vivo.test.js` per FR-019.
 - [ ] T066 [P] Emitir `pedido.cancelado` al cancelar un pedido completo desde `backend/src/realtime/emit.js` y la ruta de cancelación; actualizar `backend/tests/contract/eventos-cocina.test.js` y `specs/003-ver_pedidos/contracts/events.md` per FR-019.
-- [ ] T067 [P] Usar `lineas_pedido.nombre_plato` y `partida_codigo` en `backend/src/services/verPedidos.js` y en `frontend/src/components/PedidoCard.jsx`; añadir prueba con plato renombrado en `backend/tests/integration/lista-historico.test.js`.
-- [ ] T068 Asegurar que el aviso «Modificado» solo aparece tras `enviar-cambios` de 002; ajustar `backend/src/services/verPedidos.js` y `frontend/src/components/PedidoCard.jsx`, con prueba en `backend/tests/integration/pedido-modificado.test.js`.
-- [ ] T069 Actualizar `specs/003-ver_pedidos/quickstart.md` y `specs/003-ver_pedidos/verification.md` con los escenarios de pedido cancelado y de nombre/partida históricos.
+- [ ] T067 Usar `lineas_pedido.nombre_plato` y `partida_codigo` en `backend/src/services/verPedidos.js` y en `frontend/src/components/PedidoCard.jsx`; depende de 001 T050; añadir prueba con plato renombrado en `backend/tests/integration/lista-historico.test.js` per FR-007/FR-016.
+- [ ] T068 Asegurar que el aviso «Modificado» solo aparece tras `enviar-cambios` de 002; ajustar `backend/src/services/verPedidos.js` y `frontend/src/components/PedidoCard.jsx`, con prueba en `backend/tests/integration/pedido-modificado.test.js` per FR-018.
+- [ ] T069 Actualizar `specs/003-ver_pedidos/quickstart.md` y `specs/003-ver_pedidos/verification.md` con los escenarios de pedido cancelado y de nombre/partida históricos per FR-019/FR-018.

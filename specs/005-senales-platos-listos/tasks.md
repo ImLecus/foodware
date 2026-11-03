@@ -168,12 +168,12 @@
 
 ## Phase 7: Convergence — Clarificaciones 2026-11-03
 
-- [ ] T064 [P] Retirar el aviso activo y la mesa de la vista cuando 002 cancela el pedido completo en `backend/src/services/avisos.js`, `backend/src/services/salaMesas.js` y `backend/src/realtime/emit.js`; cubrir en `backend/tests/integration/avisos.test.js` per FR-010.
+- [ ] T064 Retirar el aviso activo y la mesa de la vista cuando 002 cancela el pedido completo en `backend/src/services/avisos.js`, `backend/src/services/salaMesas.js` y `backend/src/realtime/emit.js`; cubrir en `backend/tests/integration/avisos.test.js` per FR-010.
 - [ ] T065 [US1] Recalcular la completitud cuando una línea lista cambia de cantidad en `backend/src/services/salaMesas.js` y `backend/src/services/avisos.js`: bajar/mantener sigue completa; subir retira el aviso; cubrir en `backend/tests/unit/avisos.test.js` per FR-013.
-- [ ] T066 [P] Mantener visible un plato no disponible de un pedido enviado en `backend/src/services/salaMesas.js`; añadir prueba en `backend/tests/integration/sala.test.js` per Q4.
-- [ ] T067 [P] Usar la instantánea `nombre_plato`/`partida_codigo` en `backend/src/services/salaMesas.js` y en `frontend/src/components/MesaCard.jsx`/`PlatoEstado.jsx`; cubrir con un plato renombrado en `backend/tests/integration/sala-historico.test.js`.
-- [ ] T068 [P] Actualizar `specs/005-senales-platos-listos/contracts/api.md` con la cancelación, cantidad y disponibilidad, y `specs/005-senales-platos-listos/quickstart.md` con los escenarios J, K y L.
-- [ ] T069 Actualizar `README.md`/verificación de la historia 005 con los nuevos criterios y ejecutar la suite completa.
+- [ ] T066 Mantener visible un plato no disponible de un pedido enviado en `backend/src/services/salaMesas.js`; añadir prueba en `backend/tests/integration/sala.test.js` per FR-001/Q4.
+- [ ] T067 Usar la instantánea `nombre_plato`/`partida_codigo` en `backend/src/services/salaMesas.js` y en `frontend/src/components/MesaCard.jsx`/`PlatoEstado.jsx`; depende de 001 T050; cubrir con un plato renombrado en `backend/tests/integration/sala-historico.test.js` per FR-001.
+- [ ] T068 [P] Actualizar `specs/005-senales-platos-listos/contracts/api.md` con la cancelación, cantidad y disponibilidad, y `specs/005-senales-platos-listos/quickstart.md` con los escenarios J, K y L per FR-010/FR-013.
+- [ ] T069 Actualizar `README.md`/verificación de la historia 005 con los nuevos criterios y ejecutar la suite completa per FR-010/FR-013.
 
 ---
 
@@ -256,6 +256,8 @@ Task: "Reutilizar el estado sin conexión en frontend/src/components/AvisoSinCon
 ---
 
 ## Notes
+
+- **Fuente de verdad**: cancelación en 002, disponibilidad en 008, instantánea histórica en 001; las tareas de convergencia solo consumen esas reglas.
 
 - [P] = ficheros distintos, sin dependencias
 - [Story] mapea cada tarea a su historia para trazabilidad

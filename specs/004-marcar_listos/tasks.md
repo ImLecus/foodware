@@ -237,6 +237,8 @@ Task: "Build kitchen page and components in frontend/src/pages/CocinaPage.jsx, f
 
 ## Notes
 
+- **Fuente de verdad**: cancelación en 002, disponibilidad en 008, instantánea histórica en 001; las tareas de convergencia solo consumen esas reglas.
+
 - [P] = ficheros distintos, sin dependencias
 - Cada historia es completable y probable por separado
 - La constitución exige pruebas automatizadas por funcionalidad, escritas junto al desarrollo
@@ -279,8 +281,8 @@ Task: "Build kitchen page and components in frontend/src/pages/CocinaPage.jsx, f
 ## Phase 10: Convergence — Clarificaciones 2026-11-03
 
 - [ ] T061 [P] Rechazar el marcado/desmarcado de líneas de un pedido `cancelada` con `409 pedido_cancelado` en `backend/src/services/estadoLinea.js` y la ruta de estado; cubrir en `backend/tests/integration/estado-linea.test.js` per FR-017.
-- [ ] T062 [P] Rechazar el marcado/desmarcado mientras 002 mantiene el pedido bloqueado con `423 pedido_bloqueado` en `backend/src/services/estadoLinea.js` y la ruta de estado; cubrir en `backend/tests/integration/estado-linea-bloqueo.test.js` per FR-019.
+- [ ] T062 Rechazar el marcado/desmarcado mientras 002 mantiene el pedido bloqueado con `423 pedido_bloqueado` en `backend/src/services/estadoLinea.js` y la ruta de estado; cubrir en `backend/tests/integration/estado-linea-bloqueo.test.js` per FR-019.
 - [ ] T063 [US1] Integrar la regla de cantidad de línea lista de 002 con la completitud de cocina: bajar/mantener conserva `listo`; subir vuelve a `pendiente` y limpia `listo_en`; cubrir en `backend/tests/integration/estado-linea-cantidad.test.js` per FR-018.
 - [ ] T064 [P] Añadir una prueba de que un cambio de disponibilidad en 008 no retira ni bloquea el marcado de una línea ya enviada en `backend/tests/integration/estado-linea-disponibilidad.test.js` per FR-019/Q4.
-- [ ] T065 [P] Mostrar `nombrePlato` y `partida` históricos en `frontend/src/components/PedidoCard.jsx` y `frontend/src/components/LineaPlato.jsx`; cubrir en `frontend/tests/components/pedido.test.jsx`.
-- [ ] T066 Actualizar `specs/004-marcar_listos/contracts/openapi.yaml`, `specs/004-marcar_listos/quickstart.md` y `specs/004-marcar_listos/verification.md` con los nuevos errores y escenarios.
+- [ ] T065 Mostrar `nombrePlato` y `partida` históricos en `frontend/src/components/PedidoCard.jsx` y `frontend/src/components/LineaPlato.jsx`; depende de 001 T050; cubrir en `frontend/tests/components/pedido.test.jsx` per FR-001/FR-007.
+- [ ] T066 Actualizar `specs/004-marcar_listos/contracts/openapi.yaml`, `specs/004-marcar_listos/quickstart.md` y `specs/004-marcar_listos/verification.md` con los nuevos errores y escenarios per FR-017/FR-018/FR-019.

@@ -136,12 +136,12 @@ Aplicación web: `backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/te
 ## Phase 7: Convergence — Clarificaciones 2026-11-03
 
 - [ ] T034 [P] Excluir los pedidos `cancelada` del cálculo de consumos y del total en `backend/src/services/cuentasService.js` y en las consultas de `backend/src/db/pedidos.js`; cubrir en `backend/tests/integration/cuentas-canceladas.test.js` per FR-002/FR-011.
-- [ ] T035 [US1] Bloquear la edición/cancelación del pedido si la cuenta tiene alguna parte `pagada` y devolver `409 partes_pagadas`; coordinar `backend/src/services/cuentasService.js` con el servicio de edición de 002; cubrir en `backend/tests/integration/partes-pagadas.test.js`.
-- [ ] T036 [P] Sustituir el nombre del comensal por la etiqueta «Parte N» generada desde `orden` en `backend/src/services/divisionService.js` y `backend/src/services/cuentasService.js`; actualizar fixtures y `backend/tests/integration/division-cuenta.test.js` per FR-008.
-- [ ] T037 [P] Añadir una prueba de integración con 007 que verifique que una cuenta dividida cuenta una sola vez por `total_centimos` y se atribuye al camarero que abrió el pedido en `backend/tests/integration/dashboard-cuenta-dividida.test.js` per FR-002/FR-014.
-- [ ] T038 [P] Actualizar `specs/006-cierre-cuenta-division/contracts/api.md` (ejemplos «Parte 1/2/3», dependencia con 002 y dashboard) y `specs/006-cierre-cuenta-division/quickstart.md` con los escenarios O, P, Q y R.
-- [ ] T039 [US2] Quitar el campo de nombre en `frontend/src/components/DivisionCuenta.jsx` y `frontend/src/components/ParteCuenta.jsx`; mostrar «Parte 1», «Parte 2»…; cubrir en `frontend/tests/components/division.test.jsx`.
-- [ ] T040 Actualizar `specs/006-cierre-cuenta-division/verification.md` y ejecutar la suite completa con la regresión de cuentas canceladas y partes pagadas en `backend/tests/` y `frontend/tests/`.
+- [ ] T035 [US1] Bloquear la edición/cancelación del pedido si la cuenta tiene alguna parte `pagada` y devolver `409 partes_pagadas`; coordinar `backend/src/services/cuentasService.js` con el servicio de edición de 002; depende de T034; cubrir en `backend/tests/integration/partes-pagadas.test.js` per FR-017.
+- [ ] T036 Sustituir el nombre del comensal por el valor de etiqueta «Parte N» generado desde `orden`, manteniendo `comensal` solo como nombre del campo API, en `backend/src/services/divisionService.js` y `backend/src/services/cuentasService.js`; depende de 001 T050 y T034; actualizar fixtures y `backend/tests/integration/division-cuenta.test.js` per FR-008.
+- [ ] T037 [P] Añadir una prueba de integración con 007 que verifique que una cuenta dividida cuenta una sola vez por `total_centimos` y se atribuye al camarero que abrió el pedido en `backend/tests/integration/dashboard-cuenta-dividida.test.js`; depende de 007 T049-T050 per FR-002/FR-014.
+- [ ] T038 [P] Actualizar `specs/006-cierre-cuenta-division/contracts/api.md` (ejemplos «Parte 1/2/3», dependencia con 002 y dashboard) y `specs/006-cierre-cuenta-division/quickstart.md` con los escenarios O, P, Q y R per FR-008/FR-017.
+- [ ] T039 [US2] Quitar el campo de nombre en `frontend/src/components/DivisionCuenta.jsx` y `frontend/src/components/ParteCuenta.jsx`; mostrar «Parte 1», «Parte 2»…; cubrir en `frontend/tests/components/division.test.jsx` per FR-008.
+- [ ] T040 Actualizar `specs/006-cierre-cuenta-division/verification.md` y ejecutar la suite completa con la regresión de cuentas canceladas y partes pagadas en `backend/tests/` y `frontend/tests/` per FR-002/FR-011/FR-017.
 
 ---
 
@@ -196,7 +196,10 @@ Task: "Componente de aviso de pendientes en frontend/tests/components/ResumenCue
 
 ## Notes
 
+- **Fuente de verdad**: cancelación en 002, disponibilidad en 008, instantánea histórica en 001; las tareas de convergencia solo consumen esas reglas.
+
 - `mesas.estado` pasa a `libre` al cerrar; `cerrada` no se produce en el flujo nuevo.
 - La cuenta se asocia a `pedido_id`; una cuenta cerrada anterior no bloquea una comanda nueva.
 - Los errores de negocio (`409`, `422`, `403`) no deben mostrarse como «sin conexión».
 - No se cancela ni se marca automáticamente ningún plato: si hay pendientes, se bloquea el cierre.
+- **Parada por tarea (constitución)**: al implementar con `/speckit.implement`, el agente MUST detenerse tras cada tarea, resumir lo hecho y esperar la revisión y el commit del usuario antes de continuar.
