@@ -289,4 +289,4 @@ Task: "Build kitchen page and components in frontend/src/pages/CocinaPage.jsx, f
 
 ## Phase 11: Convergence
 
-- [ ] T067 Añadir una prueba de componente en `frontend/tests/components/pedido.test.jsx` que compruebe que `PedidoCard`/`LineaPlato` muestran el nombre y la partida históricos per T065 (partial)
+- [X] T067 Añadir una prueba de componente en `frontend/tests/components/pedido.test.jsx` que compruebe que `PedidoCard`/`LineaPlato` muestran el nombre y la partida históricos per T065 (partial)

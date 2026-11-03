@@ -25,6 +25,20 @@ describe('LineaPlato: distinción accesible', () => {
     expect(screen.getByLabelText(/listo/i)).toBeInTheDocument();
   });
 
+  it('muestra el nombre y la partida históricos de la línea', () => {
+    renderizar({
+      id: 'linea-historica',
+      nombrePlato: 'Croquetas de jamón',
+      partida: 'entrantes',
+      cantidad: 2,
+      estado: 'pendiente',
+      listoEn: null,
+    });
+
+    expect(screen.getByText(/Croquetas de jamón/)).toBeInTheDocument();
+    expect(screen.getByText('Entrantes')).toBeInTheDocument();
+  });
+
   it('marca un plato pendiente con su etiqueta de texto', () => {
     renderizar({
       id: 'linea-2',
