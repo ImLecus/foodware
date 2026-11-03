@@ -258,4 +258,4 @@ Task: "Prueba de componente en frontend/tests/components/FormularioPlato.test.js
 
 ## Fase 8: Convergence
 
-- [ ] T070 Añadir una prueba de integración con 001/002/007 que verifique que un plato renombrado o cambiado de partida conserva su nombre/partida en el pedido y en el dashboard, en `backend/tests/integration/carta-historico.test.js` per FR-003/T068 (partial)
+- [X] T070 Añadir una prueba de integración con 001/002/007 que verifique que un plato renombrado o cambiado de partida conserva su nombre/partida en el pedido y en el dashboard, en `backend/tests/integration/carta-historico.test.js` per FR-003/T068 (partial)
