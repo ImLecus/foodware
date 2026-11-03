@@ -13,6 +13,7 @@ vi.mock('../src/services/api.js', () => ({
   anadirLinea: vi.fn(),
   modificarLinea: vi.fn(),
   retirarLinea: vi.fn(),
+  cancelarPedido: vi.fn(),
 }));
 
 import {
@@ -24,6 +25,7 @@ import {
   modificarLinea,
   obtenerPedido,
   retirarLinea,
+  cancelarPedido,
 } from '../src/services/api.js';
 
 const lineas = [
@@ -101,6 +103,7 @@ describe('Editor de pedido', () => {
     anadirLinea.mockResolvedValue(null);
     modificarLinea.mockResolvedValue(null);
     retirarLinea.mockResolvedValue(null);
+    cancelarPedido.mockResolvedValue(null);
   });
 
   it('muestra las líneas del pedido enviado listas para editar', async () => {
@@ -147,6 +150,17 @@ describe('Editor de pedido', () => {
     await waitFor(() => {
       expect(retirarLinea).toHaveBeenCalledWith('pedido-1', 'linea-1');
     });
+  });
+
+  it('cancela el pedido completo tras confirmar', async () => {
+    const { onCerrar } = renderizar();
+    await screen.findByText('Croquetas de jamón');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar pedido' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Sí, cancelar pedido' }));
+
+    await waitFor(() => expect(cancelarPedido).toHaveBeenCalledWith('pedido-1'));
+    expect(onCerrar).toHaveBeenCalled();
   });
 
   it('muestra las marcas de modificada y cambios pendientes', async () => {
