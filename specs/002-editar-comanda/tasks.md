@@ -209,3 +209,8 @@ revise y haga el commit (Conventional Commits) antes de continuar con la siguien
 |------------|---------------|
 | FR-001–FR-016 (edición, cancelación y trazabilidad) | US1: T9–T34; convergencia: T40–T48 |
 | SC-001–SC-009 | US1: T9–T34; convergencia: T40–T48 |
+
+## Phase 6: Convergence
+
+- [ ] T049 Alinear el estado persistido de un pedido cancelado con el modelo (`cancelada`) o documentar explícitamente la equivalencia `estado=cerrada` + `cancelada=1` en `backend/migrations/` y `backend/src/db/pedidos.js` per `data-model.md` (partial)
+- [ ] T050 Añadir una prueba RTL del flujo «Cancelar pedido» en `frontend/tests/components/edicion.test.jsx`, cubriendo confirmación, llamada a la API y cierre del editor per T042 (partial)

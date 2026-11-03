@@ -11,9 +11,9 @@ import { componerTicket, estadoTicket } from './ticketService.js';
 const CONSUMOS_DE_PEDIDO = `
   SELECT l.id AS linea_id,
          l.pedido_id,
-         p.nombre,
+         COALESCE(l.nombre_plato, p.nombre) AS nombre,
          l.cantidad,
-         p.partida_codigo AS partida,
+         COALESCE(l.partida_codigo, p.partida_codigo) AS partida,
          l.precio_centimos,
          l.estado,
          l.listo_en,

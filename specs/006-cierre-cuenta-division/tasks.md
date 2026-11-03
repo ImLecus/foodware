@@ -213,3 +213,10 @@ Task: "Componente de aviso de pendientes en frontend/tests/components/ResumenCue
 | FR-010–FR-012 / FR-016 | US3: T22–T28 |
 | FR-002 / FR-008 / FR-017 | Convergencia: T34–T40 |
 | SC-001–SC-009 | US1–US3: T9–T28; convergencia: T34–T40 |
+
+## Phase 8: Convergence
+
+- [ ] T041 Usar `COALESCE(l.nombre_plato, p.nombre)` y `COALESCE(l.partida_codigo, p.partida_codigo)` en `CONSUMOS_DE_PEDIDO` de `backend/src/services/cuentasService.js`, y cubrirlo en `backend/tests/integration/consumos-historico.test.js` per FR-002/FR-008 (partial)
+- [ ] T042 Generar la etiqueta `Parte ${orden}` en `confirmarDivision` de `backend/src/services/cuentasService.js` en lugar de guardar el valor libre del cliente, y actualizar `backend/tests/integration/division-cuenta.test.js` per FR-008 (partial)
+- [ ] T043 Añadir una prueba de integración con 007 en `backend/tests/integration/dashboard-cuenta-dividida.test.js` que verifique el conteo único de la cuenta dividida per T037 (partial)
+- [ ] T044 Añadir una prueba de componente en `frontend/tests/components/DivisionCuenta.test.jsx` que compruebe las etiquetas «Parte 1», «Parte 2»… per T039 (partial)

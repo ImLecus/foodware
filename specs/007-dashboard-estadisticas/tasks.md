@@ -282,3 +282,8 @@ Task: "Página de total y error en frontend/tests/components/dashboard_total.tes
 
 - **Parada por tarea (constitución)**: al implementar con `/speckit.implement`, el agente MUST detenerse tras cada tarea, resumir lo hecho y esperar la revisión y el commit del usuario antes de continuar.
 - **Fuente de verdad**: cancelación en 002, disponibilidad en 008, instantánea histórica en 001; estas tareas solo consumen esas reglas.
+
+## Phase 13: Convergence
+
+- [ ] T057 Añadir una prueba de contrato en `backend/tests/contract/reports_daily.test.js` que cubra la atribución al camarero que abrió el pedido y el respaldo al que cerró per FR-014/T055 (partial)
+- [ ] T058 Añadir una prueba de integración de cuenta dividida contada una sola vez y de nombre/partida históricos en `backend/tests/integration/reports-cuenta-dividida.test.js` y `backend/tests/integration/reports-historico.test.js` per FR-002/FR-004/T056 (partial)

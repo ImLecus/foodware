@@ -289,3 +289,8 @@ Task: "Build loading and error components in frontend/src/components/EstadoCarga
 - Evitar tareas vagas o que toquen el mismo fichero en paralelo sin dependencia
 
 ---
+
+## Phase 10: Convergence
+
+- [ ] T070 Añadir una prueba de contrato/integración de `pedido.cancelado` en `backend/tests/contract/eventos-cocina.test.js` y de la desaparición del pedido en `backend/tests/integration/lista-en-vivo.test.js` per FR-019/T066 (partial)
+- [ ] T071 Añadir una prueba de la instantánea histórica de nombre/partida en la vista de cocina, con un plato renombrado, en `backend/tests/integration/lista-historico.test.js` per T067 (partial)

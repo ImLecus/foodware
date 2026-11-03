@@ -286,3 +286,7 @@ Task: "Build kitchen page and components in frontend/src/pages/CocinaPage.jsx, f
 - Evitar tareas vagas o que toquen el mismo fichero en paralelo sin dependencia
 
 ---
+
+## Phase 11: Convergence
+
+- [ ] T067 Añadir una prueba de componente en `frontend/tests/components/pedido.test.jsx` que compruebe que `PedidoCard`/`LineaPlato` muestran el nombre y la partida históricos per T065 (partial)
