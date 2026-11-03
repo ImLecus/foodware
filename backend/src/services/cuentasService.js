@@ -30,6 +30,32 @@ export function calcularTotal(consumos) {
   return consumos.reduce((total, consumo) => total + consumo.cantidad * consumo.precio_centimos, 0);
 }
 
+/**
+ * Impide editar o cancelar un pedido si su cuenta ya tiene alguna parte pagada.
+ * El camarero debe deshacer los pagos antes de tocar la comanda (clarificación
+ * 2026-11-03).
+ */
+export function exigirSinPartesPagadas(db, mesaId) {
+  const pagada = db
+    .prepare(
+      `SELECT 1
+         FROM cuentas_partes cp
+         JOIN cuentas c ON c.id = cp.cuenta_id
+        WHERE c.mesa_id = ?
+          AND cp.estado = 'pagada'
+        LIMIT 1`,
+    )
+    .get(mesaId);
+
+  if (pagada) {
+    throw new ErrorHttp(
+      409,
+      'La cuenta tiene partes pagadas; deshaz los pagos antes de modificar el pedido',
+      'partes_pagadas',
+    );
+  }
+}
+
 export function listarConsumos(db, pedidoId) {
   return db
     .prepare(CONSUMOS_DE_PEDIDO)
