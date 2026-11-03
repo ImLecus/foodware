@@ -23,6 +23,14 @@
 
 - Q: Cuando un camarero bloquea un pedido para editarlo, ¿qué acciones deben liberar ese bloqueo, incluido el caso de que abandone la edición sin guardar? (FR-015) → A: Se libera al enviar los cambios, al cancelar o salir de la edición y automáticamente tras un periodo de inactividad.
 
+### Session 2026-11-03
+
+- Q: Cuando un cliente cancela un pedido que ya se envió a cocina, ¿qué debe permitir el sistema? → A: Cancelar el pedido completo desde sala, avisar a cocina, retirarlo de la vista y liberar la mesa; no se cobra.
+- Q: Si una línea ya marcada como lista por cocina cambia de cantidad en una edición, ¿qué pasa con su estado de preparación? → A: Si la cantidad baja o se mantiene, sigue lista; si sube, vuelve a pendiente y se borra el momento de listo (regla detallada en la historia 004).
+- Q: Mientras un camarero tiene un pedido bloqueado para editarlo, ¿puede cocina seguir marcando o desmarcando sus platos como listos? → A: No: el bloqueo se extiende a cocina; al enviar o cancelar los cambios, se libera y cocina trabaja sobre el estado resultante.
+- Q: Si un plato de un pedido ya enviado deja de estar disponible en la carta, ¿se retira automáticamente? → A: No; la baja solo afecta a pedidos nuevos. El camarero puede retirarlo o cancelar el pedido.
+- Q: Cuando se edita un pedido ya enviado, ¿qué debe guardar el sistema: solo la marca de «modificado» o un registro detallado de cada cambio? → A: Un registro por modificación con el tipo de cambio, el momento y el usuario; cocina solo muestra el aviso «Modificado».
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Editar un pedido ya enviado (Priority: P1)
@@ -33,7 +41,8 @@ el pedido que ya había sido enviado y lo modifica sobre la marcha, sin tener qu
 pedido nuevo que duplique el pedido. Los cambios se aplican sobre el mismo pedido y quedan
 asociados a esa mesa. Como el pedido ya había llegado a cocina, el cambio queda marcado como una
 modificación del pedido original, de forma que se distingue de un pedido nuevo y no se confunde
-con el anterior.
+con el anterior. Si el cliente cancela el pedido completo, el camarero puede anularlo y avisar a
+cocina.
 
 **Why this priority**: los cambios de última hora son constantes en sala; sin poder corregir una
 pedido ya enviado, el camarero tendría que duplicar pedidos y cocina recibiría información
@@ -63,6 +72,9 @@ quedan sobre el mismo pedido, marcado como modificado y vinculado a la misma mes
 8. **Dado** un pedido bloqueado por un camarero que abandona la edición sin enviar cambios,
    **cuando** ese camarero cancela o sale de la edición, o transcurre el periodo de inactividad,
    **entonces** el bloqueo se libera y otro camarero puede abrir el pedido.
+9. **Dado** un pedido ya enviado con platos, **cuando** el camarero cancela el pedido completo,
+   **entonces** el pedido deja de estar vigente, desaparece de la vista de cocina y de sala, la mesa
+   queda libre si no tiene otra comanda y no se genera ningún cobro.
 
 ---
 
@@ -71,8 +83,8 @@ quedan sobre el mismo pedido, marcado como modificado y vinculado a la misma mes
 - ¿Qué ocurre si el camarero abre para editar un pedido enviado y no realiza ningún cambio? El pedido
   debe conservar su estado sin quedar marcado como modificado innecesariamente.
 - ¿Qué ocurre si el camarero retira todos los platos de un pedido ya enviado? El sistema debe
-  impedir dejar el pedido sin ningún plato o exigir una acción explícita (por ejemplo, cancelar
-  el pedido) en lugar de guardarla vacía.
+  impedir dejar el pedido sin ningún plato o exigir una acción explícita de cancelación del pedido
+  completo (FR-016) en lugar de guardarlo vacío.
 - ¿Qué ocurre si el camarero modifica el pedido mientras cocina ya está preparando el pedido?
   El pedido debe seguir reflejando su estado actualizado y la modificación debe quedar marcada
   como tal.
@@ -81,11 +93,16 @@ quedan sobre el mismo pedido, marcado como modificado y vinculado a la misma mes
   hasta que se recupere la conexión.
 - ¿Qué ocurre si el camarero intenta editar un pedido que ya no está enviado (por ejemplo, ya
   cerrada)? El sistema debe impedir la edición y avisar de que el pedido no admite cambios.
+- ¿Qué ocurre si el camarero intenta editar un pedido cuya cuenta ya tiene una parte pagada? La
+  edición se bloquea hasta que se deshaga el pago según la historia 006.
 - ¿Qué ocurre si un camarero intenta editar un pedido que otro camarero tiene abierta? El
   sistema debe impedir el acceso simultáneo e indicar que el pedido está siendo editado.
 - ¿Qué ocurre si un camarero abandona la edición sin enviar los cambios? El bloqueo se libera al
   cancelar o salir de la edición, o al expirar el periodo de inactividad, sin marcar el pedido
   como modificado.
+- ¿Qué ocurre si el cliente cancela todo el pedido ya enviado? El camarero puede cancelarlo
+  completo: deja de estar vigente, desaparece de cocina y de sala, la mesa queda libre si no tiene
+  otra comanda y no se genera ningún cobro.
 
 ## Requirements _(mandatory)_
 
@@ -95,11 +112,16 @@ quedan sobre el mismo pedido, marcado como modificado y vinculado a la misma mes
   pedido ya enviado de cualquier mesa, sin una acción previa de reapertura.
 - **FR-002**: El sistema MUST permitir añadir platos nuevos a un pedido ya enviado.
 - **FR-003**: El sistema MUST permitir retirar platos de un pedido ya enviado, quedando el plato
-  retirado fuera del pedido vigente y dejando de aparecer en el pedido.
+  retirado fuera del pedido vigente y dejando de aparecer en el pedido. La retirada es una acción
+  manual del camarero; un cambio de disponibilidad en la carta MUST NOT retirar automáticamente
+  platos de pedidos ya enviados (aclarado en la sesión de clarificación).
 - **FR-004**: El sistema MUST permitir modificar la cantidad de un plato de un pedido ya
-  enviado.
+  enviado. Si la línea ya estaba marcada como lista, MUST aplicarse la regla de la historia 004:
+  sigue lista si la cantidad baja o se mantiene, y vuelve a pendiente, borrando el momento de
+  listo, si la cantidad sube (aclarado en la sesión de clarificación).
 - **FR-005**: El sistema MUST permitir corregir las indicaciones de un plato de un pedido ya
-  enviado.
+  enviado. Las indicaciones se crean al añadir el plato al pedido en la historia 001; esta historia
+  solo las corrige (aclarado en la sesión de clarificación de la historia 001).
 - **FR-006**: El sistema MUST aplicar los cambios sobre el pedido original, sin crear un
   pedido nuevo ni duplicar el pedido.
 - **FR-007**: El sistema MUST mantener el pedido editado vinculado a la misma mesa que tenía.
@@ -112,25 +134,36 @@ quedan sobre el mismo pedido, marcado como modificado y vinculado a la misma mes
 - **FR-011**: El sistema MUST impedir dejar un pedido ya enviado sin ningún plato como
   resultado de una edición.
 - **FR-012**: El sistema MUST impedir editar un pedido que no esté en estado `enviada` (por ejemplo,
-  `cerrada`); la edición de un pedido en curso se realiza por el flujo de la historia 001.
-- **FR-013**: El sistema MUST registrar que el pedido ha sido modificado, de manera que quede
-  trazabilidad del cambio frente al pedido original.
+  `cerrada` o `cancelada`); la edición de un pedido en curso se realiza por el flujo de la historia
+  001.
+- **FR-013**: El sistema MUST registrar cada modificación del pedido con el tipo de cambio, el
+  momento y el usuario que la realizó, de manera que quede trazabilidad frente al pedido original.
+  El detalle MUST NOT ser necesario en la vista de cocina, que solo muestra el aviso «Modificado»
+  (aclarado en la sesión de clarificación).
 - **FR-014**: El sistema MUST requerir que el camarero ejecute explícitamente una acción de enviar
   los cambios para que cocina reciba la modificación; la edición no se comunica sola al guardar.
 - **FR-015**: El sistema MUST bloquear el pedido mientras un camarero la está editando, de modo
   que otro camarero no pueda editarlo simultáneamente hasta que el primero termine. El bloqueo
   MUST liberarse al enviar los cambios, al cancelar o salir de la edición y automáticamente tras
-  un periodo de inactividad (valor concreto a fijar en planificación).
+  un periodo de inactividad (valor concreto a fijar en planificación). Mientras el bloqueo esté
+  activo, cocina MUST NOT poder marcar ni desmarcar como listos los platos de ese pedido; al
+  liberarse, cocina MUST trabajar sobre el estado resultante de los cambios (aclarado en la
+  sesión de clarificación).
+- **FR-016**: El camarero MUST poder cancelar un pedido completo ya enviado a cocina. Al
+  cancelarlo, el pedido MUST dejar de estar vigente, MUST retirarse de la vista de cocina y de
+  sala, la mesa MUST quedar libre si no tiene otra comanda y MUST NOT generar consumo ni cobro.
+  La cancelación MUST comunicarse a cocina y MUST distinguirse de una edición (aclarado en la
+  sesión de clarificación).
 
 ### Key Entities _(include if feature involves data)_
 
 - **Pedido**: pedido tomado para una mesa. Atributos relevantes: mesa asociada, estado (en curso,
-  enviada o cerrada), platos que lo componen y marca de modificado.
+  enviada, cerrada o cancelada), platos que lo componen y marca de modificado.
 - **Línea de pedido**: cada plato dentro de un pedido. Atributos relevantes: plato, cantidad,
   indicaciones y el precio del plato en el momento de pedirlo.
 - **Modificación de pedido**: cambio realizado sobre un pedido previamente enviado. Atributos
-  relevantes: pedido afectado, tipo de cambio (añadir, retirar, ajustar cantidad o corregir) y
-  momento del cambio.
+  relevantes: pedido afectado, tipo de cambio (añadir, retirar, ajustar cantidad, corregir o
+  cancelar el pedido), momento del cambio y usuario que lo realizó.
 - **Mesa**: puesto del restaurante al que queda vinculado al pedido. Atributos relevantes:
   identificación de la mesa y estado.
 
@@ -150,6 +183,10 @@ quedan sobre el mismo pedido, marcado como modificado y vinculado a la misma mes
   ejecutado la acción de enviar cambios (0 envíos automáticos al guardar).
 - **SC-007**: El 100% de los bloqueos se libera al enviar los cambios, al cancelar o salir de la
   edición, o al expirar el periodo de inactividad; ningún pedido queda bloqueado indefinidamente.
+- **SC-008**: El 100% de los pedidos cancelados desaparece de cocina y de sala, libera la mesa si
+  no tiene otra comanda y no genera ningún cobro.
+- **SC-009**: El 100% de las modificaciones queda registrada con su tipo, momento y usuario; la
+  vista de cocina solo muestra el aviso «Modificado».
 
 > Nota: la numeración conserva el hueco de SC-004 para mantener estables los identificadores
 > usados en planes, contratos y quickstarts.
@@ -161,6 +198,8 @@ quedan sobre el mismo pedido, marcado como modificado y vinculado a la misma mes
 - La mesa a la que pertenece el pedido ya se abrió previamente; abrir mesas y tomar pedidos es
   objeto de otra historia.
 - El pedido mantiene su vínculo con la mesa aunque se modifiquen sus platos.
+- La cancelación de un pedido completo ya enviado se realiza desde sala, se comunica a cocina y
+  no genera consumo facturable; si cocina ya había preparado algún plato, no se cobra.
 - Las señales visuales o sonoras al camarero sobre el estado de los platos (historia 05) y el
   flujo de cocina (historias 03 y 04) son objeto de otras historias y no forman parte de esta
   especificación.
