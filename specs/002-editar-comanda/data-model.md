@@ -26,6 +26,9 @@ Extiende el modelo de la historia 001. Importes en céntimos enteros; SQLite.
   aplica solo a `enviada`.
 - **Migración**: la migración de esta historia añade el valor `cerrada` (006) y `cancelada` (002)
   al estado de `pedido` para poder validar FR-012 y FR-016.
+- **Equivalencia de implementación**: para no reconstruir la tabla `pedidos`, una cancelación se
+  persiste como `estado = 'cerrada'` + `cancelada = 1`; la API lo serializa como estado
+  `cancelada`. La equivalencia está documentada en `backend/migrations/010_pedidos_cancelada.sql`.
 - **Reglas**:
   - No se puede editar si `estado` no es `enviada` (FR-012).
   - No se puede editar ni cancelar si otro camarero tiene un bloqueo vigente (FR-015).

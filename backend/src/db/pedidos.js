@@ -196,6 +196,9 @@ export function anularPedido(db, pedidoId) {
  * Cancela un pedido ya enviado sin generar consumo ni cobro. Se conserva el
  * registro histórico, se marca `cancelada` y se libera la mesa si no tiene otra
  * comanda (FR-016).
+ *
+ * Equivalencia de persistencia: `estado = 'cerrada'` + `cancelada = 1`; la API
+ * lo expone como estado `cancelada` (ver migración 010).
  */
 export function cancelarPedido(db, pedidoId) {
   const pedido = db.prepare('SELECT mesa_id FROM pedidos WHERE id = ?').get(pedidoId);
