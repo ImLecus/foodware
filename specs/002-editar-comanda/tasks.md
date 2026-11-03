@@ -115,7 +115,7 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 
 ## Phase 5: Convergence — Clarificaciones 2026-11-03
 
-- [ ] T040 [P] Añadir `cancelada` al enum de `pedidos.estado` en `backend/migrations/010_pedidos_cancelada.sql` y en `backend/src/db/pedidos.js`; depende de 001 T050 (migración 009); actualizar fixtures y `backend/tests/integration/edicion.test.js` per FR-016.
+- [X] T040 [P] Añadir `cancelada` al enum de `pedidos.estado` en `backend/migrations/010_pedidos_cancelada.sql` y en `backend/src/db/pedidos.js`; depende de 001 T050 (migración 009); actualizar fixtures y `backend/tests/integration/edicion.test.js` per FR-016.
 - [ ] T041 [US1] Implementar `POST /pedidos/{pedidoId}/cancelar` en `backend/src/api/pedidos.js` y `backend/src/domain/edicion.js`: transacción que marca `cancelada`, retira el pedido de cocina/sala, libera la mesa si no tiene otra comanda y no genera cobro; depende de T040; cubrir con `backend/tests/contract/edicion.test.js` y `backend/tests/integration/edicion.test.js` per FR-016/SC-008.
 - [ ] T042 [P] [US1] Crear `frontend/src/components/CancelarPedido.jsx` e integrar la acción en `frontend/src/components/EditorPedido.jsx`; probar en `frontend/tests/components/edicion.test.jsx` per FR-016.
 - [ ] T043 [P] [US1] Extender el bloqueo de edición a cocina: comprobar `editando_por` en `backend/src/services/estadoLinea.js` y en la ruta de marcar/desmarcar; responder `423 pedido_bloqueado`; cubrir en `backend/tests/integration/edicion-bloqueo.test.js` per FR-015.
