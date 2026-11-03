@@ -10,7 +10,8 @@ construir el informe. El dashboard nunca escribe sobre cuentas, consumos, camare
 Unidad de venta de una mesa. Solo se cuentan las cuentas en estado *cerrada*.
 - `id`: identificador único.
 - `mesaId`: mesa cobrada.
-- `camareroId`: camarero que la cerró (clave del desglose por camarero).
+- `camareroId`: camarero que abrió/tomó el pedido (`pedidos.camarero_id`); si no consta, el que
+  cerró la cuenta. Es la clave del desglose por camarero (FR-014).
 - `estado`: `abierta` | `cerrada` (solo se agregan las `cerrada`).
 - `fechaCierre`: fecha y hora de cierre (define a qué día natural pertenece la venta).
 - `importeTotal`: total cobrado, con los precios fijados al pedir.
@@ -23,9 +24,10 @@ Unidad de venta de una mesa. Solo se cuentan las cuentas en estado *cerrada*.
 Cada plato cobrado dentro de una cuenta; base del desglose por plato.
 - `cuentaId`: cuenta a la que pertenece.
 - `platoId`: plato vendido (clave del desglose por plato).
+- `nombre`: nombre del plato **fijado al pedir** (instantánea), no el actual de la carta.
 - `cantidad`: unidades vendidas (entero ≥ 1).
 - `precioUnitario`: precio fijado en el momento de pedir (no el precio actual de la carta).
-- `partida`: entrantes | principales | postres.
+- `partida`: partida **fijada al pedir** (instantánea): entrantes | principales | postres.
 
 **Regla de validación/cálculo**: el importe de una línea es `cantidad × precioUnitario`; la suma de
 líneas de una cuenta coincide con su `importeTotal`.
@@ -50,7 +52,8 @@ líneas de una cuenta coincide con su `importeTotal`.
 Resultado completo que devuelve el endpoint para un día natural.
 - `fecha`: día consultado (`YYYY-MM-DD`, Europe/Madrid). Si no se indica una fecha, es el último día
   natural completado anterior a hoy; el día en curso no se incluye aunque tenga cuentas cerradas.
-- `totalVendido`: suma de `importeTotal` de las cuentas cerradas del día (≥ 0).
+- `totalVendido`: suma de `importeTotal` de las cuentas cerradas del día (≥ 0). Cada cuenta
+  dividida cuenta una sola vez por su total; los pedidos `cancelada` no generan cuenta ni consumo.
 - `numeroCuentas`: número de cuentas cerradas del día.
 - `porCamarero`: lista de `DesgloseCamarero`.
 - `porPlato`: lista de `DesglosePlato`.
@@ -83,8 +86,9 @@ carta, para que la suma de los desgloses cuadre con el total. Ambos desgloses se
   ningún día natural anterior registrado en el sistema.
 - `importeActual`, `importeAnterior`.
 - `diferenciaImporte`: `importeActual − importeAnterior`.
-- `diferenciaPorcentaje`: variación relativa; `null` si no hay día anterior o si
-  `importeAnterior = 0` (nunca se divide entre cero).
+- `diferenciaPorcentaje`: variación relativa con dos decimales y coma decimal en la presentación;
+  `null` si no hay día anterior o si `importeAnterior = 0` (nunca se divide entre cero). Las
+  subidas no llevan signo positivo; las bajadas, signo negativo (FR-006/SC-007).
 - `sinBaseComparacion`: booleano; `true` cuando existe día anterior, `importeAnterior = 0` e
   `importeActual > 0` (FR-011).
 - `tendencia`: `subida` | `bajada` | `sin_variacion`.
