@@ -10,15 +10,16 @@ export function listarPedidosConPendientes(db, partidaId) {
         p.id,
         p.mesa_id,
         p.enviado_en,
-        p.modificado_en,
+        p.cambios_enviados_en AS modificado_en,
         m.identificador AS mesa_identificador
       FROM pedidos p
       JOIN mesas m ON m.id = p.mesa_id
       JOIN lineas_pedido l ON l.pedido_id = p.id
       JOIN platos pl ON pl.id = l.plato_id
       WHERE p.estado = 'enviada'
+        AND p.cancelada = 0
         AND l.estado = 'pendiente'
-        AND pl.partida_codigo = ?
+        AND COALESCE(l.partida_codigo, pl.partida_codigo) = ?
       ORDER BY p.enviado_en ASC, p.id ASC
       `,
     )
