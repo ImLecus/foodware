@@ -193,7 +193,7 @@ recargar; con la conexión cortada, el tiempo de espera sigue avanzando.
 - [X] T066 [P] Emitir `pedido.cancelado` al cancelar un pedido completo desde `backend/src/realtime/emit.js` y la ruta de cancelación; actualizar `backend/tests/contract/eventos-cocina.test.js` y `specs/003-ver_pedidos/contracts/events.md` per FR-019.
 - [X] T067 Usar `lineas_pedido.nombre_plato` y `partida_codigo` en `backend/src/services/verPedidos.js` y en `frontend/src/components/PedidoCard.jsx`; depende de 001 T050; añadir prueba con plato renombrado en `backend/tests/integration/lista-historico.test.js` per FR-007/FR-016.
 - [X] T068 Asegurar que el aviso «Modificado» solo aparece tras `enviar-cambios` de 002; ajustar `backend/src/services/verPedidos.js` y `frontend/src/components/PedidoCard.jsx`, con prueba en `backend/tests/integration/pedido-modificado.test.js` per FR-018.
-- [ ] T069 Actualizar `specs/003-ver_pedidos/quickstart.md` y `specs/003-ver_pedidos/verification.md` con los escenarios de pedido cancelado y de nombre/partida históricos per FR-019/FR-018.
+- [X] T069 Actualizar `specs/003-ver_pedidos/quickstart.md` y `specs/003-ver_pedidos/verification.md` con los escenarios de pedido cancelado y de nombre/partida históricos per FR-019/FR-018.
 
 ## Dependencies & Execution Order
 
