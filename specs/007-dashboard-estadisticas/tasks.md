@@ -285,5 +285,5 @@ Task: "Página de total y error en frontend/tests/components/dashboard_total.tes
 
 ## Phase 13: Convergence
 
-- [ ] T057 Añadir una prueba de contrato en `backend/tests/contract/reports_daily.test.js` que cubra la atribución al camarero que abrió el pedido y el respaldo al que cerró per FR-014/T055 (partial)
+- [X] T057 Añadir una prueba de contrato en `backend/tests/contract/reports_daily.test.js` que cubra la atribución al camarero que abrió el pedido y el respaldo al que cerró per FR-014/T055 (partial)
 - [ ] T058 Añadir una prueba de integración de cuenta dividida contada una sola vez y de nombre/partida históricos en `backend/tests/integration/reports-cuenta-dividida.test.js` y `backend/tests/integration/reports-historico.test.js` per FR-002/FR-004/T056 (partial)
