@@ -107,10 +107,11 @@ export function obtenerPedido(pedidoId) {
   return apiGet(`/pedidos/${pedidoId}`);
 }
 
-export function anadirLinea(pedidoId, platoId, cantidad = 1) {
+export function anadirLinea(pedidoId, platoId, cantidad = 1, indicaciones = null) {
   return apiEnviar(`/pedidos/${pedidoId}/lineas`, 'POST', {
     plato_id: platoId,
     cantidad,
+    indicaciones,
   });
 }
 

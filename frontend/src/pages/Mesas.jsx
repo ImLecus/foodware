@@ -176,11 +176,11 @@ export default function Mesas() {
     setPedido(await obtenerPedido(pedido.id));
   }
 
-  async function anadirPlato(platoId, cantidad) {
+  async function anadirPlato(platoId, cantidad, indicaciones = null) {
     if (!pedido) return;
 
     try {
-      await anadirLinea(pedido.id, platoId, cantidad);
+      await anadirLinea(pedido.id, platoId, cantidad, indicaciones);
       await recargarPedido();
     } catch (error) {
       mostrarError(error);

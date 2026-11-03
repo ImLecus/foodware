@@ -77,7 +77,14 @@ export default function Pedido({
                   borderBottomWidth="1px"
                   borderColor="gray.100"
                 >
-                  <Text flex="1">{linea.plato_nombre}</Text>
+                  <Box flex="1">
+                    <Text>{linea.plato_nombre}</Text>
+                    {linea.indicaciones ? (
+                      <Text fontSize="xs" color="gray.500">
+                        {linea.indicaciones}
+                      </Text>
+                    ) : null}
+                  </Box>
                   <NumberInput
                     value={linea.cantidad}
                     min={1}

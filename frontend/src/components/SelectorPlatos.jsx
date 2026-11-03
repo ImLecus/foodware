@@ -1,10 +1,20 @@
-import { Box, Button, Flex, Heading, NumberInput, NumberInputField, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Input,
+  NumberInput,
+  NumberInputField,
+  Text,
+} from '@chakra-ui/react';
 import { useState } from 'react';
 import { formatearEuros } from '../utils/formato.js';
 import { NOMBRES_PARTIDA, PARTIDAS } from '../utils/partidas.js';
 
 export default function SelectorPlatos({ platos = [], puedeEditar = false, onAnadir }) {
   const [cantidades, setCantidades] = useState({});
+  const [indicaciones, setIndicaciones] = useState({});
 
   function cantidadDe(platoId) {
     return cantidades[platoId] ?? 1;
@@ -58,12 +68,30 @@ export default function SelectorPlatos({ platos = [], puedeEditar = false, onAna
                 >
                   <NumberInputField aria-label={`Cantidad para ${plato.nombre}`} />
                 </NumberInput>
+                <Input
+                  size="sm"
+                  maxW="180px"
+                  placeholder="Indicaciones (opcional)"
+                  aria-label={`Indicaciones para ${plato.nombre}`}
+                  value={indicaciones[plato.id] ?? ''}
+                  isDisabled={!puedeEditar}
+                  onChange={(evento) => {
+                    const valor = evento.target.value;
+                    setIndicaciones((previas) => ({ ...previas, [plato.id]: valor }));
+                  }}
+                />
                 <Button
                   size="sm"
                   colorScheme="teal"
                   variant="outline"
                   isDisabled={!puedeEditar}
-                  onClick={() => onAnadir?.(plato.id, cantidadDe(plato.id))}
+                  onClick={() =>
+                    onAnadir?.(
+                      plato.id,
+                      cantidadDe(plato.id),
+                      indicaciones[plato.id]?.trim() || null,
+                    )
+                  }
                 >
                   Añadir {plato.nombre}
                 </Button>
