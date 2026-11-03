@@ -38,8 +38,8 @@ que los necesiten.
 ### Línea de pedido (plato)
 - **Descripción**: un plato del pedido con su cantidad; es la unidad sobre la que actúa el
   cocinero.
-- **Campos**: `id`, `pedidoId`, `platoId`, `nombrePlato`, `cantidad` (entero ≥ 1), `estado`
-  (`pendiente` | `listo`), `listoEn` (marca temporal, nula si está pendiente).
+- **Campos**: `id`, `pedidoId`, `platoId`, `nombrePlato`, `partida`, `cantidad` (entero ≥ 1),
+  `estado` (`pendiente` | `listo`), `listoEn` (marca temporal, nula si está pendiente).
 - **Relaciones**: pertenece a un pedido; referencia un plato de la carta (historia 08).
 - **Reglas**:
   - La marca se aplica a la **línea completa** (todas las unidades), no a unidades sueltas
@@ -47,6 +47,16 @@ que los necesiten.
   - `listoEn` se fija al marcar como listo y se limpia al deshacer (FR-007, FR-015). Deshacer borra
     el momento de marcado: la línea recupera `estado = pendiente` y `listoEn = null`, de modo que la
     marca es totalmente reversible y no deja un momento «listo» obsoleto.
+  - **Cantidad ya lista (FR-018)**: si la cantidad baja o se mantiene, sigue `listo`; si sube,
+    vuelve a `pendiente` y se limpia `listoEn`.
+  - **Pedido cancelado (FR-017)**: una línea de pedido `cancelada` no se puede marcar ni desmarcar
+    y no cuenta como pendiente ni como lista.
+  - **Bloqueo de edición (FR-019)**: mientras 002 mantiene el pedido bloqueado, no se puede marcar
+    ni desmarcar; al liberarse, se aplica el estado resultante.
+  - **Disponibilidad (Q4 2026-11-03)**: un cambio de disponibilidad en 008 no retira la línea de un
+    pedido enviado; sigue pendiente y puede marcarse. Si no se puede preparar, el camarero la retira
+    o cancela el pedido según 002.
+  - `nombrePlato` y `partida` son la instantánea fijada al pedir (001); no se recalculan.
   - `cantidad` ≥ 1.
 
 ### Marca de listo (atributo de la línea)

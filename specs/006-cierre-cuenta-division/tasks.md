@@ -133,6 +133,18 @@ Aplicación web: `backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/te
 
 ---
 
+## Phase 7: Convergence — Clarificaciones 2026-11-03
+
+- [X] T034 [P] Excluir los pedidos `cancelada` del cálculo de consumos y del total en `backend/src/services/cuentasService.js` y en las consultas de `backend/src/db/pedidos.js`; cubrir en `backend/tests/integration/cuentas-canceladas.test.js` per FR-002/FR-011.
+- [X] T035 [US1] Bloquear la edición/cancelación del pedido si la cuenta tiene alguna parte `pagada` y devolver `409 partes_pagadas`; coordinar `backend/src/services/cuentasService.js` con el servicio de edición de 002; depende de T034; cubrir en `backend/tests/integration/partes-pagadas.test.js` per FR-017.
+- [X] T036 Sustituir el nombre del comensal por el valor de etiqueta «Parte N» generado desde `orden`, manteniendo `comensal` solo como nombre del campo API, en `backend/src/services/divisionService.js` y `backend/src/services/cuentasService.js`; depende de 001 T050 y T034; actualizar fixtures y `backend/tests/integration/division-cuenta.test.js` per FR-008.
+- [X] T037 [P] Añadir una prueba de integración con 007 que verifique que una cuenta dividida cuenta una sola vez por `total_centimos` y se atribuye al camarero que abrió el pedido en `backend/tests/integration/dashboard-cuenta-dividida.test.js`; depende de 007 T049-T050 per FR-002/FR-014.
+- [X] T038 [P] Actualizar `specs/006-cierre-cuenta-division/contracts/api.md` (ejemplos «Parte 1/2/3», dependencia con 002 y dashboard) y `specs/006-cierre-cuenta-division/quickstart.md` con los escenarios O, P, Q y R per FR-008/FR-017.
+- [X] T039 [US2] Quitar el campo de nombre en `frontend/src/components/DivisionCuenta.jsx` y `frontend/src/components/ParteCuenta.jsx`; mostrar «Parte 1», «Parte 2»…; cubrir en `frontend/tests/components/division.test.jsx` per FR-008.
+- [X] T040 Actualizar `specs/006-cierre-cuenta-division/verification.md` y ejecutar la suite completa con la regresión de cuentas canceladas y partes pagadas en `backend/tests/` y `frontend/tests/` per FR-002/FR-011/FR-017.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -184,7 +196,27 @@ Task: "Componente de aviso de pendientes en frontend/tests/components/ResumenCue
 
 ## Notes
 
+- **Fuente de verdad**: cancelación en 002, disponibilidad en 008, instantánea histórica en 001; las tareas de convergencia solo consumen esas reglas.
+
 - `mesas.estado` pasa a `libre` al cerrar; `cerrada` no se produce en el flujo nuevo.
 - La cuenta se asocia a `pedido_id`; una cuenta cerrada anterior no bloquea una comanda nueva.
 - Los errores de negocio (`409`, `422`, `403`) no deben mostrarse como «sin conexión».
 - No se cancela ni se marca automáticamente ningún plato: si hay pendientes, se bloquea el cierre.
+- **Parada por tarea (constitución)**: al implementar con `/speckit.implement`, el agente MUST detenerse tras cada tarea, resumir lo hecho y esperar la revisión y el commit del usuario antes de continuar.
+
+## Matriz de trazabilidad (resumen)
+
+| Requisitos | Fase / tareas |
+|------------|---------------|
+| FR-001–FR-004 / FR-011 / FR-019 | US1: T9–T16 |
+| FR-005–FR-009 / FR-015–FR-018 | US2: T17–T21 |
+| FR-010–FR-012 / FR-016 | US3: T22–T28 |
+| FR-002 / FR-008 / FR-017 | Convergencia: T34–T40 |
+| SC-001–SC-009 | US1–US3: T9–T28; convergencia: T34–T40 |
+
+## Phase 8: Convergence
+
+- [X] T041 Usar `COALESCE(l.nombre_plato, p.nombre)` y `COALESCE(l.partida_codigo, p.partida_codigo)` en `CONSUMOS_DE_PEDIDO` de `backend/src/services/cuentasService.js`, y cubrirlo en `backend/tests/integration/consumos-historico.test.js` per FR-002/FR-008 (partial)
+- [X] T042 Generar la etiqueta `Parte ${orden}` en `confirmarDivision` de `backend/src/services/cuentasService.js` en lugar de guardar el valor libre del cliente, y actualizar `backend/tests/integration/division-cuenta.test.js` per FR-008 (partial)
+- [X] T043 Añadir una prueba de integración con 007 en `backend/tests/integration/dashboard-cuenta-dividida.test.js` que verifique el conteo único de la cuenta dividida per T037 (partial)
+- [X] T044 Añadir una prueba de componente en `frontend/tests/components/DivisionCuenta.test.jsx` que compruebe las etiquetas «Parte 1», «Parte 2»… per T039 (partial)

@@ -65,11 +65,12 @@ export function listarMesasAbiertasParaSala(db) {
             l.cantidad,
             l.estado,
             l.listo_en,
-            p.nombre AS nombre_plato,
-            p.partida_codigo AS partida
+            COALESCE(l.nombre_plato, p.nombre) AS nombre_plato,
+            COALESCE(l.partida_codigo, p.partida_codigo) AS partida
        FROM lineas_pedido l
        JOIN platos p ON p.id = l.plato_id
-       JOIN partidas pa ON pa.codigo = p.partida_codigo
+       JOIN partidas pa
+         ON pa.codigo = COALESCE(l.partida_codigo, p.partida_codigo)
       WHERE l.pedido_id = ?
       ORDER BY pa.orden, l.rowid`,
   );

@@ -104,6 +104,20 @@ estados de la página).
 5. Volver a marcar el ingrediente como `disponible`; **esperado**: el plato se ofrece de nuevo por
    seguir activo.
 
+### E13. Disponibilidad y pedidos ya enviados (FR-016)
+
+1. Con un plato ya incluido en un pedido enviado, marcarlo como no disponible o agotar uno de sus
+   ingredientes.
+2. **Esperado**: el plato sigue en el pedido enviado y en cocina; la baja solo impide añadirlo a
+   pedidos nuevos. Si no se puede preparar, el camarero lo retira o cancela el pedido según 002.
+
+### E14. Histórico de nombre y partida (FR-003)
+
+1. Vender un plato y, después, cambiar su nombre o su partida en la gestión de la carta.
+2. Consultar el pedido y el dashboard del día de la venta.
+3. **Esperado**: el pedido y el dashboard conservan el nombre y la partida que tenía el plato al
+   pedirse; la carta vigente muestra los datos nuevos.
+
 ## Comprobación del contrato de la API
 
 ```bash

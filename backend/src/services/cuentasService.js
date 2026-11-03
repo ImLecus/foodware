@@ -11,9 +11,9 @@ import { componerTicket, estadoTicket } from './ticketService.js';
 const CONSUMOS_DE_PEDIDO = `
   SELECT l.id AS linea_id,
          l.pedido_id,
-         p.nombre,
+         COALESCE(l.nombre_plato, p.nombre) AS nombre,
          l.cantidad,
-         p.partida_codigo AS partida,
+         COALESCE(l.partida_codigo, p.partida_codigo) AS partida,
          l.precio_centimos,
          l.estado,
          l.listo_en,
@@ -22,12 +22,40 @@ const CONSUMOS_DE_PEDIDO = `
     JOIN pedidos pe ON pe.id = l.pedido_id
     JOIN platos p ON p.id = l.plato_id
    WHERE l.pedido_id = ?
+     AND pe.cancelada = 0
+     AND pe.estado IN ('en_curso', 'enviada')
    ORDER BY l.rowid
 `;
 
 /** Suma los importes de los consumos, en céntimos. */
 export function calcularTotal(consumos) {
   return consumos.reduce((total, consumo) => total + consumo.cantidad * consumo.precio_centimos, 0);
+}
+
+/**
+ * Impide editar o cancelar un pedido si su cuenta ya tiene alguna parte pagada.
+ * El camarero debe deshacer los pagos antes de tocar la comanda (clarificación
+ * 2026-11-03).
+ */
+export function exigirSinPartesPagadas(db, mesaId) {
+  const pagada = db
+    .prepare(
+      `SELECT 1
+         FROM cuentas_partes cp
+         JOIN cuentas c ON c.id = cp.cuenta_id
+        WHERE c.mesa_id = ?
+          AND cp.estado = 'pagada'
+        LIMIT 1`,
+    )
+    .get(mesaId);
+
+  if (pagada) {
+    throw new ErrorHttp(
+      409,
+      'La cuenta tiene partes pagadas; deshaz los pagos antes de modificar el pedido',
+      'partes_pagadas',
+    );
+  }
 }
 
 export function listarConsumos(db, pedidoId) {
@@ -393,7 +421,7 @@ export function confirmarDivision(db, mesaId, datos) {
       db.prepare(
         `INSERT INTO cuentas_partes (id, cuenta_id, orden, comensal, importe_centimos)
          VALUES (?, ?, ?, ?, ?)`,
-      ).run(parteId, cuentaId, parte.orden, parte.comensal.trim(), parte.importe_centimos);
+      ).run(parteId, cuentaId, parte.orden, `Parte ${parte.orden}`, parte.importe_centimos);
     }
 
     for (const asignacion of datos.asignaciones) {

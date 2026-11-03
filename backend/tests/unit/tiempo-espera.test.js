@@ -16,7 +16,7 @@ describe('tiempo de espera del pedido', () => {
       enviadoEn: '2026-10-20 09:00:00',
       modificado: 1,
     });
-    db.prepare("UPDATE pedidos SET modificado_en = '2026-10-20 10:30:00' WHERE id = ?").run(
+    db.prepare("UPDATE pedidos SET cambios_enviados_en = '2026-10-20 10:30:00' WHERE id = ?").run(
       'pedido-editado',
     );
     insertarLinea(db, { id: 'linea-1', pedidoId: 'pedido-editado' });

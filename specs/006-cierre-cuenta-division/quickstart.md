@@ -153,6 +153,35 @@ código. No incluye código de implementación: los detalles están en
 4. Consultar el ticket de la cuenta cerrada antes de abrir la nueva comanda; debe seguir siendo
    consultable.
 
+### O. Cancelación de un pedido enviado (002, clarificación 2026-11-03)
+
+1. Con una mesa y un pedido ya enviado, cancelar el pedido completo desde sala (historia 002).
+2. **Esperado**: el pedido deja de ser consumo facturable; la cuenta no incluye sus líneas; la
+   mesa queda libre si no tiene otra comanda y no se genera cobro.
+3. Intentar editar o cancelar de nuevo el pedido cancelado.
+4. **Esperado**: el sistema rechaza la operación con `pedido_cancelado`.
+
+### P. Edición bloqueada con partes pagadas (002, clarificación 2026-11-03)
+
+1. Dividir una cuenta y marcar una parte como pagada.
+2. Intentar editar o cancelar el pedido desde sala.
+3. **Esperado**: la operación se rechaza con `409 partes_pagadas`; el camarero debe deshacer el
+   pago y dejar las partes pendientes.
+4. Deshacer el pago y volver a intentar la edición.
+5. **Esperado**: la edición se permite y la división se reinicia sobre el total actualizado.
+
+### Q. Etiqueta de comensal (clarificación 2026-11-03)
+
+1. Dividir una cuenta en tres partes.
+2. **Esperado**: las partes se muestran como «Parte 1», «Parte 2» y «Parte 3»; la interfaz no pide
+   nombres ni datos personales.
+
+### R. Cuenta dividida en el dashboard (007, clarificación 2026-11-03)
+
+1. Cerrar una cuenta dividida y consultar el dashboard del día.
+2. **Esperado**: la cuenta cuenta una sola vez por su importe total, atribuida al camarero que
+   abrió/tomó el pedido; las partes pagadas no se suman por separado.
+
 ## Criterios de éxito a comprobar
 
 - [ ] SC-001: el 100 % de las cuentas cerradas muestran un total igual a la suma de los consumos con el precio fijado al pedir.
@@ -164,6 +193,13 @@ código. No incluye código de implementación: los detalles están en
 - [ ] SC-007: una cuenta dividida mantiene la mesa ocupada hasta que el 100 % de sus partes están pagadas.
 - [ ] SC-008: en el 100 % de las cuentas divididas se genera un único ticket final al pagarse la última parte, y ninguno antes.
 - [ ] SC-009: el 100 % de las partes marcadas como pagadas puede volver a pendiente mientras la cuenta esté abierta; ninguna cuenta se cierra con partes pendientes.
+
+## Comprobaciones adicionales (clarificación 2026-11-03)
+
+- [ ] Un pedido cancelado no aparece como consumo facturable y libera la mesa si no tiene otra comanda.
+- [ ] La edición o cancelación del pedido se bloquea con `409 partes_pagadas` mientras haya una parte pagada.
+- [ ] Las partes usan etiquetas «Parte 1», «Parte 2»…, sin nombres ni datos personales.
+- [ ] Una cuenta dividida cuenta una sola vez en el dashboard, atribuida al camarero que abrió/tomó el pedido.
 
 ## Referencias
 

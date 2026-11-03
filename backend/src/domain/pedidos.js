@@ -75,7 +75,10 @@ export function serializarLinea(linea) {
     plato_nombre: linea.plato_nombre,
     cantidad: linea.cantidad,
     precio_centimos: linea.precio_centimos,
+    indicaciones: linea.indicaciones ?? null,
     partida: linea.partida,
+    estado: linea.estado,
+    listo_en: linea.listo_en ?? null,
   };
 }
 
@@ -85,7 +88,7 @@ export function serializarPedido(pedido) {
     id: pedido.id,
     mesa_id: pedido.mesa_id,
     camarero_id: pedido.camarero_id,
-    estado: pedido.estado,
+    estado: pedido.cancelada ? 'cancelada' : pedido.estado,
     creada_en: pedido.creado_en,
     confirmada_en: pedido.enviado_en,
     modificada: Boolean(pedido.modificada),

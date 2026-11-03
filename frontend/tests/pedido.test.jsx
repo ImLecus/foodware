@@ -152,7 +152,19 @@ describe('SelectorPlatos', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Añadir Croquetas de jamón' }));
 
-    expect(onAnadir).toHaveBeenCalledWith('plato-entrante', 2);
+    expect(onAnadir).toHaveBeenCalledWith('plato-entrante', 2, null);
+  });
+
+  it('añade un plato con una indicación', () => {
+    const onAnadir = vi.fn();
+    renderizar(<SelectorPlatos platos={platos} puedeEditar onAnadir={onAnadir} />);
+
+    fireEvent.change(screen.getByLabelText('Indicaciones para Croquetas de jamón'), {
+      target: { value: 'sin cebolla' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Añadir Croquetas de jamón' }));
+
+    expect(onAnadir).toHaveBeenCalledWith('plato-entrante', 1, 'sin cebolla');
   });
 
   it('no permite añadir platos si no hay un pedido en curso', () => {

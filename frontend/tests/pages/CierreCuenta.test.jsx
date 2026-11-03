@@ -175,8 +175,8 @@ describe('CierreCuenta (US2)', () => {
           modo: 'iguales',
           total_base_centimos: 4250,
           partes: [
-            { orden: 1, comensal: 'Comensal 1', importe_centimos: 2125 },
-            { orden: 2, comensal: 'Comensal 2', importe_centimos: 2125 },
+            { orden: 1, comensal: 'Parte 1', importe_centimos: 2125 },
+            { orden: 2, comensal: 'Parte 2', importe_centimos: 2125 },
           ],
         }),
       ),
@@ -328,19 +328,15 @@ describe('CierreCuenta (US2)', () => {
 
     renderizar();
 
-    const comensal = await screen.findByLabelText('Comensal de la parte 1');
-    fireEvent.change(comensal, { target: { value: 'Ana' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Confirmar cobro único' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirmar cobro único' }));
 
     expect(await screen.findByText(/sin conexión\./i)).toBeInTheDocument();
     expect(screen.queryByText('Failed to fetch')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Comensal de la parte 1')).toHaveValue('Ana');
 
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
 
     await waitFor(() => expect(obtenerCuenta).toHaveBeenCalledTimes(2));
     expect(await screen.findByRole('button', { name: 'Confirmar cobro único' })).toBeEnabled();
-    expect(screen.getByLabelText('Comensal de la parte 1')).toHaveValue('Ana');
 
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar cobro único' }));
 

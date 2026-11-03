@@ -60,11 +60,12 @@ export function obtenerDesglosePorCamarero(db, fecha) {
   const filas = db
     .prepare(
       `WITH ventas AS (
-         SELECT COALESCE(c.camarero_id, p.camarero_id) AS camarero_id,
+         SELECT COALESCE(p.camarero_id, c.camarero_id) AS camarero_id,
                 c.total_centimos
            FROM cuentas c
            LEFT JOIN pedidos p ON p.id = c.pedido_id
           WHERE c.estado = 'cerrada'
+            AND (p.cancelada IS NULL OR p.cancelada = 0)
             AND c.cerrada_en IS NOT NULL
             AND c.cerrada_en >= ?
             AND c.cerrada_en < ?
@@ -100,8 +101,27 @@ export function obtenerDesglosePorPlato(db, fecha) {
   const { inicio, fin } = limitesDelDia(fecha);
   const filas = db
     .prepare(
-      `WITH base AS (
-         SELECT p.id, p.nombre, p.partida_codigo
+      `WITH ventas AS (
+         SELECT lp.plato_id AS id,
+                COALESCE(lp.nombre_plato, p.nombre) AS nombre,
+                COALESCE(lp.partida_codigo, p.partida_codigo) AS partida,
+                SUM(lp.cantidad) AS cantidad,
+                SUM(lp.cantidad * lp.precio_centimos) AS importeCentimos
+           FROM lineas_pedido lp
+           JOIN platos p ON p.id = lp.plato_id
+           JOIN pedidos pd ON pd.id = lp.pedido_id
+           JOIN cuentas c ON c.pedido_id = pd.id
+          WHERE c.estado = 'cerrada'
+            AND pd.cancelada = 0
+            AND c.cerrada_en IS NOT NULL
+            AND c.cerrada_en >= ?
+            AND c.cerrada_en < ?
+          GROUP BY lp.plato_id,
+                   COALESCE(lp.nombre_plato, p.nombre),
+                   COALESCE(lp.partida_codigo, p.partida_codigo)
+       ),
+       base AS (
+         SELECT p.id, p.nombre, p.partida_codigo AS partida
            FROM platos p
           WHERE p.activo = 1
             AND NOT EXISTS (
@@ -112,34 +132,21 @@ export function obtenerDesglosePorPlato(db, fecha) {
                  AND i.estado = 'agotado'
             )
          UNION
-         SELECT p.id, p.nombre, p.partida_codigo
-           FROM platos p
-           JOIN lineas_pedido lp ON lp.plato_id = p.id
-           JOIN pedidos pd ON pd.id = lp.pedido_id
-           JOIN cuentas c ON c.pedido_id = pd.id
-          WHERE c.estado = 'cerrada'
-            AND c.cerrada_en IS NOT NULL
-            AND c.cerrada_en >= ?
-            AND c.cerrada_en < ?
+         SELECT id, nombre, partida FROM ventas
        )
        SELECT b.id AS platoId,
               b.nombre,
-              b.partida_codigo AS partida,
-              COALESCE(SUM(CASE WHEN c.id IS NOT NULL THEN lp.cantidad ELSE 0 END), 0) AS cantidad,
-              COALESCE(SUM(CASE WHEN c.id IS NOT NULL THEN lp.cantidad * lp.precio_centimos ELSE 0 END), 0) AS importeCentimos
+              b.partida,
+              COALESCE(v.cantidad, 0) AS cantidad,
+              COALESCE(v.importeCentimos, 0) AS importeCentimos
          FROM base b
-         LEFT JOIN lineas_pedido lp ON lp.plato_id = b.id
-         LEFT JOIN pedidos pd ON pd.id = lp.pedido_id
-         LEFT JOIN cuentas c
-           ON c.pedido_id = pd.id
-          AND c.estado = 'cerrada'
-          AND c.cerrada_en IS NOT NULL
-          AND c.cerrada_en >= ?
-          AND c.cerrada_en < ?
-        GROUP BY b.id, b.nombre, b.partida_codigo
+         LEFT JOIN ventas v
+           ON v.id = b.id
+          AND v.nombre = b.nombre
+          AND v.partida = b.partida
         ORDER BY importeCentimos DESC, b.nombre`,
     )
-    .all(inicio, fin, inicio, fin);
+    .all(inicio, fin);
   return filas.map((fila) => ({
     platoId: fila.platoId,
     nombre: fila.nombre,

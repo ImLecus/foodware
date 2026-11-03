@@ -59,6 +59,11 @@ contenido mínimo y reglas de presentación verificables por una persona no téc
   fila de los desgloses de comparación.
 - La tendencia nunca depende solo del color: siempre incluye texto e icono (accesibilidad).
 - La página no permite editar ni introducir datos: es de solo lectura.
+- **Porcentaje (2026-11-03)**: dos decimales con coma y signo negativo solo en bajadas
+  (`9,11 %`, `-4,76 %`); las subidas no llevan signo positivo. Sin base de comparación no se
+  muestra porcentaje.
+- **Cuenta dividida (2026-11-03)**: el importe se muestra una sola vez por cuenta, atribuido al
+  camarero que abrió/tomó el pedido.
 
 ## Accesibilidad y localización
 

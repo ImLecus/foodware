@@ -88,6 +88,15 @@ Cada escenario corresponde a un criterio de aceptación de la spec.
     acción. Resultado esperado: el pedido desaparece de la pantalla, la mesa vuelve a mostrarse
     como libre, no se envía nada a cocina y el pedido ya no existe (`GET /api/pedidos/{id}` → `404`).
 
+11. **Indicaciones por línea (FR-006, US1 escenario 8)**
+    Añade un plato con una indicación («sin cebolla») y confirma el pedido. Resultado esperado: la
+    indicación aparece asociada a esa línea en el pedido y se conserva al consultarlo.
+
+12. **Instantánea de nombre, partida y precio (FR-018, US1 escenario 9)**
+    Con un pedido confirmado, cambia el nombre, la partida y el precio del plato en la carta
+    (historia 008) y vuelve a consultar el pedido. Resultado esperado: el pedido conserva el
+    nombre, la partida y el precio que tenía al pedirse.
+
 ## Criterios de éxito a comprobar
 
 - **SC-001**: abrir mesa y confirmar un pedido de 3 platos (una por partida) en menos de 2 min.
@@ -95,6 +104,8 @@ Cada escenario corresponde a un criterio de aceptación de la spec.
 - **SC-003**: 0 pedidos duplicados por mesa abierta.
 - **SC-005**: al confirmar, el 100 % de los platos anotados aparece en el pedido enviado.
 - **SC-006**: al anular, la mesa queda libre y sin pedido en curso, y no llega nada a cocina.
+- **SC-007**: el 100 % de las indicaciones añadidas al pedir se conserva en su línea y se muestra con el plato.
+- **SC-008**: el 100 % de las líneas conserva nombre, partida y precio del momento de pedir aunque la carta cambie después.
 
 ## Fuera de alcance (no se valida aquí)
 

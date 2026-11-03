@@ -165,6 +165,17 @@ comprobar que el plato desaparece de la carta de sala sin que el administrador l
 
 ---
 
+## Fase 7: Convergencia — Clarificaciones 2026-11-03
+
+- [X] T064 [P] Asegurar que un cambio de disponibilidad no altera ni retira líneas de pedidos ya enviados en `backend/src/services/cartaService.js` y en las consultas de pedidos; cubrir en `backend/tests/integration/carta-pedidos-enviados.test.js` per FR-016.
+- [X] T065 Usar la instantánea `nombre_plato`/`partida_codigo` en las consultas históricas de pedidos y ventas; depende de 001 T050; añadir prueba en `backend/tests/integration/carta-historico.test.js` per FR-003.
+- [X] T066 [P] Añadir en `frontend/src/pages/PaginaGestionCarta.jsx` un aviso de que la baja solo afecta a pedidos nuevos y que los pedidos enviados se gestionan desde 002; cubrir en `frontend/tests/components/gestion-carta.test.jsx` per FR-016.
+- [X] T067 [P] Actualizar `specs/008-gestion-carta/contracts/carta-api.md`, `contracts/carta-ui.md` y `quickstart.md` con disponibilidad, histórico y cancelación per FR-003/FR-016.
+- [X] T068 Añadir una prueba de integración con 001/002/007 que verifique que un plato renombrado o cambiado de partida conserva su nombre/partida en el pedido y en el dashboard, en `backend/tests/integration/carta-historico.test.js`; depende de 001 T050 y 007 T051 per FR-003/FR-014.
+- [X] T069 Actualizar `README.md`/verificación de la historia 008 y ejecutar la suite completa per FR-003/FR-016.
+
+---
+
 ## Dependencias y orden de ejecución
 
 ### Dependencias entre fases
@@ -225,6 +236,8 @@ Task: "Prueba de componente en frontend/tests/components/FormularioPlato.test.js
 
 ## Notas
 
+- **Fuente de verdad**: disponibilidad en esta historia (008), cancelación en 002, instantánea histórica en 001; las tareas de convergencia solo consumen esas reglas.
+
 - [P] = ficheros distintos y sin dependencias pendientes.
 - La constitución obliga a parar y esperar revisión/commit tras **cada** tarea durante
   `/speckit.implement`.
@@ -232,3 +245,21 @@ Task: "Prueba de componente en frontend/tests/components/FormularioPlato.test.js
 - No hay `DELETE` de platos: la baja es `activo = false` (supuesto de la spec: preservar el historial de ventas).
 - No hay `DELETE` de ingredientes: esta historia cubre alta y edición (FR-015).
 - Evitar: tareas vagas, conflictos en el mismo fichero y dependencias cruzadas entre historias.
+
+## Matriz de trazabilidad (resumen)
+
+| Requisitos | Fase / tareas |
+|------------|---------------|
+| FR-001–FR-004 | US1: T18–T27 |
+| FR-005–FR-006 / FR-012–FR-014 | US2: T28–T34 |
+| FR-007–FR-010 / FR-015 | US3: T35–T54 |
+| FR-003 / FR-016 | Convergencia: T64–T69 |
+| SC-001–SC-006 | US1–US3: T18–T54; convergencia: T64–T69 |
+
+## Fase 8: Convergence
+
+- [X] T070 Añadir una prueba de integración con 001/002/007 que verifique que un plato renombrado o cambiado de partida conserva su nombre/partida en el pedido y en el dashboard, en `backend/tests/integration/carta-historico.test.js` per FR-003/T068 (partial)
+
+## Fase 9: Convergence
+
+- [X] T071 Añadir una prueba de componente en `frontend/tests/components/PaginaGestionCarta.test.jsx` que compruebe el aviso de que la disponibilidad solo afecta a pedidos nuevos per T066 (partial)

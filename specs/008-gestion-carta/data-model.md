@@ -94,3 +94,14 @@ CartaVigente = { platos : DisponibilidadPlato.ofrecible = true } agrupados por p
   (FR-015).
 - **Precio del plato**: puede cambiar en cualquier momento; no afecta a líneas de pedido ya
   tomadas ni a cuentas del pasado (FR-014). El precio fijado al pedir pertenece a la historia 01.
+
+## Compatibilidad con pedidos e histórico (2026-11-03)
+
+- **Disponibilidad**: un cambio de `activo`, de la asociación o del `estado` de un ingrediente no
+  retira ni altera líneas de pedidos ya enviados. Solo afecta a la carta vigente y a pedidos nuevos
+  (FR-016). Si el plato no se puede preparar, el camarero lo retira o cancela el pedido según 002.
+- **Nombre y partida**: cada línea de pedido conserva `nombre_plato` y `partida_codigo` fijados al
+  pedir (001). Cambiar el nombre o la partida de un plato no altera pedidos pasados ni el histórico
+  de ventas (007).
+- **Cancelación**: la cancelación completa del pedido corresponde a 002; la carta no participa en
+  esa operación.

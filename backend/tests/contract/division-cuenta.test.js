@@ -32,9 +32,9 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1084 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1083 },
-        { orden: 3, comensal: 'Marta', importe_centimos: 1083 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1084 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1083 },
+        { orden: 3, comensal: 'Parte 3', importe_centimos: 1083 },
       ],
     });
 
@@ -50,13 +50,13 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
     expect(respuesta.body.division.modo).toBe('iguales');
     expect(respuesta.body.division.partes).toHaveLength(3);
     expect(respuesta.body.division.partes.map((parte) => parte.comensal)).toEqual([
-      'Ana',
-      'Luis',
-      'Marta',
+      'Parte 1',
+      'Parte 2',
+      'Parte 3',
     ]);
     expect(respuesta.body.division.partes[0]).toMatchObject({
       orden: 1,
-      comensal: 'Ana',
+      comensal: 'Parte 1',
       importe_centimos: 1084,
       estado: 'pendiente',
       pagada_en: null,
@@ -66,7 +66,7 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       .prepare('SELECT comensal FROM cuentas_partes ORDER BY orden')
       .all()
       .map((fila) => fila.comensal);
-    expect(comensales).toEqual(['Ana', 'Luis', 'Marta']);
+    expect(comensales).toEqual(['Parte 1', 'Parte 2', 'Parte 3']);
 
     const cuenta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
     expect(cuenta.status).toBe(200);
@@ -90,8 +90,8 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'por_consumo',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 2350 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 900 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 2350 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 900 },
       ],
       asignaciones: [
         // Croquetas (850) y tarta (600) para Ana; paella (1800) a medias.
@@ -114,8 +114,8 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1000 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1000 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1000 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1000 },
       ],
     });
 
@@ -130,8 +130,8 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'iguales',
       total_base_centimos: 3000,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1500 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1500 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1500 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1500 },
       ],
     });
 
@@ -154,8 +154,8 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'por_consumo',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 3250 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 0 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 3250 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 0 },
       ],
       asignaciones: [{ parte_orden: 1, linea_id: linea.id, importe_centimos: 850 }],
     });
@@ -171,8 +171,8 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1625 },
       ],
     });
 
@@ -180,15 +180,15 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Marta', importe_centimos: 1625 },
-        { orden: 2, comensal: 'Pablo', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 3', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Parte 4', importe_centimos: 1625 },
       ],
     });
 
     expect(respuesta.status).toBe(201);
     expect(respuesta.body.division.partes.map((parte) => parte.comensal)).toEqual([
-      'Marta',
-      'Pablo',
+      'Parte 1',
+      'Parte 2',
     ]);
 
     const cuentas = db
@@ -204,8 +204,8 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1625 },
       ],
     });
 
@@ -217,8 +217,8 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Marta', importe_centimos: 1625 },
-        { orden: 2, comensal: 'Pablo', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 3', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Parte 4', importe_centimos: 1625 },
       ],
     });
 
@@ -238,8 +238,8 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1625 },
       ],
     });
 
@@ -254,7 +254,7 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
         { orden: 2, comensal: '', importe_centimos: 1625 },
       ],
     });
@@ -272,7 +272,7 @@ describe('POST /api/sala/mesas/:mesaId/cuenta/division', () => {
       .send({
         modo: 'iguales',
         total_base_centimos: 0,
-        partes: [{ orden: 1, comensal: 'Ana', importe_centimos: 0 }],
+        partes: [{ orden: 1, comensal: 'Parte 1', importe_centimos: 0 }],
       });
 
     expect(respuesta.status).toBe(404);

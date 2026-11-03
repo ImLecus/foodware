@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import {
   emitirLineaActualizada,
+  emitirPedidoCancelado,
   emitirPedidoNuevo,
   emitirPendientesCambiado,
 } from '../../src/realtime/emit.js';
@@ -76,6 +77,19 @@ describe('SSE de cocina', () => {
     const contenido = escrito.join('');
     expect(contenido).toContain('event: pedido.nuevo');
     expect(contenido).toContain('"tipo":"pedido.nuevo"');
+    expect(contenido).toContain('"pedidoId":"pedido-1"');
+    expect(contenido).toContain('"mesa":3');
+  });
+
+  it('emite pedido.cancelado con pedido, mesa y partida', () => {
+    const { respuesta, peticion, escrito } = clienteFalso();
+    suscribir(peticion, respuesta);
+
+    emitirPedidoCancelado({ pedidoId: 'pedido-1', mesa: 3, partida: 'entrantes' });
+
+    const contenido = escrito.join('');
+    expect(contenido).toContain('event: pedido.cancelado');
+    expect(contenido).toContain('"tipo":"pedido.cancelado"');
     expect(contenido).toContain('"pedidoId":"pedido-1"');
     expect(contenido).toContain('"mesa":3');
   });

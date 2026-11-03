@@ -151,3 +151,15 @@ desgloses de la comparación quedan vacíos cuando no existe día anterior.
 
 - La consulta de un día debe resolverse en menos de 3 s (SC-005); objetivo interno < 1 s.
 - El endpoint no muta estado (idempotente por día).
+
+## Actualización 2026-11-03
+
+- **Atribución**: `porCamarero` usa el camarero que abrió/tomó el pedido
+  (`pedidos.camarero_id`); solo si no consta, el que cerró la cuenta. El `COALESCE` actual debe
+  invertirse.
+- **Cuenta dividida**: cuenta una sola vez por `totalVendido`; las partes pagadas no se suman.
+- **Plato histórico**: `porPlato` usa el nombre y la partida fijados al pedir, no los datos
+  actuales de la carta.
+- **Pedidos cancelados**: no generan cuenta ni consumo y no aparecen en el informe.
+- **Porcentaje**: dos decimales con coma y signo negativo solo en bajadas; las subidas no llevan
+  signo positivo. Sin base de comparación no se muestra porcentaje (FR-006/SC-007).

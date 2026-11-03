@@ -2,6 +2,7 @@ import { obtenerMesa } from '../db/mesas.js';
 import { limpiarBloqueo, obtenerPedido } from '../db/pedidos.js';
 import { estadoBloqueo, exigirBloqueoPropio, exigirEditable } from '../domain/edicion.js';
 import { exigirMesa, exigirMesaAbierta, exigirPedido } from '../domain/pedidos.js';
+import { exigirSinPartesPagadas } from '../services/cuentasService.js';
 import { ErrorHttp } from './error.js';
 
 /**
@@ -24,6 +25,7 @@ export function comprobarEdicion(db) {
       }
 
       exigirEditable(pedido);
+      exigirSinPartesPagadas(db, pedido.mesa_id);
 
       if (estadoBloqueo(pedido).estado === 'expirado') {
         limpiarBloqueo(db, pedido.id);

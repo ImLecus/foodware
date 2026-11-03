@@ -106,10 +106,24 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 **Purpose**: Mejoras y validación final.
 
 - [X] T035 [P] Documentar en `README.md` la edición de pedidos y enlazar `specs/002-editar-comanda/quickstart.md`
-- [ ] T036 Ejecutar la validación manual de `specs/002-editar-comanda/quickstart.md` (escenarios 1–15) y corregir lo necesario
+- [X] T036 Ejecutar la validación manual de `specs/002-editar-comanda/quickstart.md` (escenarios 1–15) y corregir lo necesario
 - [X] T037 Validar en `specs/002-editar-comanda/quickstart.md` la liberación al cancelar/salir (escenario 12) y la expiración por inactividad (escenario 13)
 - [X] T038 [P] Revisar los textos en español de España y el formato de moneda en `frontend/src/components/EditorPedido.jsx`, `frontend/src/components/EnviarCambios.jsx` y `frontend/src/utils/formato.js`
 - [X] T039 Ejecutar la suite completa (`docker compose run --rm backend npm test` y `frontend npm test`) sobre `backend/tests/` y `frontend/tests/` y dejar todo en verde
+
+---
+
+## Phase 5: Convergence — Clarificaciones 2026-11-03
+
+- [X] T040 [P] Añadir `cancelada` al enum de `pedidos.estado` en `backend/migrations/010_pedidos_cancelada.sql` y en `backend/src/db/pedidos.js`; depende de 001 T050 (migración 009); actualizar fixtures y `backend/tests/integration/edicion.test.js` per FR-016.
+- [X] T041 [US1] Implementar `POST /pedidos/{pedidoId}/cancelar` en `backend/src/api/pedidos.js` y `backend/src/domain/edicion.js`: transacción que marca `cancelada`, retira el pedido de cocina/sala, libera la mesa si no tiene otra comanda y no genera cobro; depende de T040; cubrir con `backend/tests/contract/edicion.test.js` y `backend/tests/integration/edicion.test.js` per FR-016/SC-008.
+- [X] T042 [P] [US1] Crear `frontend/src/components/CancelarPedido.jsx` e integrar la acción en `frontend/src/components/EditorPedido.jsx`; probar en `frontend/tests/components/edicion.test.jsx` per FR-016.
+- [X] T043 [P] [US1] Extender el bloqueo de edición a cocina: comprobar `editando_por` en `backend/src/services/estadoLinea.js` y en la ruta de marcar/desmarcar; responder `423 pedido_bloqueado`; cubrir en `backend/tests/integration/edicion-bloqueo.test.js` per FR-015.
+- [X] T044 [US1] Implementar la regla de cantidad de línea lista en `backend/src/domain/edicion.js` y `backend/src/db/pedidos.js`: bajar o mantener conserva `listo`; subir vuelve a `pendiente` y limpia `listo_en`; probar en `backend/tests/integration/edicion-linea-lista.test.js` per FR-004.
+- [X] T045 [US1] Bloquear edición y cancelación si la cuenta tiene alguna parte `pagada` en `backend/src/services/cuentasService.js` y en el servicio de edición; devolver `409 partes_pagadas`; depende de 006 T035; cubrir en `backend/tests/integration/edicion-partes-pagadas.test.js` per FR-017/FR-016.
+- [X] T046 [P] [US1] Asegurar que las indicaciones se crean en 001 y se corrigen en `backend/src/domain/edicion.js`; actualizar `backend/tests/contract/edicion.test.js` per FR-005.
+- [X] T047 [P] [US1] Añadir una prueba de que un cambio de disponibilidad (008) no retira líneas de un pedido enviado en `backend/tests/integration/edicion-disponibilidad.test.js` per FR-003.
+- [X] T048 [US1] Registrar la cancelación en `modificaciones` con tipo, momento y usuario; actualizar `backend/src/db/modificaciones.js`, `backend/tests/integration/edicion.test.js`, `specs/002-editar-comanda/contracts/openapi.yaml` y `specs/002-editar-comanda/quickstart.md` per FR-013/SC-009.
 
 ---
 
@@ -185,5 +199,18 @@ revise y haga el commit (Conventional Commits) antes de continuar con la siguien
 - Las pruebas se escriben primero y deben fallar antes de implementar.
 - Un commit por tarea (Conventional Commits).
 - Depende de la historia 001 (pedido enviado); la toma inicial de pedidos no se repite aquí.
+- **Fuente de verdad**: esta historia define la cancelación completa del pedido; las demás historias la referencian.
 - Fuera de alcance: cocina (003), marcar listos (004), señales (005), cierre de cuenta (006),
   dashboard (007) y gestión de carta (008).
+
+## Matriz de trazabilidad (resumen)
+
+| Requisitos | Fase / tareas |
+|------------|---------------|
+| FR-001–FR-016 (edición, cancelación y trazabilidad) | US1: T9–T34; convergencia: T40–T48 |
+| SC-001–SC-009 | US1: T9–T34; convergencia: T40–T48 |
+
+## Phase 6: Convergence
+
+- [X] T049 Alinear el estado persistido de un pedido cancelado con el modelo (`cancelada`) o documentar explícitamente la equivalencia `estado=cerrada` + `cancelada=1` en `backend/migrations/` y `backend/src/db/pedidos.js` per `data-model.md` (partial)
+- [X] T050 Añadir una prueba RTL del flujo «Cancelar pedido» en `frontend/tests/components/edicion.test.jsx`, cubriendo confirmación, llamada a la API y cierre del editor per T042 (partial)

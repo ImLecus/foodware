@@ -17,6 +17,13 @@
 
 - Q: Si el cliente se marcha o cambia de idea antes de confirmar el pedido, ¿qué debe poder hacer el camarero con ese pedido en curso y con la mesa? (FR-004, FR-005) → A: Anular el pedido en curso; el pedido se descarta, la mesa vuelve a quedar libre y nada se envía a cocina.
 
+### Session 2026-11-03
+
+- Q: ¿La anulación de un pedido ya enviado a cocina se rige por la historia 001 o por la 002? → A: Por la 002: se cancela el pedido completo desde sala, se avisa a cocina y la mesa queda libre; la 001 solo cubre la anulación antes de confirmar.
+- Q: Si un plato deja de estar disponible después de confirmar el pedido, ¿se retira del pedido enviado? → A: No; la baja solo afecta a pedidos nuevos. Si no se puede preparar, el camarero lo retira o cancela el pedido según la historia 002.
+- Q: ¿Dónde debe poder añadirse una indicación o nota a un plato: al tomar el pedido en la historia 001, solo al editarlo en la 002, o en ambos momentos? → A: En ambos: se añade al tomar el pedido y se puede corregir al editarlo; es el mismo dato de la línea.
+- Q: Cuando el dashboard muestra un día pasado, ¿debe usar los datos actuales del plato (nombre y partida) o los que tenía cuando se pidió? → A: Los que tenía al pedir: la línea guarda una instantánea de nombre y partida, igual que el precio.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Abrir una mesa y tomar el pedido plato a plato (Priority: P1)
@@ -53,6 +60,10 @@ que el pedido queda registrado como `enviada`, vinculado a la mesa y agrupado po
    pedido figura como `enviada` y sigue vinculado a su mesa.
 7. **Dado** un pedido en curso de una mesa, **cuando** el camarero anula el pedido,
    **entonces** el pedido se descarta, la mesa vuelve a quedar libre y nada se envía a cocina.
+8. **Dado** un pedido en curso, **cuando** el camarero añade un plato con una indicación o nota,
+   **entonces** la indicación queda asociada a esa línea y se muestra con el plato en el pedido.
+9. **Dado** un pedido confirmado, **cuando** el administrador cambia el nombre o la partida de un
+   plato en la carta, **entonces** el pedido conserva el nombre y la partida que tenía al pedirse.
 
 ---
 
@@ -72,6 +83,9 @@ que el pedido queda registrado como `enviada`, vinculado a la mesa y agrupado po
 - ¿Qué ocurre si el cliente se marcha o cambia de idea antes de confirmar? El camarero puede
   anular el pedido en curso: se descarta, la mesa vuelve a quedar libre y no se envía nada a
   cocina.
+- ¿Qué ocurre si el cliente cancela un pedido ya enviado a cocina? Se usa la cancelación de
+  pedido completo de la historia 002: el pedido se retira de cocina y de sala, la mesa queda libre
+  si no tiene otra comanda y no se cobra.
 
 ## Requirements _(mandatory)_
 
@@ -83,7 +97,8 @@ que el pedido queda registrado como `enviada`, vinculado a la mesa y agrupado po
 - **FR-004**: El sistema MUST iniciar un pedido en curso vinculado a la mesa abierta.
 - **FR-005**: El sistema MUST impedir que exista más de un pedido abierto para la misma mesa.
 - **FR-006**: El sistema MUST permitir al camarero añadir platos al pedido uno a uno,
-  indicando la cantidad de cada plato.
+  indicando la cantidad de cada plato y, opcionalmente, una indicación o nota por plato
+  (aclarado en la sesión de clarificación).
 - **FR-007**: El sistema MUST tomar los platos disponibles de la carta vigente del restaurante.
 - **FR-008**: El sistema MUST permitir repetir el mismo plato varias veces dentro de un pedido.
 - **FR-009**: El sistema MUST asignar automáticamente cada plato a su partida correspondiente
@@ -101,7 +116,9 @@ que el pedido queda registrado como `enviada`, vinculado a la mesa y agrupado po
   sistema (la API interna que consumirá la vista de cocina) al confirmar el pedido.
 - **FR-017**: El sistema MUST mantener el pedido vinculado a su mesa tras la confirmación.
 - **FR-018**: El sistema MUST fijar el precio de cada plato en el momento de pedirlo, de modo que
-  un cambio posterior del precio en la carta no altere el importe del pedido.
+  un cambio posterior del precio en la carta no altere el importe del pedido. También MUST fijar el
+  nombre y la partida del plato en ese momento, para preservar el histórico aunque la carta cambie
+  después (aclarado en la sesión de clarificación).
 - **FR-019**: El camarero MUST poder anular un pedido en curso; al anularlo, el pedido se descarta,
   la mesa vuelve a quedar libre y el pedido MUST NOT enviarse a cocina.
 
@@ -112,7 +129,8 @@ que el pedido queda registrado como `enviada`, vinculado a la mesa y agrupado po
 - **Pedido**: pedido tomado para una mesa. Atributos relevantes: mesa asociada, estado (en curso
   o enviada), platos que la componen y momento de confirmación.
 - **Línea de pedido**: cada plato anotado dentro de un pedido. Atributos relevantes: plato,
-  cantidad, partida a la que pertenece y el precio del plato en el momento de pedirlo.
+  cantidad, nombre y partida del plato en el momento de pedirlo, el precio en ese momento y una
+  indicación o nota opcional.
 - **Plato**: artículo de la carta del restaurante que se puede pedir. Atributos relevantes:
   nombre y partida a la que pertenece.
 - **Partida**: agrupación por la que se ordena el pedido: entrantes, principales y postres.
@@ -131,6 +149,10 @@ que el pedido queda registrado como `enviada`, vinculado a la mesa y agrupado po
   platos anotados aparecen en el pedido enviado).
 - **SC-006**: El 100% de las anulaciones deja la mesa libre y sin pedido en curso, y ningún
   pedido anulado llega a cocina.
+- **SC-007**: El 100% de las indicaciones añadidas al pedir se conserva en su línea y se muestra
+  con el plato en el pedido.
+- **SC-008**: El 100% de las líneas conserva el nombre, la partida y el precio del momento de
+  pedir, aunque la carta cambie después.
 
 > Nota: la numeración conserva el hueco de SC-004 para mantener estables los identificadores
 > usados en planes, contratos y quickstarts.
@@ -141,10 +163,12 @@ que el pedido queda registrado como `enviada`, vinculado a la mesa y agrupado po
   las tres partidas (entrantes, principales o postres).
 - Cada mesa se identifica de forma única dentro del local.
 - El camarero que toma el pedido está identificado en la aplicación.
-- Una mesa tiene como máximo un pedido en curso a la vez; la edición de pedidos ya enviados
-  (historia 02) es objeto de otra historia y no forma parte de esta especificación.
+- Una mesa tiene como máximo un pedido en curso a la vez; la edición y la cancelación de pedidos
+  ya enviados (historia 02) son objeto de otra historia y no forman parte de esta especificación.
+  La 001 solo cubre la anulación antes de la confirmación.
 - La disponibilidad de los platos de la carta la gestiona otra historia (historia 08); aquí se da
-  por hecho que los platos que se ofrecen están disponibles.
+  por hecho que los platos que se ofrecen están disponibles. Un cambio posterior de disponibilidad
+  no altera los pedidos ya confirmados; su tratamiento se rige por la historia 002.
 - Métrica de negocio posterior al lanzamiento (no forma parte de los criterios de éxito verificables
   en la aplicación): el 95% de los camareros completará abrir una mesa y confirmar su primer pedido
   al primer intento, sin ayuda.

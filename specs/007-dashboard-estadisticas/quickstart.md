@@ -119,6 +119,29 @@ contrato del endpoint; estados de la página).
 2. **Esperado**: la fecha del día consultado aparece junto al total; las filas de ambas tablas van
    de mayor a menor importe y, a igualdad, por nombre alfabético.
 
+### E14. Atribución al camarero que abrió el pedido (FR-014)
+1. Abrir una mesa con un camarero A y cerrar la cuenta con un camarero B.
+2. Consultar el dashboard del día.
+3. **Esperado**: el importe se atribuye a A (quien abrió/tomó el pedido), no a B; si una cuenta
+   antigua no conserva al camarero del pedido, se usa B.
+
+### E15. Cuenta dividida en el dashboard (FR-002)
+1. Dividir una cuenta, pagar todas las partes y cerrarla.
+2. Consultar el dashboard del día.
+3. **Esperado**: la cuenta cuenta una sola vez por su importe total; las partes pagadas no se suman
+   por separado y el desglose por camarero cuadra con el total.
+
+### E16. Histórico de nombre y partida (FR-004)
+1. Vender un plato y, después, cambiar su nombre o su partida en la carta (008).
+2. Consultar el dashboard del día de la venta.
+3. **Esperado**: el desglose muestra el nombre y la partida que tenía el plato al pedirse, no los
+   datos actuales de la carta.
+
+### E17. Formato del porcentaje (FR-006, SC-007)
+1. Consultar una comparación con subida y otra con bajada.
+2. **Esperado**: dos decimales con coma (`9,11 %`, `-4,76 %`); las subidas no llevan signo positivo
+   y las bajadas sí llevan signo negativo.
+
 ## Comprobación del contrato de la API
 
 ```bash

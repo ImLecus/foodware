@@ -15,6 +15,12 @@ Al completar el cobro, la **cuenta queda cerrada** y la **mesa vuelve a estar li
 nueva comanda; la cuenta anterior se conserva como histórico. El cierre se rechaza mientras
 existan platos pendientes en cocina, para no liberar una mesa con comida aún en preparación.
 
+La historia incorpora las decisiones de la clarificación 2026-11-03: la **cancelación de un pedido
+completo** ya enviado deja de ser consumo facturable y libera la mesa; la **división se bloquea si
+alguna parte ya está pagada** (primero se deshacen los pagos); el **comensal se identifica con una
+etiqueta simple** («Parte 1», «Parte 2»…), sin datos personales; y una **cuenta dividida cuenta una
+sola vez** en el dashboard, por su importe total y atribuida al camarero que abrió/tomó el pedido.
+
 La API reutiliza la sesión y autorización de la historia 000: los endpoints exigen sesión con rol
 `camarero`; no se aceptan identidades por cabecera ni por URL. La persistencia usa SQLite,
 migraciones versionadas y el hub SSE compartido.
@@ -64,6 +70,22 @@ descuentos, anulaciones parciales ni recuperación de cuentas cerradas.
 
 **Escala/Ámbito**: un restaurante, decenas de mesas y varias pantallas concurrentes.
 
+## Decisiones de la clarificación 2026-11-03
+
+- **Cancelación de pedido enviado**: un pedido `cancelada` deja de ser consumo facturable; la
+  cuenta se calcula solo con pedidos vigentes y la mesa queda libre si no hay otra comanda. No es
+  una anulación parcial de una cuenta cerrada (002 es la historia que posee la acción).
+- **Partes pagadas y edición**: si alguna parte está `pagada`, 002 rechaza la edición o
+  cancelación del pedido con `409 partes_pagadas`; el camarero debe deshacer los pagos y dejar las
+  partes `pendiente`. La división puede reiniciarse solo cuando no hay pagos.
+- **Comensal**: `partes.comensal` es una etiqueta simple («Parte 1», «Parte 2»…), no un nombre ni un
+  dato personal. La UI no pide nombres.
+- **Dashboard**: una cuenta dividida cuenta una sola vez por su `total_centimos`, atribuida al
+  camarero que abrió/tomó el pedido; las partes pagadas no se suman por separado (007).
+- **Impacto técnico**: no se añaden entidades; se ajustan las reglas de `cuentas_partes` (etiqueta
+  y bloqueo con pagos), la lectura de consumos (pedidos `cancelada` excluidos) y la documentación
+  del contrato. El dashboard consume el total de la cuenta, no la suma de partes.
+
 ## Verificación de la Constitución
 
 *GATE: debe pasar antes de la investigación y volver a comprobarse tras el diseño.*
@@ -72,9 +94,9 @@ descuentos, anulaciones parciales ni recuperación de cuentas cerradas.
 |---|---|---|
 | I. Simplicidad | Un flujo HTTP y una única persistencia de cuenta/partes; sin ORM ni estado global | Pasa |
 | II. Español y euro | Textos, fechas e importes con convención española | Pasa |
-| III. Cero alcance fantasma | Solo FR-001–FR-019: cierre, división, pagos, ticket, reutilización y bloqueo por cocina | Pasa |
+| III. Cero alcance fantasma | Solo FR-001–FR-019, con la cancelación de pedido enviado, el bloqueo con partes pagadas y la etiqueta de comensal ya clarificados; no se implementan cobros, devoluciones ni datos personales | Pasa |
 | IV. Verificable por no técnico | Cerrar, dividir, pagar, reutilizar la mesa y ver pendientes desde la interfaz | Pasa |
-| V. Datos con respeto | Solo etiqueta de comensal; sin secretos en el repositorio | Pasa |
+| V. Datos con respeto | Solo etiqueta simple de comensal («Parte 1»…), sin nombres ni datos personales; sin secretos en el repositorio | Pasa |
 | VI. Conventional Commits | Proceso de commits del equipo | Pasa |
 | VII. Desarrollo en equipo | Docker, README y decisiones documentadas | Pasa |
 | Tecnología obligatoria | React + Chakra UI y ExpressJS sobre Node | Pasa |
@@ -112,7 +134,7 @@ backend/
 │   ├── middleware/autenticar.js # sesión desde cookie (historia 000)
 │   ├── middleware/authorize.js  # requireRole('camarero')
 │   ├── routes/cuentas.js        # cuenta, división, pagos, cierre y ticket
-│   ├── services/cuentasService.js
+│   ├── services/cuentasService.js  # excluye pedidos cancelados y bloquea edición con pagos
 │   ├── services/divisionService.js
 │   ├── services/ticketService.js
 │   ├── realtime/emit.js         # mesa-cerrada
@@ -128,9 +150,9 @@ frontend/
 │   ├── pages/CierreCuenta.jsx
 │   ├── hooks/useCuenta.js
 │   ├── components/ResumenCuenta.jsx
-│   ├── components/DivisionCuenta.jsx
+│   ├── components/DivisionCuenta.jsx  # etiquetas «Parte 1», «Parte 2»…
 │   ├── components/AsignarConsumos.jsx
-│   ├── components/ParteCuenta.jsx
+│   ├── components/ParteCuenta.jsx     # sin nombres ni datos personales
 │   ├── components/TicketFinal.jsx
 │   └── services/api.js
 └── tests/
@@ -169,7 +191,11 @@ Actualizar [data-model.md](./data-model.md), [contracts/api.md](./contracts/api.
 - bloqueo del cierre por líneas pendientes de pedidos enviados;
 - contrato de error `platos_pendientes` y lista de platos;
 - endpoints protegidos por sesión de camarero;
-- ticket y cuentas cerradas como histórico.
+- ticket y cuentas cerradas como histórico;
+- cancelación de pedido enviado: no genera consumo y libera la mesa;
+- bloqueo de edición/cancelación si alguna parte está pagada (`partes_pagadas`);
+- etiqueta de comensal «Parte 1», «Parte 2»… sin datos personales;
+- cuenta dividida como una sola venta en el dashboard.
 
 ### Fase 2 — Tareas
 

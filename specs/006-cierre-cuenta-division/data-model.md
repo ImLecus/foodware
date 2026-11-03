@@ -32,13 +32,14 @@ cuenta cerrada se conserva como histórico; no se reabre.
 |-------|------|-------------|
 | `id` | texto | Identificador del pedido. |
 | `mesa_id` | texto | Mesa a la que pertenece. |
-| `estado` | enumerado | `en_curso` \| `enviada` \| `cerrada`. |
+| `estado` | enumerado | `en_curso` \| `enviada` \| `cerrada` \| `cancelada`. |
 | `enviado_en` | fecha | Momento de envío a cocina. |
 
 **Reglas**:
 - Los consumos de una mesa son las líneas de sus pedidos `en_curso` y `enviada` con precio
-  fijado al pedir.
+  fijado al pedir. Los pedidos `cancelada` no son consumo facturable y se excluyen del total.
 - Solo las líneas de pedidos `enviada` están en cocina y participan en el bloqueo de cierre.
+- Un pedido `cancelada` libera la mesa si no tiene otra comanda y no genera cobro (002).
 
 ### Consumo / línea de pedido (propiedad de las historias 001–004; aquí solo lectura)
 
@@ -47,9 +48,9 @@ cuenta cerrada se conserva como histórico; no se reabre.
 | `id` | texto | Identificador de la línea. |
 | `pedido_id` | texto | Pedido al que pertenece. |
 | `plato_id` | texto | Plato de la carta. |
-| `nombre` | texto | Nombre del plato en el momento de la consulta. |
+| `nombre` | texto | Nombre del plato **fijado al pedir** (instantánea), no el actual de la carta. |
 | `cantidad` | entero | Unidades (≥ 1). |
-| `partida` | enumerado | `entrantes` \| `principales` \| `postres`. |
+| `partida` | enumerado | Partida **fijada al pedir** (instantánea): `entrantes` \| `principales` \| `postres`. |
 | `precio_centimos` | entero | Precio unitario fijado al pedir, IVA incluido. |
 | `estado` | enumerado | `pendiente` \| `listo`. |
 | `listo_en` | fecha / nulo | Momento en que cocina la marcó lista. |
@@ -97,7 +98,7 @@ cuenta cerrada se conserva como histórico; no se reabre.
 | `id` | texto | Identificador único. |
 | `cuenta_id` | texto | Cuenta a la que pertenece. |
 | `orden` | entero | Posición 1..n; determina el reparto de céntimos. |
-| `comensal` | texto | Etiqueta del comensal. |
+| `comensal` | texto | Etiqueta simple generada por `orden` («Parte 1», «Parte 2»…); sin nombres ni datos personales. |
 | `importe_centimos` | entero | Importe de la parte. |
 | `estado` | enumerado | `pendiente` \| `pagada`. |
 | `pagada_en` | fecha / nulo | Momento del pago. |
@@ -108,8 +109,12 @@ cuenta cerrada se conserva como histórico; no se reabre.
 - La cuenta se cierra solo cuando todas las partes están pagadas y no hay platos pendientes de
   cocina.
 - Una parte pagada puede volver a pendiente mientras la cuenta esté abierta.
+- Mientras exista alguna parte `pagada`, 002 no permite editar ni cancelar el pedido; primero se
+  deshacen los pagos y las partes vuelven a `pendiente` (`409 partes_pagadas`).
 - Al marcar la última parte como pagada se cierra la cuenta, se libera la mesa y se emite el
   ticket único; si hay platos pendientes, la operación se rechaza.
+- En el dashboard, la cuenta dividida cuenta una sola vez por `total_centimos`; las partes no se
+  suman por separado.
 
 ### Asignación de consumo (propiedad de esta historia 006)
 
@@ -171,6 +176,7 @@ Consumo 1 ─ N Asignación
 
 ```text
 Mesa:      libre ──(abrir)──▶ ocupada ──(cerrar cuenta)──▶ libre
+Pedido:    enviada ──(cancelar, 002)──▶ cancelada
 Cuenta:    derivada/abierta ──(pago único o última parte)──▶ cerrada
 Parte:     pendiente ──(pagar)──▶ pagada ──(deshacer; cuenta abierta)──▶ pendiente
 Ticket:    no_emitido ──(cerrar cuenta)──▶ emitido

@@ -56,6 +56,10 @@ export function emitirPedidoModificado({ pedidoId, partida, modificadoEn, mesa, 
   });
 }
 
+export function emitirPedidoCancelado({ pedidoId, partida, mesa, mesaId }) {
+  publicar('pedido.cancelado', { tipo: 'pedido.cancelado', pedidoId, partida, mesa, mesaId });
+}
+
 export function emitirPedidoReabierto({ pedidoId, partida, mesa, mesaId, lineaId }) {
   publicar('pedido.reabierto', {
     tipo: 'pedido.reabierto',

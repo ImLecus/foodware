@@ -43,20 +43,42 @@ export function insertarPedido(
   { id, mesa = 'mesa-1', enviadoEn = '2026-10-20 10:00:00', modificado = 0 } = {},
 ) {
   db.prepare(
-    `INSERT INTO pedidos (id, mesa_id, camarero_id, estado, modificado, enviado_en, modificado_en)
-     VALUES (?, ?, 'camarero-1', 'enviada', ?, ?, ?)`,
-  ).run(id, mesa, modificado, enviadoEn, modificado ? enviadoEn : null);
+    `INSERT INTO pedidos
+       (id, mesa_id, camarero_id, estado, modificado, enviado_en, modificado_en,
+        cambios_enviados_en)
+     VALUES (?, ?, 'camarero-1', 'enviada', ?, ?, ?, ?)`,
+  ).run(
+    id,
+    mesa,
+    modificado,
+    enviadoEn,
+    modificado ? enviadoEn : null,
+    modificado ? enviadoEn : null,
+  );
 }
 
 export function insertarLinea(
   db,
   { id, pedidoId, platoId = 'plato-entrante', cantidad = 1, estado = 'pendiente' } = {},
 ) {
+  const plato = db
+    .prepare('SELECT nombre, partida_codigo FROM platos WHERE id = ?')
+    .get(platoId);
   db.prepare(
     `INSERT INTO lineas_pedido
-       (id, pedido_id, plato_id, cantidad, precio_centimos, estado, listo_en)
-     VALUES (?, ?, ?, ?, 100, ?, ?)`,
-  ).run(id, pedidoId, platoId, cantidad, estado, estado === 'listo' ? '2026-10-20 10:05:00' : null);
+       (id, pedido_id, plato_id, nombre_plato, cantidad, precio_centimos,
+        partida_codigo, estado, listo_en)
+     VALUES (?, ?, ?, ?, ?, 100, ?, ?, ?)`,
+  ).run(
+    id,
+    pedidoId,
+    platoId,
+    plato?.nombre ?? null,
+    cantidad,
+    plato?.partida_codigo ?? null,
+    estado,
+    estado === 'listo' ? '2026-10-20 10:05:00' : null,
+  );
 }
 
 /** Inserta una cuenta cerrada histórica para probar la reutilización de una mesa. */

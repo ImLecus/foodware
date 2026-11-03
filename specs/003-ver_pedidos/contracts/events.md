@@ -30,6 +30,14 @@ posición originales (FR-015, FR-018, SC-012).
 { "tipo": "pedido.modificado", "partida": "principales", "pedidoId": "p-130", "modificado": true }
 ```
 
+### `pedido.cancelado`
+Se emite cuando sala cancela el pedido completo (historia 002). La vista recarga la lista y el
+pedido desaparece; sus platos no se marcan como listos ni cuentan como completados (FR-019).
+
+```json
+{ "tipo": "pedido.cancelado", "partida": "principales", "pedidoId": "p-130" }
+```
+
 ### `pedido.pendientes-cambiado`
 Se emite cuando cambia el conjunto de pedidos pendientes de la partida (un pedido se completa, se
 cancela/retira o se reordena), para que la vista recargue la lista ordenada.

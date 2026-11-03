@@ -194,3 +194,40 @@ son alcance de la historia 004. Es coherente con `contracts/openapi.yaml` de la 
   funcionalidad no demostrable (descartado).
 - Implementar antes la historia 004 completa: fuera del alcance de esta historia y bloquea el
   trabajo; la 004 aportará después su pantalla y su aviso temporal sobre este mismo endpoint.
+
+## 11. Cancelación de un pedido y aviso de mesa
+
+**Decisión**: cuando 002 cancela el pedido completo, la vista deja de considerar abierta la mesa
+si no tiene otra comanda, retira su aviso activo y lo difunde por SSE (`aviso.retirado`). No se
+cobra ni se genera un aviso nuevo.
+
+**Rationale**: una mesa sin comanda vigente no debe seguir mostrando un aviso de comida lista; la
+clarificación 2026-11-03 fija que la cancelación retira el pedido y el aviso en todas las
+pantallas.
+
+**Alternativas consideradas**: mantener el aviso hasta que el camarero lo descarte (información
+obsoleta); dejar la mesa visible sin platos (confunde la vista de sala).
+
+## 12. Cambio de cantidad de una línea ya lista
+
+**Decisión**: si la cantidad de una línea `listo` baja o se mantiene, la línea sigue lista y la
+completitud no cambia; si sube, vuelve a `pendiente`, se limpia `listo_en`, la mesa deja de estar
+completa y el aviso se retira. El recálculo se dispara al confirmar los cambios en 002.
+
+**Rationale**: lo preparado cubre una reducción; un aumento exige preparar unidades nuevas. Es la
+regla aprobada en 2026-11-03 y evita avisos de mesa completa con comida sin preparar.
+
+**Alternativas consideradas**: cualquier cambio vuelve a pendiente (obliga a recocinar de más);
+seguir siempre completa (podría avisar antes de tiempo).
+
+## 13. Disponibilidad de la carta
+
+**Decisión**: un cambio de disponibilidad en 008 no retira el plato de un pedido enviado; sigue
+visible en la mesa y en la vista de sala. Si no se puede preparar, el camarero lo retira o cancela
+el pedido según 002, y la completitud se recalcula.
+
+**Rationale**: respeta el pedido ya aceptado y evita cambios silenciosos; la decisión de
+2026-11-03 remite el tratamiento a 002.
+
+**Alternativas consideradas**: ocultar el plato de la vista (deja la mesa incompleta sin
+explicación); retirarlo automáticamente (pierde el consumo ya pedido).

@@ -3,11 +3,13 @@ import { obtenerMesa } from '../db/mesas.js';
 import {
   anadirLinea,
   anularPedido,
+  cancelarPedido,
   confirmarPedido,
   limpiarBloqueo,
   marcarCambiosEnviados,
   modificarLinea,
   obtenerPedido,
+  reiniciarLineaLista,
   retirarLinea,
 } from '../db/pedidos.js';
 import { obtenerPlato } from '../db/platos.js';
@@ -38,13 +40,14 @@ import { requireRole } from '../middleware/authorize.js';
 import { comprobarEdicion } from '../middleware/bloqueo.js';
 import { ErrorHttp } from '../middleware/error.js';
 import {
+  emitirPedidoCancelado,
   emitirPedidoModificado,
   emitirPedidoNuevo,
   emitirPendientesCambiado,
 } from '../realtime/emit.js';
 import { publicar } from '../realtime/hub.js';
 import { sincronizarAvisoMesa } from '../services/avisos.js';
-import { descartarDivision } from '../services/cuentasService.js';
+import { descartarDivision, exigirSinPartesPagadas } from '../services/cuentasService.js';
 import { aISO } from '../utils/fechas.js';
 import { marcarLinea } from '../services/marcarListo.js';
 import { validarLineaPatchEdicion, validarNuevaLineaEdicion } from '../schemas/edicion.js';
@@ -131,6 +134,7 @@ export function pedidosRouter(db) {
         db,
         exigirPedido(obtenerPedido(db, req.params.pedidoId)),
       );
+      exigirSinPartesPagadas(db, pedido.mesa_id);
       adquirirBloqueoEdicion(db, pedido, req.camarero.id);
       res.json(serializarPedido(obtenerPedido(db, pedido.id)));
     } catch (error) {
@@ -195,7 +199,16 @@ export function pedidosRouter(db) {
         const pedido = req.pedido;
         const linea = buscarLinea(pedido, req.params.lineaId);
         descartarDivision(db, pedido.mesa_id);
-        const actualizada = modificarLinea(db, linea.id, datos);
+        let actualizada = modificarLinea(db, linea.id, datos);
+
+        // Subir la cantidad de una línea ya lista exige preparar unidades nuevas.
+        if (
+          datos.cantidad !== undefined &&
+          linea.estado === 'listo' &&
+          datos.cantidad > linea.cantidad
+        ) {
+          actualizada = reiniciarLineaLista(db, linea.id);
+        }
 
         if (pedido.estado === 'enviada') {
           if (datos.cantidad !== undefined) {
@@ -345,6 +358,49 @@ export function pedidosRouter(db) {
       publicar('pedido-anulado', { pedidoId: pedido.id, mesaId: pedido.mesa_id });
 
       res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/:pedidoId/cancelar', soloCamarero, (req, res, next) => {
+    try {
+      const pedido = exigirMesaAbiertaDelPedido(
+        db,
+        exigirPedido(obtenerPedido(db, req.params.pedidoId)),
+      );
+      exigirEditable(pedido);
+      exigirSinPartesPagadas(db, pedido.mesa_id);
+      exigirBloqueoPropio(pedido, req.camarero.id);
+
+      registrarCambio(db, pedido, req.camarero.id, {
+        tipo: 'cancelar',
+        detalle: { motivo: 'cancelacion_cliente' },
+      });
+      descartarDivision(db, pedido.mesa_id);
+      cancelarPedido(db, pedido.id);
+
+      const mesa = obtenerMesa(db, pedido.mesa_id);
+      const estadoMesa = sincronizarAvisoMesa(db, mesa.id, { nuevoPlatoListo: false });
+      const numero = numeroDeMesa(mesa.identificador);
+      for (const partida of PARTIDAS) {
+        emitirPedidoCancelado({
+          pedidoId: pedido.id,
+          partida,
+          mesa: numero,
+          mesaId: mesa.id,
+        });
+        emitirPendientesCambiado({ partida, mesaId: mesa.id });
+      }
+      publicar('pedido-cancelado', { pedidoId: pedido.id, mesaId: pedido.mesa_id });
+
+      res.json({
+        pedido_id: pedido.id,
+        estado: 'cancelada',
+        mesa_estado: 'libre',
+        completa: estadoMesa.completa,
+        aviso: estadoMesa.aviso,
+      });
     } catch (error) {
       next(error);
     }

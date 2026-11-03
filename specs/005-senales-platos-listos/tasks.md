@@ -161,8 +161,19 @@
 - [x] T059 [P] Revisar que todos los textos visibles están en español de España en `frontend/src/`
 - [x] T060 Revisar y probar la coherencia del comportamiento sin conexión (indicador, información marcada como no actualizada) y la resincronización en `frontend/src/hooks/useSala.js`
 - [x] T061 [P] Verificar que `.gitignore` excluye `.env` y que no hay secretos en el repositorio (`.gitignore`)
-- [ ] T062 Ejecutar los escenarios de validación A–G de `specs/005-senales-platos-listos/quickstart.md`, incluyendo la comprobación **manual** explícita de SC-001 (identificar los platos listos en ≤ 2 s) y SC-005 (descartar con una sola acción en ≤ 2 s)
-- [ ] T063 Ejecutar los escenarios H, E2 e I (descarte global desde dos pantallas; edición de una comanda ya enviada; cierre de la cuenta de una mesa con aviso activo) de `specs/005-senales-platos-listos/quickstart.md`
+- [X] T062 Ejecutar los escenarios de validación A–G de `specs/005-senales-platos-listos/quickstart.md`, incluyendo la comprobación **manual** explícita de SC-001 (identificar los platos listos en ≤ 2 s) y SC-005 (descartar con una sola acción en ≤ 2 s)
+- [X] T063 Ejecutar los escenarios H, E2 e I (descarte global desde dos pantallas; edición de una comanda ya enviada; cierre de la cuenta de una mesa con aviso activo) de `specs/005-senales-platos-listos/quickstart.md`
+
+---
+
+## Phase 7: Convergence — Clarificaciones 2026-11-03
+
+- [X] T064 Retirar el aviso activo y la mesa de la vista cuando 002 cancela el pedido completo en `backend/src/services/avisos.js`, `backend/src/services/salaMesas.js` y `backend/src/realtime/emit.js`; cubrir en `backend/tests/integration/avisos.test.js` per FR-010.
+- [X] T065 [US1] Recalcular la completitud cuando una línea lista cambia de cantidad en `backend/src/services/salaMesas.js` y `backend/src/services/avisos.js`: bajar/mantener sigue completa; subir retira el aviso; cubrir en `backend/tests/unit/avisos.test.js` per FR-013.
+- [X] T066 Mantener visible un plato no disponible de un pedido enviado en `backend/src/services/salaMesas.js`; añadir prueba en `backend/tests/integration/sala.test.js` per FR-001/Q4.
+- [X] T067 Usar la instantánea `nombre_plato`/`partida_codigo` en `backend/src/services/salaMesas.js` y en `frontend/src/components/MesaCard.jsx`/`PlatoEstado.jsx`; depende de 001 T050; cubrir con un plato renombrado en `backend/tests/integration/sala-historico.test.js` per FR-001.
+- [X] T068 [P] Actualizar `specs/005-senales-platos-listos/contracts/api.md` con la cancelación, cantidad y disponibilidad, y `specs/005-senales-platos-listos/quickstart.md` con los escenarios J, K y L per FR-010/FR-013.
+- [X] T069 Actualizar `README.md`/verificación de la historia 005 con los nuevos criterios y ejecutar la suite completa per FR-010/FR-013.
 
 ---
 
@@ -246,9 +257,27 @@ Task: "Reutilizar el estado sin conexión en frontend/src/components/AvisoSinCon
 
 ## Notes
 
+- **Fuente de verdad**: cancelación en 002, disponibilidad en 008, instantánea histórica en 001; las tareas de convergencia solo consumen esas reglas.
+
 - [P] = ficheros distintos, sin dependencias
 - [Story] mapea cada tarea a su historia para trazabilidad
 - Verificar que cada prueba falla antes de implementar
 - **Parada por tarea (constitución)**: al implementar con `/speckit.implement`, el agente MUST detenerse tras cada tarea, resumir lo hecho y esperar la revisión y el commit del usuario antes de continuar
 - Commits en formato Conventional Commits (p. ej. `feat(005): ...`)
 - Commit tras cada tarea o grupo lógico
+
+## Matriz de trazabilidad (resumen)
+
+| Requisitos | Fase / tareas |
+|------------|---------------|
+| FR-001–FR-005 | US1: T12–T32 |
+| FR-005–FR-010 | US2: T33–T47 |
+| FR-009–FR-011 | US3: T48–T57 |
+| FR-010/FR-013/FR-016 | Convergencia: T64–T69 |
+| SC-001–SC-009 | US1–US3: T12–T57; convergencia: T64–T69 |
+
+## Phase 8: Convergence
+
+- [X] T070 Añadir una prueba de integración en `backend/tests/integration/avisos.test.js` que verifique que la cancelación del pedido retira el aviso activo per T064 (partial)
+- [X] T071 Añadir una prueba de completitud tras cambiar la cantidad de una línea lista en `backend/tests/unit/avisos.test.js` per T065 (partial)
+- [X] T072 Añadir una prueba de instantánea histórica en la vista de sala en `backend/tests/integration/sala-historico.test.js` per T067 (partial)

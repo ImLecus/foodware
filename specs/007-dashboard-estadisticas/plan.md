@@ -71,6 +71,23 @@ comparación. Si una fila no tuvo ventas el día anterior y sí las tiene el dí
   alfabético; el orden se aplica igual en los desgloses del informe y en los de comparación
   (FR-013).
 
+## Decisiones de la clarificación 2026-11-03
+
+- **Atribución por camarero (FR-014)**: el importe de cada cuenta se atribuye al camarero que
+  abrió/tomó el pedido (`pedidos.camarero_id`); solo si no consta se usa el que la cerró
+  (`cuentas.camarero_id`). La implementación actual debe invertir el `COALESCE`.
+- **Cuenta dividida (FR-002)**: cuenta una sola vez por su `total_centimos`, atribuida al camarero
+  que abrió/tomó el pedido; las partes pagadas no se suman por separado.
+- **Instantánea de plato (FR-004)**: el desglose usa `lineas_pedido.nombre_plato` y
+  `partida_codigo` fijados al pedir, no los datos actuales de la carta (008).
+- **Pedidos cancelados**: no generan cuenta ni consumo; el dashboard solo agrega cuentas cerradas
+  vigentes. Un pedido `cancelada` no aparece en ningún desglose.
+- **Partes pagadas**: la cuenta solo se cierra cuando todas las partes están pagadas; no hay
+  cuentas cerradas con partes pendientes que puedan descuadrar el total.
+- **Porcentaje (FR-006/SC-007)**: dos decimales con coma y signo negativo solo en bajadas.
+- **Impacto técnico**: `reportingService` usa el camarero del pedido, el total de la cuenta (no la
+  suma de partes) y la instantánea de la línea. No se añaden tablas ni caché.
+
 ## Contexto Técnico
 
 **Lenguaje/Versión**: JavaScript ES2022 sobre Node.js 22 LTS (backend) y React 18 con JavaScript y
@@ -99,10 +116,11 @@ frontend servido como estáticos. Uso en tablets de sala y puesto de encargado. 
 agregación diaria (SUM/GROUP BY sobre un día de cuentas) por debajo de 1 s en el volumen esperado.
 
 **Restricciones**: moneda euro y convenciones españolas de número/fecha; solo el rol *encargado*
-puede acceder mediante sesión real (historia 000); los precios usados son los fijados en el
-momento de pedir; el día natural es la unidad de servicio (Europe/Madrid); los desgloses incluyen
-todos los camareros activos y los platos de la carta vigente con `0,00 €` si no vendieron, además
-de cualquier actor con ventas ese día aunque ya no esté activo o en la carta.
+puede acceder mediante sesión real (historia 000); los precios, nombres y partidas usados son los
+fijados en el momento de pedir; el día natural es la unidad de servicio (Europe/Madrid); la venta
+se atribuye al camarero que abrió/tomó el pedido y una cuenta dividida cuenta una sola vez; los
+desgloses incluyen todos los camareros activos y los platos de la carta vigente con `0,00 €` si no
+vendieron, además de cualquier actor con ventas ese día aunque ya no esté activo o en la carta.
 
 **Alcance/Escala**: restaurante medio; consulta de un día concreto; histórico mínimo limitado al
 día anterior; pocos usuarios encargados y varias cuentas por día.
@@ -115,7 +133,7 @@ día anterior; pocos usuarios encargados y varias cuentas por día.
 |-------------------|--------------|--------|
 | I. Simplicidad | Agregación bajo demanda con SQL; sin capa de caché ni agregados precalculados; sin librería de gráficas | Pasa |
 | II. Español de España y euro | Formato `Intl` es-ES y €; día natural Europe/Madrid | Pasa |
-| III. Cero alcance fantasma | Solo los FR-001…FR-013 de la spec: lectura + visualización del dashboard, incluida la comparación sin base cuando el día anterior no tuvo ventas, el universo de camareros activos y carta vigente, la fecha visible y el orden por importe; no se implementan pedidos, cierre ni gestión de carta | Pasa |
+| III. Cero alcance fantasma | Solo los FR-001…FR-014 de la spec: lectura + visualización del dashboard, incluida la atribución al camarero que abrió el pedido, la cuenta dividida como una sola venta, la instantánea de nombre/partida, la fecha visible y el orden por importe; no se implementan pedidos, cierre ni gestión de carta | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` con escenarios de comprobación desde la interfaz | Pasa |
 | V. Datos con respeto | Solo se leen ventas, camarero y plato; sin datos personales innecesarios ni secretos | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |

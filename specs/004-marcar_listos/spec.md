@@ -22,6 +22,13 @@
 - Q: Cuando el cocinero marca el último plato pendiente de un pedido y el pedido desaparece de la lista de cocina, ¿cómo puede deshacer esa última marca si ya no lo ve en pantalla? (FR-006, FR-014) → A: Mediante un aviso temporal ("Pedido completado") con acción "Deshacer" mostrado durante al menos 10 segundos tras completarse el pedido.
 - Q: ¿Cuánto tiempo debe permanecer visible la acción "Deshacer" del aviso temporal tras completar un pedido? (SC-009) → A: Al menos 10 segundos.
 
+### Session 2026-11-03
+
+- Q: ¿Qué ocurre con un pedido cancelado desde sala que aún tiene platos pendientes? → A: El pedido completo se retira de la vista de cocina (historia 002) y sus platos no se pueden marcar como listos.
+- Q: Si una línea de pedido ya marcada como lista cambia de cantidad en una edición posterior, ¿qué debe pasar con su estado de preparación y con la completitud de la mesa? → A: Si la cantidad baja o se mantiene, la línea sigue lista; si sube, vuelve a pendiente y se borra el momento de listo. La completitud de la mesa se recalcula en consecuencia.
+- Q: ¿Puede cocina marcar o desmarcar platos de un pedido bloqueado por una edición de sala? → A: No; el bloqueo de la historia 002 se extiende a cocina y la operación se permite al liberarse el bloqueo.
+- Q: Si un plato de un pedido enviado deja de estar disponible en la carta, ¿puede cocina seguir marcándolo? → A: Sí, mientras siga en el pedido; la baja de carta no lo retira. Si no se puede preparar, el camarero lo retira o cancela el pedido según la historia 002.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Marcar un plato como listo desde la cocina (Priority: P1)
@@ -79,7 +86,7 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 
 - **Plato ya marcado como listo**: la acción no tiene efecto y no se altera el momento registrado previamente.
 - **Plato de otra partida**: no puede marcarse; la marca solo aplica a la partida del cocinero.
-- **Plato de un pedido que ya no está pendiente** (por ejemplo, retirado o cancelado desde sala): no puede marcarse.
+- **Plato de un pedido que ya no está pendiente** (por ejemplo, retirado o cancelado desde sala): no puede marcarse. La cancelación del pedido completo se rige por la historia 002 y retira el pedido de la vista de cocina.
 - **Plato retirado del pedido antes de marcarlo** (historia 02): deja de existir como pendiente y no puede marcarse.
 - **Último plato de un pedido**: al marcarlo, el pedido deja de estar pendiente y desaparece de la lista de pendientes de cocina; se muestra un aviso temporal con la acción "Deshacer" durante al menos 10 segundos que permite revertir esa última marca.
 - **Un pedido con todos sus platos listos**: la pantalla del camarero refleja que todos los platos del pedido están listos.
@@ -87,6 +94,9 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - **Marcado simultáneo del mismo plato** desde dos pantallas de la misma partida: el resultado debe ser uno solo, sin duplicar el momento registrado.
 - **Pedido con varias unidades del mismo plato**: la marca afecta a la línea completa del plato (todas sus unidades), no a unidades sueltas.
 - **Deshacer una marca de listo**: el plato vuelve a contarse como pendiente y reaparece entre los platos por preparar del pedido; la pantalla del camarero deja de mostrarlo como listo.
+- **Cambio de cantidad de una línea ya lista** (historia 002): si la cantidad baja o se mantiene, la línea sigue lista; si sube, vuelve a pendiente y se borra el momento de listo, y la completitud de la mesa se recalcula.
+- **Pedido bloqueado por una edición de sala**: mientras dure el bloqueo, cocina no puede marcar ni desmarcar sus platos; al liberarse, se aplica el estado resultante de los cambios.
+- **Plato que deja de estar disponible en la carta**: si ya está en un pedido enviado, sigue pendiente y puede marcarse como listo; la baja solo afecta a pedidos nuevos. Si no se puede preparar, el camarero lo retira o cancela el pedido según la historia 002.
 
 ## Requirements *(mandatory)*
 
@@ -108,6 +118,9 @@ El sistema deja constancia del momento exacto en que cada plato se marcó como l
 - **FR-014**: El cocinero MUST poder deshacer la marca de un plato marcado como listo, devolviéndolo a pendiente. Cuando la marca deshecha sea la del último plato pendiente del pedido, la acción MUST ofrecerse desde el aviso temporal mostrado al completarse el pedido y MUST permanecer disponible durante al menos 10 segundos.
 - **FR-015**: Al deshacer la marca, el plato MUST dejar de conservar su condición de listo y MUST volver a contarse como pendiente en la pantalla de cocina y en la pantalla del camarero.
 - **FR-016**: El marcado de platos como listos MUST realizarse plato a plato; la pantalla de cocina MUST NOT ofrecer una acción para marcar todos los platos de un pedido a la vez.
+- **FR-017**: Un pedido cancelado desde sala (historia 002) MUST dejar de estar disponible para marcar sus platos como listos y MUST retirarse de la vista de cocina; sus platos MUST NOT contarse como pendientes ni como listos.
+- **FR-018**: Si una línea ya marcada como lista cambia de cantidad en una edición posterior (historia 002), la línea MUST seguir lista cuando la cantidad baje o se mantenga, y MUST volver a pendiente, borrando su momento de listo, cuando la cantidad suba. La completitud de la mesa MUST recalcularse en consecuencia (historia 005).
+- **FR-019**: Mientras un pedido esté bloqueado por una edición de sala (historia 002), la pantalla de cocina MUST NOT permitir marcar ni desmarcar sus platos como listos; al liberarse el bloqueo, MUST aplicarse el estado resultante de los cambios.
 
 ### Key Entities *(include if data involved)*
 

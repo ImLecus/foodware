@@ -107,10 +107,11 @@ export function obtenerPedido(pedidoId) {
   return apiGet(`/pedidos/${pedidoId}`);
 }
 
-export function anadirLinea(pedidoId, platoId, cantidad = 1) {
+export function anadirLinea(pedidoId, platoId, cantidad = 1, indicaciones = null) {
   return apiEnviar(`/pedidos/${pedidoId}/lineas`, 'POST', {
     plato_id: platoId,
     cantidad,
+    indicaciones,
   });
 }
 
@@ -146,6 +147,10 @@ export function cerrarEdicion(pedidoId) {
 
 export function enviarCambios(pedidoId) {
   return apiEnviar(`/pedidos/${pedidoId}/enviar-cambios`, 'POST');
+}
+
+export function cancelarPedido(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/cancelar`, 'POST');
 }
 
 /* Sala: señales de platos listos (historia 005) */

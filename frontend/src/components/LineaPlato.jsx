@@ -1,5 +1,6 @@
 import { Badge, Button, HStack, Text, VStack } from '@chakra-ui/react';
 import { formatearHora } from '../utils/formato.js';
+import { NOMBRES_PARTIDA } from '../utils/partidas.js';
 
 export default function LineaPlato({ linea, onMarcarListo, onDeshacer, deshabilitado = false }) {
   const listo = linea.estado === 'listo';
@@ -12,6 +13,11 @@ export default function LineaPlato({ linea, onMarcarListo, onDeshacer, deshabili
         <Text fontSize="sm">
           {linea.nombrePlato} × {linea.cantidad}
         </Text>
+        {linea.partida && (
+          <Text fontSize="xs" color="gray.500">
+            {NOMBRES_PARTIDA[linea.partida] ?? linea.partida}
+          </Text>
+        )}
         {listo && linea.listoEn && (
           <Text fontSize="xs" color="gray.500">
             Preparado a las {formatearHora(linea.listoEn)}

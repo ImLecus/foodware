@@ -17,7 +17,7 @@ import AsignarConsumos from './AsignarConsumos.jsx';
 import ParteCuenta from './ParteCuenta.jsx';
 
 function comensalPorDefecto(indice) {
-  return `Comensal ${indice + 1}`;
+  return `Parte ${indice + 1}`;
 }
 
 /**
@@ -76,12 +76,6 @@ export default function DivisionCuenta({
   function cambiarModo(nuevoModo) {
     setError(null);
     setModo(nuevoModo);
-  }
-
-  function cambiarComensal(orden, valor) {
-    setComensales((actual) =>
-      actual.map((comensal, indice) => (indice === orden - 1 ? valor : comensal)),
-    );
   }
 
   function alternarConsumo(lineaId, orden) {
@@ -207,11 +201,7 @@ export default function DivisionCuenta({
 
           <Stack spacing={2}>
             {partes.map((parte) => (
-              <ParteCuenta
-                key={parte.orden}
-                parte={parte}
-                onCambiarComensal={(valor) => cambiarComensal(parte.orden, valor)}
-              />
+              <ParteCuenta key={parte.orden} parte={parte} />
             ))}
           </Stack>
 

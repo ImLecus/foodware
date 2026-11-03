@@ -125,6 +125,17 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 
 ---
 
+## Phase 5: Convergence — Clarificaciones 2026-11-03
+
+- [X] T049 [US1] Añadir la columna `indicaciones` a `lineas_pedido` en `backend/migrations/008_lineas_pedido_indicaciones.sql` y actualizar `backend/src/db/seed.js` con ejemplos; cubrir la migración en `backend/tests/integration/migraciones.test.js` per FR-006.
+- [X] T050 [US1] Añadir las columnas de instantánea `nombre_plato` y `partida_codigo` a `lineas_pedido` en `backend/migrations/009_lineas_pedido_instantanea.sql` y actualizar el seed; depende de T049; probar que se rellenan al crear la línea en `backend/tests/integration/pedidos_historico.test.js` per FR-018.
+- [X] T051 [US1] Actualizar `backend/src/db/pedidos.js` para copiar nombre, partida, precio e indicaciones al crear la línea y devolverlos en las consultas; ajustar `backend/tests/integration/pedidos.test.js` per FR-006/FR-018.
+- [X] T052 [P] [US1] Ampliar `backend/src/schemas/pedidos.js` y `backend/src/api/pedidos.js` para aceptar `indicaciones` en `NuevaLinea` y devolver la instantánea en `LineaPedido`; actualizar `backend/tests/contract/pedidos.test.js` y `specs/001-comandas/contracts/openapi.yaml` per FR-006/FR-018.
+- [X] T053 [P] [US1] Añadir el campo de indicaciones en `frontend/src/components/SelectorPlatos.jsx` y mostrarlas en `frontend/src/components/Pedido.jsx`; cubrirlo en `frontend/tests/components/Pedido.test.jsx` per FR-006/SC-007.
+- [X] T054 [US1] Añadir una prueba de regresión en `backend/tests/integration/pedidos_historico.test.js` que cambie nombre/partida/precio del plato y verifique que el pedido conserva la instantánea; actualizar `specs/001-comandas/quickstart.md` per FR-018/SC-008.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -205,5 +216,15 @@ revise y haga el commit (Conventional Commits) antes de continuar con la siguien
 - Un commit por tarea (Conventional Commits).
 - La anulación solo aplica a pedidos en curso; un pedido ya `enviada` devuelve 409 (FR-019).
 - La edición de pedidos ya enviados pertenece a la historia 002 (no se incluye aquí).
+- **Fuente de verdad**: esta historia define la instantánea de nombre/partida/precio y las indicaciones por línea; las demás historias las referencian.
 - Fuera de alcance: cocina (003), marcar listos (004), señales (005), cierre de cuenta (006),
   dashboard (007) y gestión de carta (008).
+
+## Matriz de trazabilidad (resumen)
+
+| Requisitos | Fase / tareas |
+|------------|---------------|
+| FR-001–FR-005 (mesa y pedido) | US1: T15–T22 |
+| FR-006–FR-012 (líneas, cantidades e indicaciones) | US1: T23–T31; convergencia: T49–T53 |
+| FR-013–FR-019 (confirmación y anulación) | US1: T32–T44 |
+| SC-001–SC-008 | US1: T15–T44; convergencia: T49–T54 |

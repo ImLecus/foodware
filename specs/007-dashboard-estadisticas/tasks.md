@@ -124,61 +124,6 @@ description: "Task list for feature 007-dashboard-estadisticas"
 
 ---
 
-## Dependencies & Execution Order
-
-### Phase Dependencies
-
-- **Setup (Phase 1)**: sin dependencias.
-- **Foundational (Phase 2)**: depende de Setup y bloquea las historias.
-- **US1 (Phase 3)**: depende de Foundational; es el MVP.
-- **US2 (Phase 4)**: depende de Foundational y del total de US1.
-- **US3 (Phase 5)**: depende de Foundational y de los datos de US1/US2.
-- **Polish (Phase 6)**: depende de las historias implementadas.
-
-### User Story Dependencies
-
-- **US1**: independiente; entrega el total y el estado de error correcto.
-- **US2**: reutiliza la fecha resuelta por US1.
-- **US3**: reutiliza la fecha y los desgloses de US1/US2.
-
-### Parallel Opportunities
-
-- T001/T002, T003/T005, T007/T009/T010, T013/T014, T016/T017/T018 y T020/T021 pueden ir en paralelo.
-- No paralelizar tareas que modifiquen `backend/src/services/reportingService.js`, `backend/src/api/reportsRouter.js` o `frontend/src/pages/PaginaDashboard.jsx`.
-- Las pruebas de cada historia se escriben antes de su implementación.
-
-## Parallel Example: User Story 1
-
-```bash
-# Pruebas en paralelo:
-Task: "Integración de cierre de hoy y fecha por defecto en backend/tests/integration/reporting_fecha.test.js"
-Task: "Página de total y error en frontend/tests/components/dashboard_total.test.jsx"
-```
-
-## Implementation Strategy
-
-### MVP First (User Story 1)
-
-1. Completar Setup y Foundational.
-2. Corregir la fecha por defecto y el estado de error de la página.
-3. Validar el escenario E11: cerrar una cuenta hoy y comprobar que el dashboard muestra ayer.
-4. Continuar con US2 y US3.
-
-### Incremental Delivery
-
-1. Fecha por defecto y regresión de hoy.
-2. Total y estados de la página.
-3. Desgloses y comparación sobre la misma fecha.
-4. Documentación y validación E1–E11.
-5. Convergencia 2026-10-28: universo de desgloses, base cero por fila, fecha visible y orden; validar E10, E12 y E13.
-
-## Notes
-
-- El día en curso nunca se muestra como parcial.
-- `?date=hoy` sigue siendo `400`; solo la ausencia de `date` usa el día anterior completado.
-- No se debe mostrar «sin conexión» para un `400` o `500` del servidor.
-- No se modifica la lógica de cierre de cuentas de la historia 006.
-
 ## Phase 7: Convergence
 
 - [x] T025 Sustituir las agrupaciones `DATE(cerrada_en, 'localtime')` de `backend/src/services/reportingService.js` por una conversión explícita a Europe/Madrid basada en `limitesDelDia`, y añadir una prueba con `TZ=UTC` que cubra un cierre en la madrugada, per FR-001/plan D2 (partial)
@@ -268,3 +213,77 @@ Task: "Desgloses y comparación por fila en frontend/src/pages/PaginaDashboard.j
 - [x] T046 Reutilizar `IndicadorTendencia` (icono + color + texto) en cada fila de comparación por camarero y por plato en `frontend/src/pages/PaginaDashboard.jsx`, manteniendo «sin base de comparación» sin porcentaje, con pruebas en `frontend/tests/components/dashboard_comparison.test.jsx`, per SC-003 (partial) — MEDIUM
 - [x] T047 Atribuir en el informe las cuentas históricas sin `camarero_id` mediante `COALESCE(c.camarero_id, pedidos.camarero_id)` en `obtenerDesglosePorCamarero` de `backend/src/services/reportingService.js`, añadiendo el `LEFT JOIN` a `pedidos` por `cuenta.pedido_id` y una prueba de reconciliación en `backend/tests/contract/reports_breakdowns.test.js`, per SC-004 (partial) — MEDIUM
 - [x] T048 Documentar en `specs/007-dashboard-estadisticas/verification.md` la justificación del ajuste de `frontend/tests/App.test.jsx` (historia 008) y corregir las referencias a `reporting_breakdowns.test.js` y `reporting_comparison.test.js`, que no existen, per Constitution III/IV (unrequested) — LOW
+
+---
+
+## Phase 12: Convergence — Clarificaciones 2026-11-03
+
+- [X] T049 [P] Invertir el `COALESCE` de `obtenerDesglosePorCamarero` en `backend/src/services/reportingService.js` para priorizar `pedidos.camarero_id` y usar `cuentas.camarero_id` solo como respaldo; depende de 001 T051; actualizar `backend/tests/contract/reports_breakdowns.test.js` per FR-014.
+- [X] T050 Asegurar que una cuenta dividida cuenta una sola vez por `cuentas.total_centimos` en `backend/src/services/reportingService.js` y no suma partes; depende de 006 T037; cubrir en `backend/tests/integration/reports-cuenta-dividida.test.js` per FR-002.
+- [X] T051 Usar `lineas_pedido.nombre_plato` y `partida_codigo` en `obtenerDesglosePorPlato` de `backend/src/services/reportingService.js`; depende de 001 T050; añadir prueba con plato renombrado en `backend/tests/integration/reports-historico.test.js` per FR-004.
+- [X] T052 Excluir pedidos `cancelada` y cuentas no cerradas de la agregación en `backend/src/services/reportingService.js`; depende de 002 T041; cubrir en `backend/tests/integration/reports-cancelados.test.js` per FR-008.
+- [X] T053 [P] Ajustar `formatearPorcentaje` en `frontend/src/utils/format.js` y `IndicadorTendencia.jsx` para dos decimales, coma y signo negativo solo en bajadas; cubrir en `frontend/tests/utils/format.test.js` y `frontend/tests/components/dashboard_comparison.test.jsx` per FR-006/SC-007.
+- [X] T054 [US2] Actualizar `specs/007-dashboard-estadisticas/contracts/reports-api.md`, `contracts/dashboard-ui.md`, `quickstart.md` y `verification.md` con atribución, cuenta dividida, histórico y formato de porcentaje per FR-014/FR-002/FR-004/FR-006.
+- [X] T055 [US2] Añadir una prueba de contrato que cubra la atribución al camarero que abrió el pedido y el respaldo al que cerró en `backend/tests/contract/reports_daily.test.js` per FR-014.
+- [X] T056 [US2] Añadir una prueba de integración de cuenta dividida y de histórico de nombre/partida en `backend/tests/integration/reports-cuenta-dividida.test.js` y `backend/tests/integration/reports-historico.test.js` per FR-002/FR-004.
+
+---
+
+
+## Dependencies & Execution Order
+
+### Phase Dependencies
+
+- **Setup (Phase 1)**: sin dependencias.
+- **Foundational (Phase 2)**: depende de Setup y bloquea las historias.
+- **US1 (Phase 3)**: depende de Foundational; es el MVP.
+- **US2 (Phase 4)**: depende de Foundational y del total de US1.
+- **US3 (Phase 5)**: depende de Foundational y de los datos de US1/US2.
+- **Polish (Phase 6)**: depende de las historias implementadas.
+
+### User Story Dependencies
+
+- **US1**: independiente; entrega el total y el estado de error correcto.
+- **US2**: reutiliza la fecha resuelta por US1.
+- **US3**: reutiliza la fecha y los desgloses de US1/US2.
+
+### Parallel Opportunities
+
+- T001/T002, T003/T005, T007/T009/T010, T013/T014, T016/T017/T018 y T020/T021 pueden ir en paralelo.
+- No paralelizar tareas que modifiquen `backend/src/services/reportingService.js`, `backend/src/api/reportsRouter.js` o `frontend/src/pages/PaginaDashboard.jsx`.
+- Las pruebas de cada historia se escriben antes de su implementación.
+
+## Parallel Example: User Story 1
+
+```bash
+# Pruebas en paralelo:
+Task: "Integración de cierre de hoy y fecha por defecto en backend/tests/integration/reporting_fecha.test.js"
+Task: "Página de total y error en frontend/tests/components/dashboard_total.test.jsx"
+```
+
+## Implementation Strategy
+
+### MVP First (User Story 1)
+
+1. Completar Setup y Foundational.
+2. Corregir la fecha por defecto y el estado de error de la página.
+3. Validar el escenario E11: cerrar una cuenta hoy y comprobar que el dashboard muestra ayer.
+4. Continuar con US2 y US3.
+
+### Incremental Delivery
+
+1. Fecha por defecto y regresión de hoy.
+2. Total y estados de la página.
+3. Desgloses y comparación sobre la misma fecha.
+4. Documentación y validación E1–E11.
+5. Convergencia 2026-10-28: universo de desgloses, base cero por fila, fecha visible y orden; validar E10, E12 y E13.
+
+## Notes
+
+- **Parada por tarea (constitución)**: al implementar con `/speckit.implement`, el agente MUST detenerse tras cada tarea, resumir lo hecho y esperar la revisión y el commit del usuario antes de continuar.
+- **Fuente de verdad**: cancelación en 002, disponibilidad en 008, instantánea histórica en 001; estas tareas solo consumen esas reglas.
+
+## Phase 13: Convergence
+
+- [X] T057 Añadir una prueba de contrato en `backend/tests/contract/reports_daily.test.js` que cubra la atribución al camarero que abrió el pedido y el respaldo al que cerró per FR-014/T055 (partial)
+- [X] T058 Añadir una prueba de integración de cuenta dividida contada una sola vez y de nombre/partida históricos en `backend/tests/integration/reports-cuenta-dividida.test.js` y `backend/tests/integration/reports-historico.test.js` per FR-002/FR-004/T056 (partial)

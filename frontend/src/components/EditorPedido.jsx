@@ -1,6 +1,12 @@
 import {
   Alert,
   AlertDescription,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   AlertIcon,
   Badge,
   Box,
@@ -16,11 +22,13 @@ import {
   NumberInputField,
   Spinner,
   Text,
+  useDisclosure,
 } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   abrirEdicion,
   anadirLinea,
+  cancelarPedido,
   cerrarEdicion,
   enviarCambios,
   listarPlatos,
@@ -38,6 +46,8 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
   const [platos, setPlatos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [aviso, setAviso] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelarPedidoRef = useRef(null);
 
   useEffect(() => {
     let activo = true;
@@ -159,6 +169,16 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
   async function enviar() {
     try {
       await enviarCambios(pedidoId);
+      onActualizado?.();
+      onCerrar?.();
+    } catch (error) {
+      manejarError(error);
+    }
+  }
+
+  async function confirmarCancelacionPedido() {
+    try {
+      await cancelarPedido(pedidoId);
       onActualizado?.();
       onCerrar?.();
     } catch (error) {
@@ -325,12 +345,44 @@ export default function EditorPedido({ pedidoId, mesa, enLinea = true, onCerrar,
         <Button variant="outline" onClick={cancelar}>
           Cancelar edición
         </Button>
+        <Button colorScheme="red" variant="outline" onClick={onOpen}>
+          Cancelar pedido
+        </Button>
         <EnviarCambios
           cambiosPendientes={pedido.cambios_pendientes}
           enLinea={enLinea}
           onEnviar={enviar}
         />
       </CardFooter>
+
+      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelarPedidoRef} onClose={onClose}>
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Cancelar pedido completo
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              ¿Seguro que quieres cancelar el pedido de {mesa?.identificador ?? 'la mesa'}? Se
+              retirará de cocina y sala, la mesa quedará libre y no se cobrará.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelarPedidoRef} onClick={onClose}>
+                Volver
+              </Button>
+              <Button
+                colorScheme="red"
+                ml={3}
+                onClick={() => {
+                  onClose();
+                  confirmarCancelacionPedido();
+                }}
+              >
+                Sí, cancelar pedido
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Card>
   );
 }

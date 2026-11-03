@@ -226,3 +226,55 @@ cabeceras de camarero ni parámetros de URL. Sin sesión se responde `401`; con 
 
 **Alternativas consideradas**: mantener la identidad por cabecera para tests (dejaría un bypass
 de autenticación); confiar solo en el guard de la interfaz (inseguro).
+
+## 14. Cancelación de un pedido enviado (clarificación 2026-11-03)
+
+**Decisión**: la cancelación completa del pedido pertenece a la historia 002. Un pedido
+`cancelada` deja de ser consumo facturable: la cuenta se calcula solo con pedidos `en_curso` y
+`enviada` vigentes. La mesa queda libre si no tiene otra comanda y no se genera cobro. No se
+considera una anulación parcial de una cuenta cerrada.
+
+**Rationale**: evita que un pedido cancelado bloquee el cierre o aparezca en el total; mantiene
+la frontera de responsabilidades (002 cancela, 006 cobra) y la coherencia con la clarificación de
+2026-11-03.
+
+**Alternativas consideradas**: descontar el pedido cancelado del total como una anulación parcial
+(complejidad y posible descuadre); mantenerlo como consumo cero (aparecería en el ticket sin
+importe).
+
+## 15. Bloqueo de edición y cancelación con partes pagadas
+
+**Decisión**: 002 comprueba, antes de editar o cancelar un pedido, si la cuenta asociada tiene
+alguna parte `pagada`. Si la hay, rechaza con `409 partes_pagadas`; el camarero debe deshacer los
+pagos (006) y dejar las partes `pendiente`. Con la división iniciada pero sin pagos, la edición
+sigue permitida y la división se reinicia.
+
+**Rationale**: evita perder o duplicar cobros. La clarificación 2026-11-03 eligió bloquear hasta
+deshacer los pagos por ser la opción más simple y segura para un restaurante pequeño.
+
+**Alternativas consideradas**: tratar lo pagado como pago a cuenta (requiere recalcular y puede
+dejar saldos negativos); permitir editar perdiendo la división (pierde la trazabilidad del cobro).
+
+## 16. Etiqueta de comensal
+
+**Decisión**: `cuentas_partes.comensal` es una etiqueta simple («Parte 1», «Parte 2»…) generada a
+partir de `orden`; no se piden nombres ni datos personales. La interfaz no incluye un campo de
+nombre.
+
+**Rationale**: la clarificación 2026-11-03 aplica el principio de datos mínimos de la constitución;
+la etiqueta basta para identificar y cobrar cada parte.
+
+**Alternativas consideradas**: nombre o alias introducido por el camarero (dato personal
+innecesario); número de comensal/asiento (más fricción sin aportar valor).
+
+## 17. Cuenta dividida en el dashboard
+
+**Decisión**: para el dashboard (007), una cuenta dividida cuenta una sola vez por su
+`total_centimos`, atribuida al camarero que abrió/tomó el pedido. Las partes pagadas no se suman
+por separado.
+
+**Rationale**: evita duplicar ventas y mantiene la reconciliación con las cuentas cerradas; la
+clarificación 2026-11-03 lo alinea con la regla de atribución de 007.
+
+**Alternativas consideradas**: sumar cada parte (duplica la venta); repartir el importe entre los
+camareros que cobraron (complejidad y descuadre con la atribución por apertura).

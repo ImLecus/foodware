@@ -200,3 +200,17 @@ cuando:
 
 Mientras dure, **no se permite descartar avisos** ni confirmar cambios. Al recuperarse la
 conexión, se refresca la instantánea y se reanuda el SSE (FR-014, SC-008).
+
+## 8. Actualización de la clarificación 2026-11-03
+
+- **Pedido cancelado (002)**: la mesa deja de estar abierta si no tiene otra comanda; su aviso
+  activo se retira y se emite `aviso.retirado`. Sus platos no se pueden marcar.
+- **Cambio de cantidad de una línea lista**: si baja o se mantiene, sigue `listo` y la completitud
+  no cambia; si sube, vuelve a `pendiente`, se limpia `listo_en` y se emite `aviso.retirado` si la
+  mesa deja de estar completa.
+- **Disponibilidad**: un cambio de disponibilidad en 008 no retira el plato de un pedido enviado;
+  sigue visible. Si no se puede preparar, el camarero lo retira o cancela el pedido según 002.
+- **Bloqueo de edición (002)**: mientras el pedido esté bloqueado para editar, el marcado/desmarcado
+  se rechaza con `423 pedido_bloqueado`; un pedido `cancelada` se rechaza con `409 pedido_cancelado`.
+- **Nombre y partida**: la vista usa la instantánea fijada al pedir (001), no los datos actuales de
+  la carta (008).

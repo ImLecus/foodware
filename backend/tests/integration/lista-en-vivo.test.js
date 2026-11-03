@@ -7,6 +7,7 @@ import {
   CABECERA_COCINERO,
   clienteSseFalso,
   crearAppDePrueba,
+  crearPedidoEnviado,
 } from '../ayuda.js';
 import { crearBase, insertarLinea, insertarPedido } from '../helpers/fixtures.js';
 
@@ -47,6 +48,29 @@ describe('lista de cocina en vivo', () => {
     const ids = listarPedidosPendientes(db, 'entrantes').map((pedido) => pedido.id);
 
     expect(ids).toEqual(['pedido-b']);
+  });
+
+  it('retira el pedido de cocina y emite pedido.cancelado al cancelarlo', async () => {
+    const prueba = crearAppDePrueba();
+    db = prueba.db;
+    const { app } = prueba;
+    const pedidoId = await crearPedidoEnviado(app);
+
+    const entrantes = clienteSseFalso();
+    suscribir(entrantes.peticion, entrantes.respuesta, 'entrantes');
+
+    await request(app).post(`/api/pedidos/${pedidoId}/editar`).set(CABECERA_CAMARERO);
+    const cancelado = await request(app)
+      .post(`/api/pedidos/${pedidoId}/cancelar`)
+      .set(CABECERA_CAMARERO);
+
+    expect(cancelado.status).toBe(200);
+    expect(entrantes.escrito.join('')).toContain('event: pedido.cancelado');
+
+    const pendientes = await request(app)
+      .get('/api/partidas/entrantes/pedidos-pendientes')
+      .set(CABECERA_COCINERO);
+    expect(pendientes.body).toEqual([]);
   });
 
   it('emite pedido.nuevo al confirmar y pendientes-cambiado al completar por SSE', async () => {

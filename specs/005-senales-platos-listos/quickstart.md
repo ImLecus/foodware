@@ -124,6 +124,27 @@ código. No incluye código de implementación: los detalles están en
    *(Si el cierre de cuenta aún no está disponible, comprobar que la vista deja de mostrar la
    mesa y su aviso al dejar de estar abierta.)*
 
+### J. Cancelación de un pedido con aviso activo (FR-010)
+
+1. Completar los platos de una mesa para que aparezca su aviso.
+2. Cancelar el pedido completo desde sala (historia 002).
+3. **Esperado**: la mesa deja de mostrarse si no tiene otra comanda, el aviso se retira en todas las
+   pantallas y no se genera uno nuevo.
+
+### K. Cambio de cantidad de una línea lista (FR-013)
+
+1. Con una mesa completa, bajar la cantidad de una línea ya lista desde 002.
+2. **Esperado**: la línea sigue lista y la mesa sigue completa.
+3. Subir la cantidad de esa misma línea.
+4. **Esperado**: la línea vuelve a pendiente, la mesa deja de estar completa y el aviso se retira
+   hasta que se marque de nuevo.
+
+### L. Plato no disponible en un pedido enviado
+
+1. Marcar como no disponible un plato que ya está en un pedido enviado (historia 008).
+2. **Esperado**: el plato sigue apareciendo en la mesa y en la vista; la baja solo afecta a pedidos
+   nuevos. Si no se puede preparar, el camarero lo retira o cancela el pedido según 002.
+
 ## Criterios de éxito a comprobar
 
 > **Comprobación manual explícita (E1)**: SC-001 y SC-005 son perceptivos y se verifican a mano

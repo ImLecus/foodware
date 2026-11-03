@@ -63,11 +63,11 @@ Pedido tomado para una mesa.
 
 - **Reglas de unicidad**: como máximo **una** pedido en estado `en_curso` por mesa
   (restricción única parcial sobre `mesa_id` donde `estado = 'en_curso'`).
-- **Estados**: `en_curso` → `enviada` al confirmar. La modificación posterior (`modificada`) es
-  objeto de la historia 002.
+- **Estados**: `en_curso` → `enviada` al confirmar. La modificación posterior (`modificada`) y el
+  estado `cancelada` de un pedido enviado son objeto de la historia 002.
 - **Anulación**: un pedido `en_curso` puede anularse; el pedido y sus `LineaPedido` se **eliminan**
   de la base de datos y no se conserva un estado `anulada` (decisión en `research.md` §11). Un
-  pedido `enviada` no se puede anular.
+  pedido `enviada` no se anula desde 001; su cancelación completa se rige por 002.
 - **Relaciones**: una `Pedido` tiene muchas `LineaPedido`; pertenece a una `Mesa`.
 
 ## LineaPedido
@@ -79,13 +79,20 @@ Cada plato anotado dentro de un pedido.
 | `id` | UUID (PK) | Generado por el sistema |
 | `pedido_id` | Pedido (FK) | Obligatorio |
 | `plato_id` | Plato (FK) | Obligatorio |
+| `nombre_plato` | texto | **Instantánea** del nombre del plato al pedir; no se recalcula |
 | `cantidad` | entero | Obligatorio, ≥ 1 |
 | `precio_centimos` | entero | Copia del precio del plato **en el momento de pedirlo**; no se recalcula |
-| `partida` | Partida | Derivada del `Plato` (se conserva para agrupar/consultar) |
+| `partida_codigo` | Partida | **Instantánea** de la partida del plato al pedir; se conserva para agrupar/consultar |
+| `indicaciones` | texto / nulo | **Nuevo**: indicación o nota opcional del cliente para esa línea |
 
 - **Reglas**: se permite repetir el mismo `plato_id` en varias líneas (una por repetición) o
   aumentar la `cantidad` de una línea; ambas opciones son válidas y equivalentes funcionalmente.
-- **Anulación**: al anular el pedido, sus líneas se eliminan con él (borrado en cascada).
+  Las indicaciones son opcionales y se capturan al añadir la línea; la corrección posterior
+  pertenece a la historia 002.
+- **Anulación**: al anular el pedido, sus líneas se eliminan con él (borrado en cascada). La
+  anulación de un pedido ya enviado pertenece a la historia 002 y no se modela aquí.
+- **Instantánea**: nombre, partida y precio se fijan al crear la línea; los cambios posteriores de
+  la carta (008) no alteran el histórico (FR-018, `research.md` §13).
 - **Precio**: fijado al crear la línea (decisión de clarificación; ver `research.md` §4).
 
 ## Camarero (referenciado)
@@ -124,9 +131,9 @@ Pedido
 ├── pedido_id
 ├── confirmada_en
 └── partidas:
-    ├── entrantes:  [ { plato, cantidad, precio_centimos } ... ]
-    ├── principales:[ { plato, cantidad, precio_centimos } ... ]
-    └── postres:    [ { plato, cantidad, precio_centimos } ... ]
+    ├── entrantes:  [ { nombre_plato, cantidad, precio_centimos, indicaciones } ... ]
+    ├── principales:[ { nombre_plato, cantidad, precio_centimos, indicaciones } ... ]
+    └── postres:    [ { nombre_plato, cantidad, precio_centimos, indicaciones } ... ]
 ```
 
 ## Eventos SSE

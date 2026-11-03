@@ -12,6 +12,12 @@ claves en `snake_case`, coherente con las historias 001–005.
 - **Historia 000**: autenticación por cookie y `requireRole('camarero')`.
 - **Historia 005**: hub SSE `GET /api/eventos`; esta historia solo emite `mesa-cerrada`.
 - **Historias 001–004**: mesas, pedidos y líneas con precio fijado al pedir; aquí solo se leen.
+- **Historia 002**: posee la cancelación completa del pedido y comprueba `409 partes_pagadas`
+  antes de editar o cancelar. Un pedido `cancelada` no aparece como consumo facturable.
+- **Etiqueta de comensal**: el campo `comensal` es una etiqueta simple («Parte 1», «Parte 2»…),
+  generada a partir de `orden`; no se piden nombres ni datos personales (clarificación 2026-11-03).
+- **Dashboard (007)**: una cuenta dividida cuenta una sola vez por `total_centimos`, atribuida al
+  camarero que abrió/tomó el pedido; las partes pagadas no se suman por separado.
 
 ## 1. `GET /api/sala/mesas/{mesaId}/cuenta`
 
@@ -88,9 +94,9 @@ las partes `pendiente` y las asignaciones; no cierra la mesa ni emite ticket.
   "modo": "iguales",
   "total_base_centimos": 4250,
   "partes": [
-    { "orden": 1, "comensal": "Ana", "importe_centimos": 1417 },
-    { "orden": 2, "comensal": "Luis", "importe_centimos": 1417 },
-    { "orden": 3, "comensal": "Marta", "importe_centimos": 1416 }
+    { "orden": 1, "comensal": "Parte 1", "importe_centimos": 1417 },
+    { "orden": 2, "comensal": "Parte 2", "importe_centimos": 1417 },
+    { "orden": 3, "comensal": "Parte 3", "importe_centimos": 1416 }
   ]
 }
 ```
@@ -102,8 +108,8 @@ las partes `pendiente` y las asignaciones; no cierra la mesa ni emite ticket.
   "modo": "por_consumo",
   "total_base_centimos": 4250,
   "partes": [
-    { "orden": 1, "comensal": "Ana", "importe_centimos": 1700 },
-    { "orden": 2, "comensal": "Luis", "importe_centimos": 2550 }
+    { "orden": 1, "comensal": "Parte 1", "importe_centimos": 1700 },
+    { "orden": 2, "comensal": "Parte 2", "importe_centimos": 2550 }
   ],
   "asignaciones": [
     { "parte_orden": 1, "linea_id": "linea-301", "importe_centimos": 1700 },
@@ -128,7 +134,7 @@ las partes `pendiente` y las asignaciones; no cierra la mesa ni emite ticket.
   "division": {
     "modo": "iguales",
     "partes": [
-      { "id": "parte-501", "orden": 1, "comensal": "Ana", "importe_centimos": 1417, "estado": "pendiente", "pagada_en": null }
+      { "id": "parte-501", "orden": 1, "comensal": "Parte 1", "importe_centimos": 1417, "estado": "pendiente", "pagada_en": null }
     ],
     "asignaciones": []
   }
@@ -153,7 +159,7 @@ Marca una parte como pagada. No lleva cuerpo.
 
 ```json
 {
-  "parte": { "id": "parte-501", "orden": 1, "comensal": "Ana", "importe_centimos": 1417, "estado": "pagada", "pagada_en": "2026-10-20T21:00:00.000Z" },
+  "parte": { "id": "parte-501", "orden": 1, "comensal": "Parte 1", "importe_centimos": 1417, "estado": "pagada", "pagada_en": "2026-10-20T21:00:00.000Z" },
   "ticket_estado": "no_emitido",
   "ticket": null,
   "mesa_abierta": true,
@@ -165,7 +171,7 @@ Marca una parte como pagada. No lleva cuerpo.
 
 ```json
 {
-  "parte": { "id": "parte-503", "orden": 3, "comensal": "Marta", "importe_centimos": 1416, "estado": "pagada", "pagada_en": "2026-10-20T21:05:00.000Z" },
+  "parte": { "id": "parte-503", "orden": 3, "comensal": "Parte 3", "importe_centimos": 1416, "estado": "pagada", "pagada_en": "2026-10-20T21:05:00.000Z" },
   "ticket_estado": "emitido",
   "ticket": {
     "estado": "emitido",
@@ -174,9 +180,9 @@ Marca una parte como pagada. No lleva cuerpo.
     "total_centimos": 4250,
     "generado_en": "2026-10-20T21:05:00.000Z",
     "partes": [
-      { "orden": 1, "comensal": "Ana", "importe_centimos": 1417 },
-      { "orden": 2, "comensal": "Luis", "importe_centimos": 1417 },
-      { "orden": 3, "comensal": "Marta", "importe_centimos": 1416 }
+      { "orden": 1, "comensal": "Parte 1", "importe_centimos": 1417 },
+      { "orden": 2, "comensal": "Parte 2", "importe_centimos": 1417 },
+      { "orden": 3, "comensal": "Parte 3", "importe_centimos": 1416 }
     ]
   },
   "mesa_abierta": false,
@@ -209,7 +215,7 @@ Deshace el pago de una parte y la devuelve a `pendiente`, solo con la cuenta abi
 
 ```json
 {
-  "parte": { "id": "parte-501", "orden": 1, "comensal": "Ana", "importe_centimos": 1417, "estado": "pendiente", "pagada_en": null },
+  "parte": { "id": "parte-501", "orden": 1, "comensal": "Parte 1", "importe_centimos": 1417, "estado": "pendiente", "pagada_en": null },
   "ticket_estado": "no_emitido",
   "ticket": null,
   "mesa_abierta": true,

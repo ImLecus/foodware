@@ -25,6 +25,10 @@
 - Q: Si la primera carga de pedidos falla porque el servidor no responde, ¿qué debe mostrar la vista de cocina? (FR-017) → A: Un mensaje de error ("No se pudieron cargar los pedidos") con botón "Reintentar"; no se muestra el estado vacío.
 - Q: Cuando un pedido se edita después de enviarse, ¿basta con indicar en la vista de cocina que ese pedido fue modificado, o hay que resaltar además los platos que cambiaron? (FR-015) → A: Basta con un aviso "Modificado" junto al pedido, sin detallar qué platos cambiaron.
 
+### Session 2026-11-03
+
+- Q: ¿Cómo debe desaparecer de la vista de cocina un pedido cancelado desde sala? → A: La cancelación del pedido completo (historia 002) lo retira de la vista de cocina y de sala; no hay que marcar sus platos como listos ni se muestra como pendiente.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ver los pedidos pendientes de mi partida, ordenados por espera (Priority: P1)
@@ -91,7 +95,7 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 - **Todos los platos de un pedido dejan de estar pendientes**: el pedido desaparece de la lista y no queda como pendiente.
 - **Muchos pedidos pendientes a la vez**: la lista permite desplazarse y localizar el pedido más urgente con facilidad.
 - **Interrupción momentánea de la conexión**: la vista muestra un indicador de "sin conexión" y marca la información como no actualizada; el tiempo de espera de los pedidos ya mostrados sigue avanzando con el reloj local; al restablecerse, recupera la información vigente sin duplicar ni perder pedidos.
-- **Pedido cancelado o retirado desde sala**: deja de aparecer como pendiente en la vista de cocina.
+- **Pedido cancelado o retirado desde sala**: deja de aparecer como pendiente en la vista de cocina; la cancelación del pedido completo se rige por la historia 002 y no requiere marcar sus platos como listos.
 - **Pedido editado tras el envío**: el pedido conserva su tiempo de espera original y mantiene su posición por antigüedad, y muestra un aviso "Modificado"; no se detalla qué platos cambiaron.
 
 ## Requirements *(mandatory)*
@@ -115,7 +119,8 @@ La vista se mantiene al día conforme avanza el servicio. Cuando llega un pedido
 - **FR-015**: Una edición posterior del pedido (historia 02) MUST NOT reiniciar el tiempo de espera del pedido ni alterar su posición por antigüedad.
 - **FR-016**: Cada pedido pendiente MUST indicar la mesa de la que procede.
 - **FR-017**: Mientras la vista carga los pedidos por primera vez, MUST mostrar un indicador de carga distinto del estado vacío; MUST NOT mostrar el estado vacío antes de recibir los datos. Si la carga inicial falla, MUST mostrar un mensaje de error con una acción de reintento y MUST NOT mostrar el estado vacío.
-- **FR-018**: Un pedido editado después de su envío MUST mostrar un aviso "Modificado" junto al pedido; MUST NOT ser necesario detallar qué platos cambiaron.
+- **FR-018**: Un pedido editado después de su envío MUST mostrar un aviso "Modificado" junto al pedido; MUST NOT ser necesario detallar qué platos cambiaron. El registro detallado de la modificación corresponde a la historia 002 (tipo, momento y usuario).
+- **FR-019**: Un pedido cancelado desde sala (historia 002) MUST dejar de aparecer como pendiente en la vista de cocina, MUST NOT requerir que sus platos se marquen como listos y MUST NOT contarse como pedido completado.
 
 ### Key Entities *(include if data involved)*
 

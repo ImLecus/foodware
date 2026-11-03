@@ -114,6 +114,16 @@ Aviso N ─── 1 Mesa
 6. **Mesa cerrada**: al dejar de estar abierta (cuenta cerrada), deja de mostrarse y sus avisos
    dejan de considerarse; si tenía un aviso activo, éste se retira y desaparece de todas las
    pantallas (FR-010). El cierre de cuenta pertenece a la historia 06.
+7. **Pedido cancelado**: si 002 cancela el pedido completo, la mesa deja de estar abierta si no
+   tiene otra comanda, su aviso activo se retira y no se genera uno nuevo (FR-010).
+8. **Cambio de cantidad de una línea lista**: si baja o se mantiene, sigue `listo`; si sube, vuelve
+   a `pendiente`, se limpia `listo_en` y la mesa deja de estar completa hasta que se marque de
+   nuevo (FR-013).
+9. **Disponibilidad**: un cambio de disponibilidad en 008 no retira el plato de un pedido enviado;
+   sigue visible en la vista. Si no se puede preparar, el camarero lo retira o cancela el pedido
+   según 002, y se recalcula la completitud.
+10. **Nombre y partida**: la línea usa la instantánea fijada al pedir (001), no los datos actuales
+    de la carta (008).
 
 ## Transiciones de estado
 

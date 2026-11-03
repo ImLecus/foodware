@@ -31,8 +31,8 @@ describe('Ticket final de la cuenta (US3)', () => {
         modo: 'iguales',
         total_base_centimos: 3250,
         partes: [
-          { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
-          { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+          { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
+          { orden: 2, comensal: 'Parte 2', importe_centimos: 1625 },
         ],
       });
 
@@ -88,8 +88,8 @@ describe('Ticket final de la cuenta (US3)', () => {
       identificador: 'Mesa 1',
       total_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1625 },
       ],
     });
 

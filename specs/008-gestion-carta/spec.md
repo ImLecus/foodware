@@ -22,6 +22,11 @@
 
 - Q: La historia dice que el administrador actualiza el estado de los ingredientes, pero no dice cómo se crean los ingredientes ni cómo se asocian a los platos; ¿qué debe incluir esta historia sobre esa gestión? (FR-007, FR-008) → A: Crear y editar ingredientes, asociarlos a platos y cambiar su estado (disponible/agotado), todo desde la gestión de la carta.
 
+### Session 2026-11-03
+
+- Q: Si un plato deja de estar disponible (por baja manual o por ingrediente agotado) cuando ya está en un pedido enviado a cocina, ¿qué debe hacer el sistema? → A: Los pedidos ya enviados no se alteran; la baja solo impide añadir el plato a pedidos nuevos. Si cocina no puede prepararlo, el camarero lo retira o cancela el pedido según la historia 002.
+- Q: Cuando el dashboard muestra un día pasado, ¿debe usar los datos actuales del plato (nombre y partida) o los que tenía cuando se pidió? → A: Los que tenía al pedir: cada línea guarda una instantánea de nombre y partida, igual que el precio (historia 001).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Gestión del catálogo de platos (Priority: P1)
@@ -121,6 +126,11 @@ administrador tenga que desactivar el plato.
   modifica el precio ya fijado en platos pedidos con anterioridad ni en cuentas del pasado.
 - El administrador cambia datos de un plato mientras los camareros lo están pidiendo: los
   cambios se aplican a la carta vigente y se reflejan en las tabletas de sala.
+- Un plato ya enviado a cocina deja de estar disponible: permanece en el pedido enviado; la baja
+  solo impide añadirlo a pedidos nuevos. Si cocina no puede prepararlo, el camarero lo retira o
+  cancela el pedido según la historia 002.
+- Un plato cambia de nombre o de partida después de haberse vendido: el histórico conserva el
+  nombre y la partida del momento de pedir; la carta vigente muestra los datos nuevos.
 - Un ingrediente agotado y reabastecido dentro del mismo servicio: el plato se oculta y se
   vuelve a ofrecer según el estado del ingrediente registrado en el sistema en cada momento.
 - Un ingrediente asociado a varios platos: al pasar a agotado se ocultan todos los platos
@@ -142,7 +152,9 @@ administrador tenga que desactivar el plato.
 - **FR-002**: El sistema MUST permitir al administrador crear un plato con nombre, partida y
   precio, e incluirlo en la carta.
 - **FR-003**: El sistema MUST permitir al administrador modificar el nombre, la partida y el
-  precio de un plato existente.
+  precio de un plato existente. Los cambios MUST NOT alterar las líneas de pedidos ya realizados,
+  que conservan el nombre, la partida y el precio del momento de pedir (aclarado en la sesión de
+  clarificación).
 - **FR-004**: El sistema MUST exigir un precio válido (mayor que cero) al crear o modificar un
   plato y rechazar valores vacíos o negativos con un aviso.
 - **FR-005**: El sistema MUST permitir al administrador marcar un plato como disponible o no
@@ -169,6 +181,10 @@ administrador tenga que desactivar el plato.
   anterioridad; afecta solo a la carta vigente y a los nuevos pedidos.
 - **FR-015**: El sistema MUST permitir al administrador crear y editar ingredientes, asociarlos a
   uno o varios platos y cambiar su estado (disponible o agotado) desde la gestión de la carta.
+- **FR-016**: Un cambio de disponibilidad (baja manual o ingrediente agotado) MUST afectar solo a
+  la carta vigente y a los pedidos nuevos; MUST NOT alterar ni retirar automáticamente platos de
+  pedidos ya enviados. Si el plato ya no puede prepararse, el camarero MUST poder retirarlo o
+  cancelar el pedido conforme a la historia 002 (aclarado en la sesión de clarificación).
 
 ### Key Entities *(include if feature involves data)*
 
@@ -216,3 +232,7 @@ administrador tenga que desactivar el plato.
   española de España (constitución del proyecto).
 - La carta vigente es la que ven las tabletas de sala al tomar pedidos; esta historia garantiza
   su contenido actualizado, no cómo se realiza el pedido.
+- Un cambio de disponibilidad no altera los pedidos ya enviados; su tratamiento posterior (retirar
+  el plato o cancelar el pedido) corresponde a la historia 002.
+- Los cambios de nombre o partida no alteran los pedidos ya realizados ni el histórico de ventas;
+  cada línea conserva la instantánea del momento de pedir (historia 001).

@@ -34,9 +34,9 @@ describe('Ticket único y reversión de partes (US3)', () => {
         modo: 'iguales',
         total_base_centimos: 3250,
         partes: [
-          { orden: 1, comensal: 'Ana', importe_centimos: 1084 },
-          { orden: 2, comensal: 'Luis', importe_centimos: 1083 },
-          { orden: 3, comensal: 'Marta', importe_centimos: 1083 },
+          { orden: 1, comensal: 'Parte 1', importe_centimos: 1084 },
+          { orden: 2, comensal: 'Parte 2', importe_centimos: 1083 },
+          { orden: 3, comensal: 'Parte 3', importe_centimos: 1083 },
         ],
       });
 
@@ -75,9 +75,9 @@ describe('Ticket único y reversión de partes (US3)', () => {
 
     expect(ultima.body.ticket_estado).toBe('emitido');
     expect(ultima.body.ticket.partes.map((parte) => parte.comensal)).toEqual([
-      'Ana',
-      'Luis',
-      'Marta',
+      'Parte 1',
+      'Parte 2',
+      'Parte 3',
     ]);
     expect(
       ultima.body.ticket.partes.reduce((suma, parte) => suma + parte.importe_centimos, 0),

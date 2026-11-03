@@ -90,3 +90,24 @@ aquí con su justificación y alternativas.
   pantallas con poco contraste, sin complejidad adicional.
 - **Alternatives considered**: usar solo color (incumple el requisito de accesibilidad); añadir solo
   un icono sin texto (menos explícito para una persona no técnica).
+
+## R10. Pedidos cancelados (FR-019)
+
+- **Decision**: la consulta de pendientes excluye los pedidos en estado `cancelada` (historia 002).
+  La cancelación publica `pedido.pendientes-cambiado` y, si se añade, `pedido.cancelado`; la vista
+  recarga la lista y el pedido desaparece. Sus platos no se pueden marcar ni cuentan como
+  completados.
+- **Rationale**: una cancelación completa no es una preparación pendiente; mantenerla en cocina
+  haría que el cocinero preparase comida que ya no se sirve y bloquearía el cierre de la cuenta.
+- **Alternatives considered**: mostrarla con estado «cancelado» (ruido innecesario en cocina);
+  exigir que cocina marque todos los platos como listos (bloquea la mesa y falsea el servicio).
+
+## R11. Instantánea de nombre y partida
+
+- **Decision**: la vista usa `lineas_pedido.nombre_plato` y `partida_codigo`, copiados al pedir
+  (historia 001), no los datos actuales de la carta (008). Un cambio de nombre o partida posterior
+  no altera lo que ve cocina.
+- **Rationale**: la clarificación 2026-11-03 exige preservar el histórico; cocina debe preparar el
+  plato tal y como se pidió, aunque la carta se haya editado después.
+- **Alternatives considered**: unir siempre con el plato actual (puede mostrar un nombre o partida
+  distintos de los del pedido); guardar solo el `plato_id` (pierde el nombre histórico).

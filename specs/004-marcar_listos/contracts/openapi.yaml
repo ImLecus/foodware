@@ -41,7 +41,8 @@ paths:
         partida), la respuesta contiene `pedidoId` e `id` de la línea, que el cliente usa para
         ofrecer el aviso temporal «Pedido completado» con la acción «Deshacer» durante al menos
         10 s (FR-014, SC-009). Esa acción es otra llamada a esta misma operación con
-        `estado: pendiente`.
+        `estado: pendiente`. No se permite marcar líneas de pedidos `cancelada` ni mientras 002
+        mantiene el pedido bloqueado para edición (FR-017, FR-019).
       parameters:
         - name: pedidoId
           in: path
@@ -119,9 +120,17 @@ paths:
               schema: { $ref: "#/components/schemas/Error" }
         "409":
           description: >
-            Se intenta marcar `listo` una línea de una partida que ya está completada (FR-003).
-            Deshacer una línea `listo` se admite aunque la partida esté completada, para permitir la
-            reversión desde el aviso (FR-014).
+            Se intenta marcar `listo` una línea de una partida que ya está completada (FR-003), la
+            línea pertenece a un pedido `cancelada` (`pedido_cancelado`, FR-017) o el estado no es
+            aplicable. Deshacer una línea `listo` se admite aunque la partida esté completada, para
+            permitir la reversión desde el aviso (FR-014).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "423":
+          description: >
+            El pedido está bloqueado por una edición de sala (002); cocina no puede marcar ni
+            desmarcar hasta que se libere el bloqueo (`pedido_bloqueado`, FR-019).
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -165,6 +174,9 @@ components:
           items: { $ref: "#/components/schemas/LineaPedido" }
     LineaPedido:
       type: object
+      description: >
+        Línea de pedido. `nombrePlato` y `partida` son la instantánea fijada al pedir (001); no se
+        recalculan si la carta cambia después (008).
       required: [id, pedidoId, nombrePlato, cantidad, estado]
       properties:
         id: { type: string }

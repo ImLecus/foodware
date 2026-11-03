@@ -46,6 +46,10 @@ mesas, un cocinero por partida y pedidos enviados con varias líneas.
 | 10 | Marcado simultáneo (edge case) | Desde dos pantallas de cocina de la misma partida, marca la misma línea | Un único `listoEn`, sin duplicados |
 | 11 | Corte momentáneo (edge case) | Detén y reinicia el backend; vuelve a marcar | La marca no se pierde y el estado es coherente |
 | 12 | Deshacer tras completar la partida (US1.6, FR-014, SC-009) | Marca todas las líneas de tu partida del pedido y, en el aviso «Pedido completado», pulsa «Deshacer» dentro de los 10 s siguientes | El pedido reaparece como pendiente en cocina para esa partida con la última línea en `pendiente`; el aviso se retira y sala refleja el cambio |
+| 13 | Pedido cancelado (FR-017) | Cancela desde sala un pedido enviado (historia 002) e intenta marcar sus platos | El pedido desaparece de cocina y la API rechaza el marcado con `pedido_cancelado` |
+| 14 | Cantidad de una línea lista (FR-018) | Con una línea `listo`, baja su cantidad y luego súbela desde 002 | Al bajar sigue `listo`; al subir vuelve a `pendiente` y se borra `listoEn` |
+| 15 | Bloqueo de edición (FR-019) | Abre el pedido en edición (002) e intenta marcarlo desde cocina | La API rechaza con `pedido_bloqueado`; al enviar o cancelar la edición, cocina puede marcar |
+| 16 | Plato no disponible en un pedido enviado | Marca el plato como no disponible en la carta (008) y revisa un pedido enviado | El plato sigue en el pedido y puede marcarse; si no se puede preparar, el camarero lo retira o cancela el pedido según 002 |
 
 El seed incluye pedidos mixtos para comprobar que la completitud es por partida. No se debe intentar
 completar una línea de otra partida: la interfaz no ofrece esa acción y la API responde `403` si se

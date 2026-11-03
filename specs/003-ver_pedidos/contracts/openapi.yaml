@@ -63,6 +63,9 @@ components:
   schemas:
     PedidoCocina:
       type: object
+      description: >
+        Pedido pendiente de una partida. Los pedidos `cancelada` (historia 002) se excluyen de la
+        lista; el aviso «Modificado» solo aparece tras «enviar cambios».
       required: [id, mesa, partida, enviadoEn, modificado, estado, lineas]
       properties:
         id: { type: string }
@@ -81,6 +84,9 @@ components:
           items: { $ref: "#/components/schemas/LineaPedido" }
     LineaPedido:
       type: object
+      description: >
+        Línea de pedido. `nombrePlato` es la instantánea fijada al pedir (historia 001); un cambio
+        posterior de la carta (008) no altera lo que ve cocina.
       required: [id, nombrePlato, cantidad, estado]
       properties:
         id: { type: string }

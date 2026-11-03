@@ -28,6 +28,12 @@
 - Q: ¿Qué debe considerarse exactamente una "mesa abierta" que aparece en la vista del camarero? (FR-001, FR-011) → A: Una mesa con una comanda en curso o ya enviada a cocina queda abierta mientras no se haya cerrado su cuenta.
 - Q: Cuando se cierra la cuenta de una mesa que tenía un aviso de mesa completa activo (sin descartar), ¿qué debe pasar con ese aviso? (FR-010, FR-009) → A: El aviso se retira (deja de estar activo) y desaparece de todas las pantallas al cerrarse la cuenta de esa mesa.
 
+### Session 2026-11-03
+
+- Q: ¿Qué ocurre con la mesa y con el aviso de mesa completa cuando se cancela el pedido completo desde sala? → A: La cancelación (historia 002) retira el pedido y su aviso de todas las pantallas; la mesa deja de aparecer como abierta si no tiene otra comanda y no se cobra.
+- Q: Cuando una línea ya marcada como lista cambia de cantidad en una edición, ¿cómo afecta a la completitud de la mesa? → A: Si la cantidad baja o se mantiene, la línea sigue lista y la mesa no cambia; si sube, vuelve a pendiente, la mesa deja de estar completa y su aviso se retira hasta que se marque de nuevo (regla detallada en la historia 004).
+- Q: Si un plato de una mesa deja de estar disponible en la carta, ¿desaparece de la vista del camarero? → A: No; sigue en el pedido ya enviado. La baja solo afecta a pedidos nuevos; si no se puede preparar, el camarero lo retira o cancela el pedido según la historia 002.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Estado de los platos de cada mesa en tiempo real (Priority: P1)
@@ -109,8 +115,10 @@ que deja de mostrarse.
 - ¿Qué ocurre si un plato vuelve a "pendiente" cuando la mesa ya estaba marcada como completa? El aviso de mesa completa debe retirarse y la mesa deja de considerarse completa hasta que ese plato vuelva a estar listo.
 - ¿Qué muestra la vista cuando no hay ninguna mesa abierta o mientras la información se está cargando? Un mensaje claro de "No hay mesas abiertas" en el primer caso y un indicador de carga en el segundo, en lugar de una pantalla en blanco.
 - ¿Qué ocurre con una mesa cuya comanda todavía no se ha enviado a cocina? Aparece como mesa abierta, pero sin platos que cocina pueda marcar; no se considera completa ni genera aviso hasta que se envíe.
-- ¿Qué ocurre si se edita una comanda ya enviada (se añade, cambia o retira un plato) cuando la mesa ya estaba completa? Los platos ya listos que no se toquen siguen listos; si entra un plato pendiente, el aviso de mesa completa se retira y la mesa deja de considerarse completa hasta que ese plato vuelva a estar listo.
+- ¿Qué ocurre si se edita una comanda ya enviada (se añade, cambia o retira un plato) cuando la mesa ya estaba completa? Los platos ya listos que no se toquen siguen listos; si entra un plato pendiente, el aviso de mesa completa se retira y la mesa deja de considerarse completa hasta que ese plato vuelva a estar listo. Si una línea ya lista sube de cantidad, vuelve a pendiente y la mesa deja de estar completa; si baja o se mantiene, sigue lista.
 - ¿Qué ocurre si se cierra la cuenta de una mesa con un aviso de mesa completa activo? El aviso se retira y deja de mostrarse en todas las pantallas, junto con la desaparición de la mesa de la vista.
+- ¿Qué ocurre si se cancela el pedido completo de una mesa con un aviso de mesa completa activo? La cancelación (historia 002) retira el pedido y el aviso de todas las pantallas; la mesa deja de aparecer como abierta si no tiene otra comanda y no se cobra.
+- ¿Qué ocurre si un plato de un pedido ya enviado deja de estar disponible en la carta? Sigue apareciendo en la vista del camarero y en la mesa; la baja solo afecta a pedidos nuevos. Si no se puede preparar, el camarero lo retira o cancela el pedido según la historia 002.
 
 ## Requirements *(mandatory)*
 
@@ -129,10 +137,11 @@ que deja de mostrarse.
 - **FR-010**: Un aviso descartado MUST dejar de mostrarse en todas las pantallas
   mientras no se produzca un nuevo plato listo en esa mesa. Al cerrarse la cuenta de una
   mesa con un aviso activo, el sistema MUST retirar ese aviso y dejar de mostrarlo en todas
-  las pantallas (una mesa cerrada ya no aparece en la vista).
+  las pantallas (una mesa cerrada ya no aparece en la vista). La cancelación del pedido completo
+  (historia 002) MUST retirar igualmente el aviso y la mesa de la vista si no tiene otra comanda.
 - **FR-011**: El sistema MUST mostrar a cada camarero todas las mesas abiertas del restaurante, sin restringirlas a las que tenga asignadas.
 - **FR-012**: Los cambios de estado realizados en cocina MUST reflejarse en la vista del camarero sin intervención manual de éste.
-- **FR-013**: Un plato MUST poder volver del estado "listo" al estado "pendiente" si se corrige (por ejemplo, un error o un plato devuelto); al hacerlo, el sistema MUST recalcular automáticamente la completitud de la mesa y su aviso. La edición de una comanda ya enviada a cocina (añadir, cambiar o retirar un plato) MUST recalcular igualmente la completitud: los platos ya listos que no se toquen mantienen su estado; si con la edición entra un plato pendiente, la mesa deja de estar completa y su aviso se retira, y al marcarse ese plato como listo se genera un aviso nuevo.
+- **FR-013**: Un plato MUST poder volver del estado "listo" al estado "pendiente" si se corrige (por ejemplo, un error o un plato devuelto); al hacerlo, el sistema MUST recalcular automáticamente la completitud de la mesa y su aviso. La edición de una comanda ya enviada a cocina (añadir, cambiar o retirar un plato) MUST recalcular igualmente la completitud: los platos ya listos que no se toquen mantienen su estado; si con la edición entra un plato pendiente, la mesa deja de estar completa y su aviso se retira, y al marcarse ese plato como listo se genera un aviso nuevo. Si la edición cambia la cantidad de una línea ya lista, MUST aplicarse la regla de la historia 004: sigue lista si la cantidad baja o se mantiene, y vuelve a pendiente si sube.
 - **FR-014**: La vista del camarero MUST requerir conexión con la red del restaurante; al perderse, MUST mostrar un indicador claro de "sin conexión" y marcar la información como no actualizada, y al recuperarla MUST resincronizar automáticamente el estado de los platos y los avisos.
 - **FR-015**: Cuando no haya ninguna mesa abierta, la vista MUST mostrar un estado vacío claro (por ejemplo, "No hay mesas abiertas"); mientras la información esté cargando, MUST mostrar un indicador de carga en lugar de una pantalla en blanco.
 - **FR-016**: La historia MUST incluir el mecanismo mínimo para marcar y desmarcar un plato como listo (responsabilidad de cocina), de forma que el cambio de estado que alimenta la vista del camarero pueda producirse y probarse de extremo a extremo; la pantalla de cocina y su aviso temporal «Pedido completado» pertenecen a la historia 004 y quedan fuera de esta historia.

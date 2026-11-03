@@ -38,9 +38,9 @@ describe('División de la cuenta (US2)', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1084 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1083 },
-        { orden: 3, comensal: 'Marta', importe_centimos: 1083 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1084 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1083 },
+        { orden: 3, comensal: 'Parte 3', importe_centimos: 1083 },
       ],
     });
 
@@ -50,17 +50,17 @@ describe('División de la cuenta (US2)', () => {
       .prepare('SELECT orden, comensal, importe_centimos FROM cuentas_partes ORDER BY orden')
       .all();
     expect(partes).toEqual([
-      { orden: 1, comensal: 'Ana', importe_centimos: 1084 },
-      { orden: 2, comensal: 'Luis', importe_centimos: 1083 },
-      { orden: 3, comensal: 'Marta', importe_centimos: 1083 },
+      { orden: 1, comensal: 'Parte 1', importe_centimos: 1084 },
+      { orden: 2, comensal: 'Parte 2', importe_centimos: 1083 },
+      { orden: 3, comensal: 'Parte 3', importe_centimos: 1083 },
     ]);
     expect(partes.reduce((suma, parte) => suma + parte.importe_centimos, 0)).toBe(3250);
 
     const cuenta = await request(app).get('/api/sala/mesas/mesa-1/cuenta').set(CABECERA_CAMARERO);
     expect(cuenta.body.division.partes.map((parte) => parte.comensal)).toEqual([
-      'Ana',
-      'Luis',
-      'Marta',
+      'Parte 1',
+      'Parte 2',
+      'Parte 3',
     ]);
   });
 
@@ -89,8 +89,8 @@ describe('División de la cuenta (US2)', () => {
         modo: 'iguales',
         total_base_centimos: 1800,
         partes: [
-          { orden: 1, comensal: 'Ana', importe_centimos: 900 },
-          { orden: 2, comensal: 'Luis', importe_centimos: 900 },
+          { orden: 1, comensal: 'Parte 1', importe_centimos: 900 },
+          { orden: 2, comensal: 'Parte 2', importe_centimos: 900 },
         ],
       });
 
@@ -119,8 +119,8 @@ describe('División de la cuenta (US2)', () => {
       modo: 'por_consumo',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 2350 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 900 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 2350 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 900 },
       ],
       asignaciones: [
         { parte_orden: 1, linea_id: lineaDe('plato-entrante'), importe_centimos: 850 },
@@ -155,8 +155,8 @@ describe('División de la cuenta (US2)', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1625 },
       ],
     });
 
@@ -169,8 +169,8 @@ describe('División de la cuenta (US2)', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1625 },
       ],
     });
     expect(conTotalViejo.status).toBe(422);
@@ -179,8 +179,8 @@ describe('División de la cuenta (US2)', () => {
       modo: 'iguales',
       total_base_centimos: 3850,
       partes: [
-        { orden: 1, comensal: 'Marta', importe_centimos: 1925 },
-        { orden: 2, comensal: 'Pablo', importe_centimos: 1925 },
+        { orden: 1, comensal: 'Parte 3', importe_centimos: 1925 },
+        { orden: 2, comensal: 'Parte 4', importe_centimos: 1925 },
       ],
     });
     expect(response.status).toBe(201);
@@ -191,8 +191,8 @@ describe('División de la cuenta (US2)', () => {
     expect(cuentas.total).toBe(1);
     expect(db.prepare('SELECT COUNT(*) AS total FROM cuentas_partes').get().total).toBe(2);
     expect(db.prepare('SELECT comensal FROM cuentas_partes ORDER BY orden').all()).toEqual([
-      { comensal: 'Marta' },
-      { comensal: 'Pablo' },
+      { comensal: 'Parte 1' },
+      { comensal: 'Parte 2' },
     ]);
   });
 
@@ -203,8 +203,8 @@ describe('División de la cuenta (US2)', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1625 },
       ],
     });
     expect(division.status).toBe(201);
@@ -278,8 +278,8 @@ describe('División de la cuenta (US2)', () => {
       modo: 'por_consumo',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 2350 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 900 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 2350 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 900 },
       ],
       asignaciones: [
         { parte_orden: 1, linea_id: lineaDe('plato-entrante'), importe_centimos: 850 },
@@ -313,8 +313,8 @@ describe('División de la cuenta (US2)', () => {
       modo: 'iguales',
       total_base_centimos: 3250,
       partes: [
-        { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
-        { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+        { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
+        { orden: 2, comensal: 'Parte 2', importe_centimos: 1625 },
       ],
     });
 
@@ -350,8 +350,8 @@ describe('División de la cuenta (US2)', () => {
         modo: 'iguales',
         total_base_centimos: 1800,
         partes: [
-          { orden: 1, comensal: 'Ana', importe_centimos: 900 },
-          { orden: 2, comensal: 'Luis', importe_centimos: 900 },
+          { orden: 1, comensal: 'Parte 1', importe_centimos: 900 },
+          { orden: 2, comensal: 'Parte 2', importe_centimos: 900 },
         ],
       });
     expect(division.status).toBe(201);

@@ -32,16 +32,20 @@ proyecto (historia 04). Los campos no usados por esta historia (importes, carta)
 - **Reglas**:
   - `estado` es `pendiente` mientras alguna línea no esté lista (FR-008).
   - `enviadoEn` **no** se reinicia al editar el pedido (FR-005, FR-015); `modificadoEn` solo sirve
-    como marca distintiva y `modificado` indica si hubo edición posterior al envío (FR-018).
+    como marca distintiva y `modificado` indica si hubo edición posterior al envío (FR-018). El
+    aviso «Modificado» aparece cuando 002 comunica los cambios con «enviar cambios».
   - Solo se listan los pedidos de la partida del cocinero (FR-002, FR-003).
+  - Los pedidos `cancelada` (002) se excluyen de la vista; no se marcan ni cuentan como completados
+    (FR-019).
 
 ### Línea de pedido (plato)
 - **Descripción**: plato del pedido con su cantidad y su estado.
-- **Campos**: `id`, `pedidoId`, `nombrePlato`, `cantidad` (≥1), `estado` (`pendiente` | `listo`),
-  `listoEn` (marca temporal, nula si pendiente).
+- **Campos**: `id`, `pedidoId`, `nombrePlato`, `partida`, `cantidad` (≥1), `estado` (`pendiente` |
+  `listo`), `listoEn` (marca temporal, nula si pendiente).
 - **Reglas**: los platos de la partida se muestran todos (incluidos los ya listos, marcados
   visualmente) (FR-007). La distinción entre listo y pendiente combina color con un símbolo o
-  etiqueta de texto, nunca solo color (FR-007, SC-010).
+  etiqueta de texto, nunca solo color (FR-007, SC-010). `nombrePlato` y `partida` son la
+  instantánea fijada al pedir (001), no los datos actuales de la carta (008).
 
 ### Estado de la vista (cliente)
 

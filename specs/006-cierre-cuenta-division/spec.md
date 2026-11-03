@@ -28,6 +28,13 @@
 - Q: Cuando se cobra y cierra una mesa, ¿debe quedar disponible de inmediato para abrir una nueva comanda? → A: La mesa vuelve a estar libre inmediatamente al cerrar la cuenta; la cuenta anterior queda como histórico y puede abrirse una nueva comanda sobre la misma mesa.
 - Q: Si al cerrar una cuenta quedan platos pendientes en cocina, ¿qué debe hacer el sistema? → A: Impedir el cierre hasta que cocina marque todos los platos como listos; mostrar un aviso con los platos pendientes.
 
+### Session 2026-11-03
+
+- Q: ¿Cómo afecta al cierre de cuenta la cancelación de un pedido ya enviado? → A: Un pedido cancelado deja de ser consumo facturable; la cuenta se calcula solo con los pedidos vigentes y la mesa queda libre si no hay otra comanda. No es una anulación parcial de una cuenta cerrada.
+- Q: Para el dashboard, ¿cómo debe contar una cuenta dividida en varias partes? → A: Una sola vez por el importe total, atribuida al camarero que abrió/tomó el pedido; las partes pagadas no se suman por separado.
+- Q: Si una cuenta ya tiene alguna parte marcada como pagada y el camarero modifica el pedido, ¿qué debe pasar con la división y con lo ya cobrado? → A: Se impide modificar el pedido mientras haya alguna parte pagada; el camarero debe deshacer el pago (volver a pendiente) y después editar.
+- Q: ¿Cómo debe identificar el sistema al comensal de cada parte de una cuenta dividida? → A: Con una etiqueta simple («Parte 1», «Parte 2»…), sin pedir datos personales.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Cerrar la cuenta y calcular el total (Priority: P1)
@@ -110,13 +117,15 @@ En una cuenta dividida, el ticket se rige por el escenario 5: no se emite hasta 
 - ¿Qué ocurre cuando el total no se puede repartir en partes exactamente iguales (por ejemplo, 10 € entre 3)? Los céntimos sobrantes se reparten de uno en uno entre las partes por orden, empezando por la primera, de modo que la suma de las partes siga coincidiendo con el total.
 - ¿Qué ocurre si un plato lo comparten varios comensales? Debe poder repartirse su importe entre las partes correspondientes sin perder la coincidencia con el total.
 - ¿Qué ocurre si el camarero cancela el cierre antes de confirmar el cobro? La cuenta y la mesa deben quedar como estaban, sin cambios.
-- ¿Qué ocurre con una mesa sin consumos? La cuenta debe mostrar un total de cero y no debe permitir un cierre sin importe.
+- ¿Qué ocurre con una mesa sin consumos? La cuenta debe mostrar un total de cero y no debe permitir un cierre sin importe. Si no hay consumos porque el pedido se canceló, no se genera cuenta y la mesa queda libre según la historia 002.
 - ¿Qué ocurre si no están pagadas todas las partes de una cuenta dividida? La mesa no se cierra hasta que todas las partes queden marcadas como pagadas.
 - ¿Qué ocurre si el camarero marca una parte como pagada por error? Puede volver a marcarla como pendiente mientras la cuenta no esté cerrada; la cuenta no se cierra si queda alguna parte pendiente.
 - ¿Qué ocurre si se modifica la cuenta después de iniciar la división? La división se reinicia y el camarero debe rehacerla sobre el nuevo total.
+- ¿Qué ocurre si se intenta modificar el pedido con partes ya pagadas? La modificación se bloquea hasta que el camarero deshaga los pagos y todas las partes vuelvan a pendiente.
 - ¿Qué ocurre si un precio cambia entre el consumo y el cierre? Se aplica el precio registrado en el momento de pedir cada plato; el cambio de precio no altera las cuentas ya en curso.
 - ¿Qué ocurre si se intenta cerrar una cuenta que ya está cerrada? El sistema debe impedirlo.
 - ¿Qué ocurre si quedan platos pendientes en cocina al cerrar la cuenta? El cierre se bloquea y se muestran los platos pendientes; solo se permite cerrar cuando cocina los ha marcado todos como listos.
+- ¿Qué ocurre si se cancela un pedido completo antes de cerrar la cuenta? El pedido cancelado no forma parte del consumo facturable y la mesa queda libre si no tiene otra comanda; no se trata de una anulación parcial de una cuenta cerrada.
 - ¿Qué ocurre con la mesa después de cerrar su cuenta? Vuelve a estar libre inmediatamente y puede abrir una nueva comanda; la cuenta anterior se conserva como histórico.
 
 ## Requirements *(mandatory)*
@@ -130,7 +139,9 @@ En una cuenta dividida, el ticket se rige por el escenario 5: no se emite hasta 
 - **FR-005**: El camarero MUST poder dividir la cuenta en varias partes.
 - **FR-006**: La división MUST poder hacerse en partes iguales.
 - **FR-007**: La división MUST poder hacerse repartiendo el importe según lo consumido por cada comensal.
-- **FR-008**: Cada parte de la división MUST quedar asociada al comensal al que corresponde.
+- **FR-008**: Cada parte de la división MUST quedar asociada al comensal al que corresponde. El
+  comensal MUST identificarse con una etiqueta simple («Parte 1», «Parte 2»…) y MUST NOT requerir
+  nombre ni datos personales (aclarado en la sesión de clarificación).
 - **FR-009**: La suma de las partes MUST coincidir siempre con el importe total de la cuenta.
 - **FR-010**: El sistema MUST generar el ticket final con el total de la cuenta y el desglose de cada parte con su importe. En una cuenta dividida, MUST generar un único ticket final al pagarse la última parte, sin generar tickets provisionales por las partes intermedias.
 - **FR-011**: Al confirmar el cobro de la cuenta, o de todas sus partes cuando esté dividida, el sistema MUST cerrar la cuenta y liberar la mesa para que pueda recibir una nueva comanda; la cuenta cerrada MUST conservarse como histórico. El cierre MUST rechazarse mientras existan platos pendientes en cocina.
@@ -139,7 +150,7 @@ En una cuenta dividida, el ticket se rige por el escenario 5: no se emite hasta 
 - **FR-014**: El sistema MUST impedir cerrar una cuenta que ya esté cerrada.
 - **FR-015**: Al cerrar la cuenta, el camarero MUST poder asignar cada plato consumido (o una porción de su importe) a una de las partes de la división, ya que el pedido no registra el consumo por comensal.
 - **FR-016**: Cuando la cuenta esté dividida, el camarero MUST poder marcar cada parte como pagada por separado; la cuenta MUST cerrarse solo cuando todas las partes estén pagadas. El camarero MUST poder deshacer la marca de una parte pagada mientras la cuenta no esté cerrada, devolviéndola a pendiente.
-- **FR-017**: Si la cuenta se modifica después de iniciar una división, el sistema MUST reiniciar la división para que el camarero la rehaga sobre el total actualizado.
+- **FR-017**: Si la cuenta se modifica después de iniciar una división, el sistema MUST reiniciar la división para que el camarero la rehaga sobre el total actualizado. Si alguna parte ya está marcada como pagada, el sistema MUST impedir modificar el pedido hasta que todas las partes vuelvan a pendiente (aclarado en la sesión de clarificación).
 - **FR-018**: En una división en partes iguales que no sea exacta, el sistema MUST repartir los céntimos sobrantes de uno en uno entre las partes por orden, empezando por la primera, de modo que la suma siga coincidiendo con el total.
 - **FR-019**: Si una mesa tiene platos pendientes en cocina, el sistema MUST impedir el cierre de su cuenta y MUST mostrar los platos pendientes; el cierre MUST permitirse cuando todos los platos estén marcados como listos.
 
@@ -149,7 +160,8 @@ En una cuenta dividida, el ticket se rige por el escenario 5: no se emite hasta 
 - **Cuenta**: importe total de lo consumido por una mesa y su estado (abierta o cerrada); una cuenta cerrada no se reabre.
 - **Consumo**: cada plato registrado en la mesa con el precio fijado en el momento de pedirlo, base del cálculo del total; puede asignarse a una parte de la división al cerrar la cuenta.
 - **División de la cuenta**: conjunto de partes en que se reparte el importe; cada parte tiene un importe, una forma (partes iguales o por consumo) y los platos o porciones asignados.
-- **Comensal**: persona a la que se asocia una parte de la cuenta.
+- **Comensal**: etiqueta simple que identifica cada parte de la cuenta («Parte 1», «Parte 2»…); no
+  se recogen nombres ni datos personales.
 - **Parte de la cuenta**: cada porción de la división, con su importe, el comensal asociado y su estado (pendiente de pago o pagada).
 - **Ticket**: documento final con el total de la cuenta y el desglose de cada parte con su importe; los precios ya incluyen el IVA y no se desglosa impuesto alguno.
 
@@ -173,8 +185,15 @@ En una cuenta dividida, el ticket se rige por el escenario 5: no se emite hasta 
 - Los precios de los platos son los del momento de pedir cada plato y se muestran con IVA incluido; el desglose de impuestos queda fuera del alcance de esta historia.
 - El cobro lo confirma el camarero (efectivo, tarjeta u otro medio); el sistema no se integra con terminales de pago.
 - La división de la cuenta es opcional: por defecto la cuenta se cobra como un único pago; si se divide, cada parte se paga por separado y la cuenta se cierra al completarse el pago de todas ellas, liberando la mesa.
-- No se contemplan propinas, descuentos ni anulaciones parciales en esta historia.
+- El comensal se identifica con una etiqueta simple («Parte 1», «Parte 2»…); no se recogen
+  nombres ni datos personales.
+- No se contemplan propinas, descuentos ni anulaciones parciales en esta historia. La
+  cancelación de un pedido completo o la retirada de platos antes del cierre se rigen por la
+  historia 002 y no se consideran anulaciones parciales de una cuenta cerrada: el consumo vigente
+  es el que se cobra y el pedido cancelado no forma parte del consumo facturable.
 - Una mesa cobrada vuelve a estar libre y puede recibir una nueva comanda; las cuentas cerradas se conservan como histórico y no se reabren.
+- Una cuenta dividida cuenta como una sola venta en el dashboard, por su importe total y atribuida
+  al camarero que abrió/tomó el pedido; las partes pagadas no se suman por separado.
 - Cómo se entrega el ticket (impresión o formato digital) queda fuera del alcance; esta historia se centra en su contenido.
 - La interfaz y los importes están en español de España y en euros (€).
 - La funcionalidad se ofrece en la versión 1 dentro del alcance ya definido, sin funciones adicionales no especificadas.

@@ -168,6 +168,33 @@ recargar; con la conexión cortada, el tiempo de espera sigue avanzando.
 
 ---
 
+## Phase 7: Convergence
+
+- [X] T056 CRITICAL Normalizar los mensajes de error visibles al español y unificar el cuerpo de error de la API a `{ codigo, mensaje }` en `backend/src/middleware/error.js`, `backend/src/routes/partidas.js`, `backend/src/routes/cocineros.js` y `frontend/src/services/api.js`; traducir los fallos de red y cubrirlo en `frontend/tests/i18n/textos.test.jsx` per Constitution II, FR-014, T055 (contradicts)
+- [X] T057 Emitir los eventos del contrato en los flujos reales: `pedido.nuevo` al confirmar, `pedido.modificado` al enviar cambios y `pedido.pendientes-cambiado` al confirmar, anular, completar o reabrir; usar `realtime/emit.js` desde `routes/pedidos.js` y actualizar `frontend/src/services/events.js`, `backend/tests/contract/eventos-cocina.test.js` y `backend/tests/contract/eventos-pedido-modificado.test.js` per FR-009, FR-011, FR-018, T038, T039, T045, `contracts/events.md` (missing)
+- [X] T058 Implementar canales SSE por partida y enrutar cada evento a su canal, incluyendo `partida` en `linea.actualizada`, `pedido.pendientes-cambiado` y `pedido.reabierto`; sustituir el `Set` global de `backend/src/realtime/hub.js` y ajustar `sse.js`, `routes/partidas.js` y `suscribirAPartida()` per T043, plan R2, `contracts/events.md`, FR-002/FR-003 (contradicts)
+- [X] T059 Añadir pruebas de contrato e integración que ejecuten los endpoints reales (`POST /confirmar`, `POST /enviar-cambios`, `POST /anular`) y verifiquen la emisión y los payloads de los eventos en el canal de la partida, además de reforzar `backend/tests/integration/lista-en-vivo.test.js` con el flujo SSE per T038, T039, T040, `contracts/events.md` (partial)
+- [X] T060 Ampliar `backend/src/db/seed.js` para cubrir los escenarios del quickstart que hoy no se pueden demostrar: ~20 mesas, un cocinero sin partida, un pedido con más de una hora de espera y dos pedidos con el mismo `enviadoEn`; actualizar `README.md` con la verificación per T052, `quickstart.md`, FR-004, FR-013 (partial)
+- [X] T061 Añadir logging de emisión de eventos en `backend/src/realtime/emit.js` o `backend/src/realtime/hub.js` con tipo, partida e identificadores, y cubrirlo con una prueba per T050 (missing)
+- [X] T062 Añadir el mapa de FR-001…FR-018 a las pruebas y a `specs/003-ver_pedidos/verification.md`, indicando qué test cubre cada requisito per T054 (missing)
+- [X] T063 Derivar `modificado` únicamente de `modificadoEn` no nulo en `backend/src/services/verPedidos.js` y ajustar fixtures y pruebas para que el flag legado `modificado` no produzca falsos positivos per T031, T028, `data-model.md` (partial)
+
+---
+
+## Phase 8: Convergence
+
+- [X] T064 Actualizar el estado de las líneas de otras partidas en las pantallas de cocina: al marcar o deshacer una línea, emitir un refresco (`pedido.pendientes-cambiado` o evento equivalente) a todas las partidas presentes en el pedido, no solo a la partida de la línea, para que las pantallas que muestran todas las líneas no conserven estados obsoletos; añadir una prueba de integración con un pedido mixto y canales de dos partidas en `backend/tests/integration/eventos-partida.test.js` per FR-007, US2/AC4, US3/AC4, T043, T057, T058 (partial)
+
+---
+
+## Phase 9: Convergence — Clarificaciones 2026-11-03
+
+- [X] T065 [P] Excluir los pedidos `cancelada` de la consulta de pendientes en `backend/src/services/verPedidos.js` y de las consultas de `backend/src/db/pedidos.js`; cubrir con `backend/tests/integration/lista-en-vivo.test.js` per FR-019.
+- [X] T066 [P] Emitir `pedido.cancelado` al cancelar un pedido completo desde `backend/src/realtime/emit.js` y la ruta de cancelación; actualizar `backend/tests/contract/eventos-cocina.test.js` y `specs/003-ver_pedidos/contracts/events.md` per FR-019.
+- [X] T067 Usar `lineas_pedido.nombre_plato` y `partida_codigo` en `backend/src/services/verPedidos.js` y en `frontend/src/components/PedidoCard.jsx`; depende de 001 T050; añadir prueba con plato renombrado en `backend/tests/integration/lista-historico.test.js` per FR-007/FR-016.
+- [X] T068 Asegurar que el aviso «Modificado» solo aparece tras `enviar-cambios` de 002; ajustar `backend/src/services/verPedidos.js` y `frontend/src/components/PedidoCard.jsx`, con prueba en `backend/tests/integration/pedido-modificado.test.js` per FR-018.
+- [X] T069 Actualizar `specs/003-ver_pedidos/quickstart.md` y `specs/003-ver_pedidos/verification.md` con los escenarios de pedido cancelado y de nombre/partida históricos per FR-019/FR-018.
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -251,6 +278,8 @@ Task: "Build loading and error components in frontend/src/components/EstadoCarga
 
 ## Notes
 
+- **Fuente de verdad**: cancelación en 002, disponibilidad en 008, instantánea histórica en 001; las tareas de convergencia solo consumen esas reglas.
+
 - [P] = ficheros distintos, sin dependencias
 - Cada historia es completable y probable por separado
 - La constitución exige pruebas automatizadas por funcionalidad, escritas junto al desarrollo
@@ -261,19 +290,7 @@ Task: "Build loading and error components in frontend/src/components/EstadoCarga
 
 ---
 
-## Phase 7: Convergence
+## Phase 10: Convergence
 
-- [X] T056 CRITICAL Normalizar los mensajes de error visibles al español y unificar el cuerpo de error de la API a `{ codigo, mensaje }` en `backend/src/middleware/error.js`, `backend/src/routes/partidas.js`, `backend/src/routes/cocineros.js` y `frontend/src/services/api.js`; traducir los fallos de red y cubrirlo en `frontend/tests/i18n/textos.test.jsx` per Constitution II, FR-014, T055 (contradicts)
-- [X] T057 Emitir los eventos del contrato en los flujos reales: `pedido.nuevo` al confirmar, `pedido.modificado` al enviar cambios y `pedido.pendientes-cambiado` al confirmar, anular, completar o reabrir; usar `realtime/emit.js` desde `routes/pedidos.js` y actualizar `frontend/src/services/events.js`, `backend/tests/contract/eventos-cocina.test.js` y `backend/tests/contract/eventos-pedido-modificado.test.js` per FR-009, FR-011, FR-018, T038, T039, T045, `contracts/events.md` (missing)
-- [X] T058 Implementar canales SSE por partida y enrutar cada evento a su canal, incluyendo `partida` en `linea.actualizada`, `pedido.pendientes-cambiado` y `pedido.reabierto`; sustituir el `Set` global de `backend/src/realtime/hub.js` y ajustar `sse.js`, `routes/partidas.js` y `suscribirAPartida()` per T043, plan R2, `contracts/events.md`, FR-002/FR-003 (contradicts)
-- [X] T059 Añadir pruebas de contrato e integración que ejecuten los endpoints reales (`POST /confirmar`, `POST /enviar-cambios`, `POST /anular`) y verifiquen la emisión y los payloads de los eventos en el canal de la partida, además de reforzar `backend/tests/integration/lista-en-vivo.test.js` con el flujo SSE per T038, T039, T040, `contracts/events.md` (partial)
-- [X] T060 Ampliar `backend/src/db/seed.js` para cubrir los escenarios del quickstart que hoy no se pueden demostrar: ~20 mesas, un cocinero sin partida, un pedido con más de una hora de espera y dos pedidos con el mismo `enviadoEn`; actualizar `README.md` con la verificación per T052, `quickstart.md`, FR-004, FR-013 (partial)
-- [X] T061 Añadir logging de emisión de eventos en `backend/src/realtime/emit.js` o `backend/src/realtime/hub.js` con tipo, partida e identificadores, y cubrirlo con una prueba per T050 (missing)
-- [X] T062 Añadir el mapa de FR-001…FR-018 a las pruebas y a la documentación de verificación de la historia, indicando qué test cubre cada requisito per T054 (missing)
-- [X] T063 Derivar `modificado` únicamente de `modificadoEn` no nulo en `backend/src/services/verPedidos.js` y ajustar fixtures y pruebas para que el flag legado `modificado` no produzca falsos positivos per T031, T028, `data-model.md` (partial)
-
----
-
-## Phase 8: Convergence
-
-- [X] T064 Actualizar el estado de las líneas de otras partidas en las pantallas de cocina: al marcar o deshacer una línea, emitir un refresco (`pedido.pendientes-cambiado` o evento equivalente) a todas las partidas presentes en el pedido, no solo a la partida de la línea, para que las pantallas que muestran todas las líneas no conserven estados obsoletos; añadir una prueba de integración con un pedido mixto y canales de dos partidas en `backend/tests/integration/eventos-partida.test.js` per FR-007, US2/AC4, US3/AC4, T043, T057, T058 (partial)
+- [X] T070 Añadir una prueba de contrato/integración de `pedido.cancelado` en `backend/tests/contract/eventos-cocina.test.js` y de la desaparición del pedido en `backend/tests/integration/lista-en-vivo.test.js` per FR-019/T066 (partial)
+- [X] T071 Añadir una prueba de la instantánea histórica de nombre/partida en la vista de cocina, con un plato renombrado, en `backend/tests/integration/lista-historico.test.js` per T067 (partial)

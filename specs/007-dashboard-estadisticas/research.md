@@ -151,3 +151,48 @@ su justificación.
 - **Alternativas consideradas**: orden alfabético (no responde a la pregunta de negocio); orden de
   carta por partida (útil para la comanda, no para estadísticas); ocultar la fecha (riesgo de
   interpretar ayer como hoy).
+
+## D15. Atribución al camarero que abrió el pedido
+
+- **Decisión**: el importe de cada cuenta se atribuye a `pedidos.camarero_id`; si no consta, se usa
+  `cuentas.camarero_id` (quien la cerró). La consulta debe invertir el `COALESCE` actual.
+- **Razón**: la clarificación 2026-11-03 elige el rendimiento de sala (quién atendió) frente al
+  cobro; es estable aunque el cobro lo haga otra persona.
+- **Alternativas consideradas**: atribuir al que cierra (regla actual, menos representativa del
+  servicio); repartir entre ambos (complejidad y descuadre).
+
+## D16. Cuenta dividida en el dashboard
+
+- **Decisión**: una cuenta dividida cuenta una sola vez por `cuentas.total_centimos`, atribuida al
+  camarero que abrió/tomó el pedido. Las partes pagadas no se suman por separado.
+- **Razón**: evita duplicar la venta y mantiene la reconciliación con las cuentas cerradas; la
+  clarificación 2026-11-03 lo alinea con la atribución de D15.
+- **Alternativas consideradas**: sumar cada parte (duplica ventas); repartir el importe entre los
+  camareros que cobraron (complejidad y descuadre).
+
+## D17. Instantánea de nombre y partida
+
+- **Decisión**: el desglose por plato usa `lineas_pedido.nombre_plato` y `partida_codigo` fijados al
+  pedir (001), no los datos actuales de la carta (008).
+- **Razón**: un cambio posterior de nombre o partida no debe alterar el histórico de ventas; es
+  coherente con el fijado del precio.
+- **Alternativas consideradas**: unir siempre con el plato actual (distorsiona el histórico);
+  mostrar solo el `plato_id` (pierde el nombre legible).
+
+## D18. Pedidos cancelados
+
+- **Decisión**: los pedidos `cancelada` no generan cuenta ni consumo; el dashboard solo agrega
+  cuentas cerradas. No aparecen en el total ni en los desgloses.
+- **Razón**: una cancelación completa no es una venta; incluirla descuadraría el total y el
+  desglose por camarero.
+- **Alternativas consideradas**: incluirla con importe cero (ruido y posible confusión); incluir su
+  importe (venta inexistente).
+
+## D19. Formato del porcentaje
+
+- **Decisión**: dos decimales con coma decimal y signo negativo solo en las bajadas (`9,11 %`,
+  `-4,76 %`); las subidas no llevan signo positivo. Sin base de comparación no se muestra porcentaje.
+- **Razón**: la clarificación 2026-11-03 fija un formato inequívoco y coherente con la convención
+  española; evita discrepancias entre la API y la UI.
+- **Alternativas consideradas**: un decimal (menos precisión); entero (pierde variaciones pequeñas);
+  dos decimales con signo positivo (ruido visual).

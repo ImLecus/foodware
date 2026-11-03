@@ -1,0 +1,9 @@
+-- Historia 001: indicaciones por línea.
+--
+-- La tabla base `lineas_pedido` ya incluye la columna `indicaciones` en 001_init.sql.
+-- Esta migración se conserva para dejar constancia versionada del contrato y para
+-- que futuras instalaciones que partan de un esquema anterior puedan aplicar el
+-- mismo número de migración sin recrear la columna.
+--
+-- No se ejecuta ALTER TABLE para evitar el error "duplicate column name" en bases
+-- de datos creadas con 001_init.sql.

@@ -4,17 +4,18 @@ import { liberarMesa, marcarMesaOcupada } from './mesas.js';
 const LINEA_CAMPOS = `l.id,
                       l.pedido_id,
                       l.plato_id,
-                      p.nombre AS plato_nombre,
+                      COALESCE(l.nombre_plato, p.nombre) AS plato_nombre,
                       l.cantidad,
                       l.precio_centimos,
                       l.indicaciones,
                       l.estado,
                       l.listo_en,
-                      p.partida_codigo AS partida`;
+                      COALESCE(l.partida_codigo, p.partida_codigo) AS partida`;
 
 const LINEA_JOIN = `FROM lineas_pedido l
                       JOIN platos p ON p.id = l.plato_id
-                      JOIN partidas pa ON pa.codigo = p.partida_codigo`;
+                      JOIN partidas pa
+                        ON pa.codigo = COALESCE(l.partida_codigo, p.partida_codigo)`;
 
 function listarLineas(db, pedidoId) {
   return db
@@ -87,8 +88,8 @@ export function listarLineasPendientesDePedido(db, pedidoId) {
     .prepare(
       `SELECT l.id AS linea_id,
               l.pedido_id,
-              p.nombre,
-              p.partida_codigo AS partida,
+              COALESCE(l.nombre_plato, p.nombre) AS nombre,
+              COALESCE(l.partida_codigo, p.partida_codigo) AS partida,
               l.estado,
               l.listo_en
          FROM lineas_pedido l
@@ -130,9 +131,19 @@ export function anadirLinea(db, { pedidoId, plato, cantidad, indicaciones = null
   const id = randomUUID();
   db.prepare(
     `INSERT INTO lineas_pedido
-       (id, pedido_id, plato_id, cantidad, precio_centimos, indicaciones)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-  ).run(id, pedidoId, plato.id, cantidad, plato.precio_centimos, indicaciones);
+       (id, pedido_id, plato_id, nombre_plato, cantidad, precio_centimos,
+        partida_codigo, indicaciones)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    id,
+    pedidoId,
+    plato.id,
+    plato.nombre,
+    cantidad,
+    plato.precio_centimos,
+    plato.partida,
+    indicaciones,
+  );
   return obtenerLinea(db, id);
 }
 
@@ -149,6 +160,14 @@ export function modificarLinea(db, lineaId, { cantidad, indicaciones }) {
 
 export function retirarLinea(db, lineaId) {
   db.prepare('DELETE FROM lineas_pedido WHERE id = ?').run(lineaId);
+}
+
+/** Devuelve una línea lista a pendiente y limpia su momento de listo. */
+export function reiniciarLineaLista(db, lineaId) {
+  db.prepare("UPDATE lineas_pedido SET estado = 'pendiente', listo_en = NULL WHERE id = ?").run(
+    lineaId,
+  );
+  return obtenerLinea(db, lineaId);
 }
 
 /** Confirma el pedido: pasa a `enviada` y fija el momento de confirmación. */
@@ -170,6 +189,24 @@ export function anularPedido(db, pedidoId) {
     liberarMesa(db, pedido.mesa_id);
   });
   anular();
+  return pedido.mesa_id;
+}
+
+/**
+ * Cancela un pedido ya enviado sin generar consumo ni cobro. Se conserva el
+ * registro histórico, se marca `cancelada` y se libera la mesa si no tiene otra
+ * comanda (FR-016).
+ *
+ * Equivalencia de persistencia: `estado = 'cerrada'` + `cancelada = 1`; la API
+ * lo expone como estado `cancelada` (ver migración 010).
+ */
+export function cancelarPedido(db, pedidoId) {
+  const pedido = db.prepare('SELECT mesa_id FROM pedidos WHERE id = ?').get(pedidoId);
+  const cancelar = db.transaction(() => {
+    db.prepare("UPDATE pedidos SET estado = 'cerrada', cancelada = 1 WHERE id = ?").run(pedidoId);
+    liberarMesa(db, pedido.mesa_id);
+  });
+  cancelar();
   return pedido.mesa_id;
 }
 
