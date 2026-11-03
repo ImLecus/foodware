@@ -4,6 +4,7 @@ import { ErrorHttp } from '../middleware/error.js';
 const esquemaNuevaLinea = z.object({
   plato_id: z.string().min(1, 'El plato es obligatorio'),
   cantidad: z.coerce.number().int().min(1, 'La cantidad debe ser al menos 1').default(1),
+  indicaciones: z.string().trim().max(200, 'Las indicaciones son demasiado largas').nullish(),
 });
 
 const esquemaLineaPatch = z.object({

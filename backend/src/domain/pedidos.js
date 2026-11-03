@@ -75,7 +75,10 @@ export function serializarLinea(linea) {
     plato_nombre: linea.plato_nombre,
     cantidad: linea.cantidad,
     precio_centimos: linea.precio_centimos,
+    indicaciones: linea.indicaciones ?? null,
     partida: linea.partida,
+    estado: linea.estado,
+    listo_en: linea.listo_en ?? null,
   };
 }
 
