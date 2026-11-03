@@ -22,4 +22,12 @@ describe('PaginaGestionCarta', () => {
       expect(screen.getByText(/Gestión de la carta/i)).toBeInTheDocument();
     });
   });
+
+  it('avisa de que la disponibilidad solo afecta a pedidos nuevos', async () => {
+    render(<PaginaGestionCarta />);
+    await waitFor(() => {
+      expect(screen.getByText(/Los cambios de disponibilidad afectan solo a la carta vigente/i))
+        .toBeInTheDocument();
+    });
+  });
 });

@@ -262,4 +262,4 @@ Task: "Prueba de componente en frontend/tests/components/FormularioPlato.test.js
 
 ## Fase 9: Convergence
 
-- [ ] T071 Añadir una prueba de componente en `frontend/tests/components/PaginaGestionCarta.test.jsx` que compruebe el aviso de que la disponibilidad solo afecta a pedidos nuevos per T066 (partial)
+- [X] T071 Añadir una prueba de componente en `frontend/tests/components/PaginaGestionCarta.test.jsx` que compruebe el aviso de que la disponibilidad solo afecta a pedidos nuevos per T066 (partial)
