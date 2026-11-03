@@ -56,8 +56,24 @@ export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
       throw new ErrorHttp(404, 'El pedido no existe', 'pedido_no_encontrado');
     }
 
+    if (pedido.cancelada) {
+      throw new ErrorHttp(409, 'El pedido está cancelado', 'pedido_cancelado');
+    }
+
     if (pedido.estado === 'cerrada') {
       throw new ErrorHttp(409, 'La cuenta ya está cerrada', 'cuenta_cerrada');
+    }
+
+    const bloqueoVigente =
+      pedido.editando_por &&
+      pedido.bloqueo_expira_en &&
+      new Date(`${pedido.bloqueo_expira_en.replace(' ', 'T')}Z`).getTime() > Date.now();
+    if (bloqueoVigente) {
+      throw new ErrorHttp(
+        423,
+        'El pedido está siendo editado por un camarero',
+        'pedido_bloqueado',
+      );
     }
 
     exigirMesaAbierta(exigirMesa(obtenerMesa(db, pedido.mesa_id)));

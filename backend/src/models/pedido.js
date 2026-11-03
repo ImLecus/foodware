@@ -27,7 +27,14 @@ export function listarPedidosConPendientes(db, partidaId) {
 
 export function buscarPedido(db, pedidoId) {
   return (
-    db.prepare('SELECT id, mesa_id, estado, enviado_en FROM pedidos WHERE id = ?').get(pedidoId) ??
-    null
+    db
+      .prepare(
+        `SELECT id, mesa_id, estado, enviado_en, cancelada,
+                editando_por, editando_desde, editando_ultima_actividad,
+                bloqueo_expira_en
+           FROM pedidos
+          WHERE id = ?`,
+      )
+      .get(pedidoId) ?? null
   );
 }
