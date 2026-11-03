@@ -1,4 +1,4 @@
-import { Badge, Button, Flex, Input, Text } from '@chakra-ui/react';
+import { Badge, Button, Flex, Text } from '@chakra-ui/react';
 import { formatearEuros } from '../utils/formato.js';
 
 /**
@@ -7,12 +7,10 @@ import { formatearEuros } from '../utils/formato.js';
  */
 export default function ParteCuenta({
   parte,
-  onCambiarComensal,
   onPagar,
   onDeshacer,
   pagando = false,
   deshabilitado = false,
-  editable = true,
 }) {
   const pagada = parte.estado === 'pagada';
   const conAcciones = Boolean(onPagar || onDeshacer);
@@ -31,17 +29,7 @@ export default function ParteCuenta({
           Parte {parte.orden}
         </Text>
 
-        {editable ? (
-          <Input
-            size="sm"
-            maxW="220px"
-            aria-label={`Comensal de la parte ${parte.orden}`}
-            value={parte.comensal}
-            onChange={(evento) => onCambiarComensal?.(evento.target.value)}
-          />
-        ) : (
-          <Text fontWeight="medium">{parte.comensal}</Text>
-        )}
+        <Text fontWeight="medium">{parte.comensal}</Text>
 
         <Badge colorScheme={pagada ? 'green' : 'gray'}>
           {pagada ? 'Pagada' : 'Pendiente'}
