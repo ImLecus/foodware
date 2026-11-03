@@ -72,6 +72,24 @@ Cada escenario corresponde a un criterio de aceptación de la spec.
     pedido **no** queda marcado como modificado.
 15. **Sin conexión (clarificación)** — Detén el backend durante una edición. Resultado: indicador
     "sin conexión", no permite guardar ni enviar y conserva lo escrito en pantalla.
+16. **Cancelar el pedido completo (FR-016, SC-008)** — Con un pedido enviado, pulsa **"Cancelar
+    pedido"** y confirma. Resultado: el pedido desaparece de cocina y sala, la mesa queda libre si
+    no tiene otra comanda y no se genera ningún cobro.
+17. **Bloqueo de edición y cocina (FR-015)** — Abre el pedido en edición y, desde cocina, intenta
+    marcar un plato de ese pedido como listo. Resultado: cocina no puede marcar ni desmarcar hasta
+    que el camarero envíe o cancele los cambios.
+18. **Cantidad de una línea lista (FR-004)** — Con una línea marcada como lista, baja la cantidad y
+    comprueba que sigue lista; después súbela y comprueba que vuelve a pendiente y desaparece su
+    momento de listo.
+19. **Disponibilidad de la carta (FR-003)** — Marca como no disponible un plato que ya está en un
+    pedido enviado. Resultado: el plato sigue en el pedido; solo se impide añadirlo a pedidos
+    nuevos.
+20. **Trazabilidad con usuario (FR-013, SC-009)** — Realiza una edición y consulta el registro.
+    Resultado: queda una modificación con tipo, momento y usuario; cocina solo muestra
+    «Modificado».
+21. **Edición con partes pagadas (006)** — Marca una parte de la cuenta como pagada e intenta
+    editar el pedido. Resultado: la edición se bloquea hasta deshacer el pago y dejar las partes
+    pendientes.
 
 ## Criterios de éxito a comprobar
 
@@ -82,6 +100,10 @@ Cada escenario corresponde a un criterio de aceptación de la spec.
 - **SC-006**: ninguna modificación llega a cocina sin pulsar "enviar cambios".
 - **SC-007**: el 100 % de los bloqueos se libera al enviar, al cancelar o salir, o al expirar por
   inactividad; ningún pedido queda bloqueado indefinidamente.
+- **SC-008**: el 100 % de los pedidos cancelados desaparece de cocina y sala, libera la mesa si no
+  tiene otra comanda y no genera cobro.
+- **SC-009**: el 100 % de las modificaciones queda registrada con tipo, momento y usuario; la vista
+  de cocina solo muestra «Modificado».
 
 ## Fuera de alcance (no se valida aquí)
 

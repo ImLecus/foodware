@@ -118,6 +118,10 @@ paths:
   /pedidos/{pedidoId}/lineas/{lineaId}:
     patch:
       summary: Modifica la cantidad o las indicaciones de una línea
+      description: >
+        Si la línea ya estaba `listo`, bajar o mantener la cantidad la mantiene lista; subirla la
+        devuelve a `pendiente` y borra `listo_en` (FR-004). Las indicaciones se corrigen aquí; se
+        crean al añadir el plato en la historia 001.
       operationId: modificarLinea
       parameters:
         - $ref: '#/components/parameters/pedidoId'
@@ -189,6 +193,33 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+  /pedidos/{pedidoId}/cancelar:
+    post:
+      summary: Cancela el pedido completo ya enviado
+      operationId: cancelarPedido
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+      responses:
+        '200':
+          description: >
+            Pedido cancelado: deja de estar vigente, se retira de cocina y sala, libera la mesa si
+            no tiene otra comanda y no genera consumo ni cobro (FR-016).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PedidoConfirmado' }
+        '409':
+          description: >
+            El pedido no está `enviada`, la cuenta tiene partes pagadas o el bloqueo del solicitante
+            expiró (`codigo: pedido_cancelado`, `partes_pagadas` o `bloqueo_expirado`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423':
+          description: El pedido está bloqueado por otro camarero (FR-015)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
   /eventos:
     get:
       summary: Suscripción SSE a eventos de estado (tiempo real, hub compartido)
@@ -228,7 +259,10 @@ components:
 
     LineaPedido:
       type: object
-      required: [id, plato_id, cantidad, precio_centimos, partida]
+      description: >
+        Línea de pedido. `plato_nombre`, `partida` y `precio_centimos` son la instantánea fijada al
+        pedir; `estado`/`listo_en` reflejan la preparación en cocina.
+      required: [id, plato_id, plato_nombre, cantidad, precio_centimos, partida, estado]
       properties:
         id: { type: string, format: uuid }
         plato_id: { type: string, format: uuid }
@@ -237,6 +271,8 @@ components:
         precio_centimos: { type: integer, minimum: 1 }
         indicaciones: { type: string, nullable: true }
         partida: { $ref: '#/components/schemas/Partida' }
+        estado: { type: string, enum: [pendiente, listo] }
+        listo_en: { type: string, format: date-time, nullable: true }
 
     Pedido:
       type: object
@@ -244,7 +280,7 @@ components:
       properties:
         id: { type: string, format: uuid }
         mesa_id: { type: string, format: uuid }
-        estado: { type: string, enum: [en_curso, enviada, cerrada] }
+        estado: { type: string, enum: [en_curso, enviada, cerrada, cancelada] }
         modificada: { type: boolean }
         cambios_pendientes: { type: boolean }
         cambios_enviados_en: { type: string, format: date-time, nullable: true }
@@ -317,5 +353,5 @@ components:
           type: string
           nullable: true
           description: Código estable para que la UI distinga el motivo del rechazo
-          enum: [pedido_no_editable, pedido_bloqueado, bloqueo_expirado, pedido_vacio, sin_cambios]
+          enum: [pedido_no_editable, pedido_bloqueado, bloqueo_expirado, pedido_vacio, sin_cambios, pedido_cancelado, partes_pagadas]
         detalle: { type: string, nullable: true }

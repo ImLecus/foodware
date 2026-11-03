@@ -92,3 +92,67 @@ Resuelve las incógnitas del *Technical Context*. No quedan `NEEDS CLARIFICATION
   fichero.
 - **Rationale**: coherencia con la 001 y verificación de las reglas de integridad.
 - **Alternatives considered**: mocks de BD (descartado: menos fieles para bloqueos/transacciones).
+
+## 10. Cancelación de un pedido enviado
+
+- **Decision**: `POST /pedidos/{id}/cancelar` cambia el pedido a `cancelada`, retira el pedido y
+  sus líneas de las vistas de cocina/sala, libera la mesa si no tiene otra comanda y registra una
+  modificación de tipo `cancelar` (tipo, momento y usuario). No genera consumo ni cobro. Solo se
+  permite si el pedido está `enviada` y no tiene partes pagadas.
+- **Rationale**: la clarificación 2026-11-03 aprobó la cancelación completa desde sala; es la única
+  forma coherente de liberar la mesa y evitar platos pendientes que bloqueen el cierre (006).
+- **Alternatives considered**: retirar platos uno a uno (no libera la mesa de forma explícita y
+  complica la trazabilidad); exigir que cocina marque todo listo (bloquea la mesa y no representa
+  una cancelación real).
+
+## 11. Bloqueo de edición extendido a cocina
+
+- **Decision**: mientras `editando_por` esté vigente, las operaciones de cocina (004/005) sobre las
+  líneas del pedido se rechazan; al liberar el bloqueo, cocina opera sobre el estado resultante.
+  La comprobación se centraliza en el servicio de edición.
+- **Rationale**: evita que cocina marque un plato que el camarero está retirando o cambiando, y
+  mantiene una única fuente de verdad; la clarificación 2026-11-03 eligió esta opción por
+  simplicidad.
+- **Alternatives considered**: permitir cocina y descartar marcas al retirar (más complejo y
+  propenso a contradicciones); bloquear solo los platos ya listos (reglas asimétricas).
+
+## 12. Línea lista y cambio de cantidad
+
+- **Decision**: `lineas_pedido` incorpora `estado` (`pendiente|listo`) y `listo_en`. Si una línea
+  lista cambia de cantidad, sigue lista cuando la cantidad baja o se mantiene, y vuelve a
+  `pendiente` borrando `listo_en` cuando sube. La completitud de la mesa la recalcula 005.
+- **Rationale**: lo ya preparado cubre una reducción; un aumento exige preparar unidades nuevas. Es
+  la regla aprobada en la clarificación 2026-11-03 y evita servir unidades no preparadas.
+- **Alternatives considered**: cualquier cambio vuelve a pendiente (obliga a recocinar de más);
+  seguir siempre lista (podría servir unidades no preparadas).
+
+## 13. Disponibilidad de la carta
+
+- **Decision**: un cambio de disponibilidad (008) no retira automáticamente líneas de pedidos ya
+  enviados; el camarero puede retirarlas o cancelar el pedido. La línea conserva su instantánea de
+  nombre, partida y precio.
+- **Rationale**: respeta el pedido ya aceptado y evita modificaciones silenciosas; la decisión de
+  2026-11-03 remite el tratamiento a 002.
+- **Alternatives considered**: retirada automática (sorprende a cocina y al cliente); bloquear la
+  baja mientras haya pedidos (impide gestionar la carta).
+
+## 14. Trazabilidad con usuario
+
+- **Decision**: cada `modificacion` guarda `pedido_id`, `camarero_id` (usuario), `tipo`
+  (añadir/retirar/ajustar/corregir/cancelar), `linea_id`, `detalle` y `momento`. La vista de cocina
+  solo muestra el aviso «Modificado»; el detalle queda para auditoría.
+- **Rationale**: la clarificación 2026-11-03 pide trazabilidad con usuario sin recargar la vista de
+  cocina; 003 confirma que no necesita el detalle.
+- **Alternatives considered**: solo un flag `modificada` (insuficiente para auditar); historial
+  completo con valores anteriores/nuevos (más almacenamiento del necesario).
+
+## 15. Edición bloqueada con partes pagadas
+
+- **Decision**: antes de editar o cancelar un pedido, se comprueba si la cuenta asociada tiene
+  alguna parte `pagada`; si la hay, se rechaza con `409 partes_pagadas` y se pide deshacer los
+  pagos (006). Con la división iniciada pero sin pagos, la edición sigue permitida y la división se
+  reinicia.
+- **Rationale**: evita perder o duplicar cobros; la clarificación 2026-11-03 eligió bloquear hasta
+  deshacer los pagos por ser la opción más simple y segura.
+- **Alternatives considered**: tratar lo pagado como pago a cuenta (requiere recalcular y puede
+  dejar saldos negativos); permitir editar perdiendo la división (pierde trazabilidad del cobro).
