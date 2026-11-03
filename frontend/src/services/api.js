@@ -149,6 +149,10 @@ export function enviarCambios(pedidoId) {
   return apiEnviar(`/pedidos/${pedidoId}/enviar-cambios`, 'POST');
 }
 
+export function cancelarPedido(pedidoId) {
+  return apiEnviar(`/pedidos/${pedidoId}/cancelar`, 'POST');
+}
+
 /* Sala: señales de platos listos (historia 005) */
 
 export function obtenerMesasSala() {
