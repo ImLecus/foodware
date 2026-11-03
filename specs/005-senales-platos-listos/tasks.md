@@ -279,5 +279,5 @@ Task: "Reutilizar el estado sin conexión en frontend/src/components/AvisoSinCon
 ## Phase 8: Convergence
 
 - [X] T070 Añadir una prueba de integración en `backend/tests/integration/avisos.test.js` que verifique que la cancelación del pedido retira el aviso activo per T064 (partial)
-- [ ] T071 Añadir una prueba de completitud tras cambiar la cantidad de una línea lista en `backend/tests/unit/avisos.test.js` per T065 (partial)
+- [X] T071 Añadir una prueba de completitud tras cambiar la cantidad de una línea lista en `backend/tests/unit/avisos.test.js` per T065 (partial)
 - [ ] T072 Añadir una prueba de instantánea histórica en la vista de sala en `backend/tests/integration/sala-historico.test.js` per T067 (partial)
