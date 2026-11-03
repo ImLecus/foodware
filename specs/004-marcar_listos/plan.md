@@ -58,6 +58,23 @@ líneas; por eso el pedido reaparece como pendiente en la lista de cocina y el c
 sala por SSE. No se añaden dependencias ni endpoints: se reutiliza el marcado idempotente y el
 sistema de toasts del stack obligatorio.
 
+## Decisiones de la clarificación 2026-11-03
+
+- **Pedido cancelado (FR-017)**: un pedido `cancelada` (002) se retira de la vista de cocina y sus
+  líneas no se pueden marcar ni desmarcar; no cuentan como pendientes ni como listas.
+- **Cantidad de una línea ya lista (FR-018)**: si la cantidad baja o se mantiene, la línea sigue
+  `listo`; si sube, vuelve a `pendiente` y se borra `listo_en`.
+- **Bloqueo de edición (FR-019)**: mientras 002 mantiene un pedido bloqueado para editar, cocina no
+  puede marcar ni desmarcar sus líneas; al liberarse el bloqueo, opera sobre el estado resultante.
+- **Disponibilidad de la carta**: si un plato deja de estar disponible pero ya está en un pedido
+  enviado, sigue pendiente y puede marcarse; la baja solo afecta a pedidos nuevos. Si no se puede
+  preparar, el camarero lo retira o cancela el pedido según 002.
+- **Nombre y partida**: la línea conserva la instantánea fijada al pedir; la vista de cocina no usa
+  los datos actuales de la carta (008).
+- **Impacto técnico**: se añaden/confirman `lineas_pedido.estado`, `listo_en`, `nombre_plato` y
+  `partida_codigo`; el endpoint de marcado comprueba el estado `cancelada` y el bloqueo de edición.
+  No se añaden entidades ni dependencias.
+
 ## Verificación de la Constitución
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -66,7 +83,7 @@ sistema de toasts del stack obligatorio.
 |-------------------|--------------|--------|
 | I. Simplicidad | Un backend, un frontend y SQLite como único almacén; refresco en vivo con SSE | Pasa |
 | II. Español de España y euro | UI y estados («pendiente», «listo») en español; no maneja importes | Pasa |
-| III. Cero alcance fantasma | Solo los FR-001…FR-016 de la spec (marcar, deshacer —incluido el aviso temporal con «Deshacer»—, registrar, propagar) | Pasa |
+| III. Cero alcance fantasma | Solo los FR-001…FR-019 de la spec (marcar, deshacer —incluido el aviso temporal con «Deshacer»—, registrar, propagar, cancelación, cantidad de línea lista y bloqueo de edición) | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` demuestra cada escenario desde la aplicación | Pasa |
 | V. Datos con respeto | Solo datos operativos del servicio; secretos por variables de entorno | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |

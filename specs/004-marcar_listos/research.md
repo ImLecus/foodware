@@ -83,3 +83,42 @@ pruebas). Se resuelven aquí con una decisión, su justificación y las alternat
   seguir); endpoint específico de «deshacer» con testigo del servidor (más piezas y estado que
   mantener para un caso que ya resuelve la asignación de estado); retrasar la desaparición del
   pedido para permitir deshacerlo (contradice FR-006 y SC-005).
+
+## R8. Pedidos cancelados
+
+- **Decision**: el endpoint de marcado rechaza líneas de pedidos en estado `cancelada` con
+  `409 pedido_cancelado`; el pedido no aparece en la lista de cocina. La cancelación se comunica
+  por SSE (`pedido.cancelado` / `pedido.pendientes-cambiado`).
+- **Rationale**: no tiene sentido preparar un pedido que sala ha cancelado por completo; dejar las
+  líneas marcables podría bloquear la mesa y falsear el estado de cocina (FR-017).
+- **Alternatives considered**: mostrarlo como pendiente hasta que cocina lo complete (trabajo
+  inútil); permitir marcarlo y cerrarlo (no refleja la cancelación real).
+
+## R9. Cantidad de una línea ya lista
+
+- **Decision**: si una línea `listo` cambia de cantidad en 002, el servicio de edición aplica:
+  bajar o mantener → sigue `listo`; subir → vuelve a `pendiente` y limpia `listo_en`. La
+  completitud de la mesa la recalcula 005.
+- **Rationale**: lo ya preparado cubre una reducción; un aumento exige preparar unidades nuevas.
+  Es la regla aprobada en 2026-11-03 y evita servir unidades no preparadas.
+- **Alternatives considered**: cualquier cambio vuelve a pendiente (obliga a recocinar de más);
+  seguir siempre lista (podría servir unidades no preparadas).
+
+## R10. Bloqueo de edición de sala
+
+- **Decision**: mientras 002 mantiene el pedido bloqueado (`editando_por` vigente), el endpoint de
+  marcado responde `423 pedido_bloqueado`; al liberarse, cocina opera sobre el estado resultante.
+- **Rationale**: evita que cocina marque un plato que el camarero está retirando o cambiando; la
+  clarificación 2026-11-03 eligió esta opción por simplicidad.
+- **Alternatives considered**: permitir cocina y descartar marcas al retirar (más complejo y
+  propenso a contradicciones); bloquear solo las líneas ya listas (reglas asimétricas).
+
+## R11. Disponibilidad de la carta
+
+- **Decision**: un cambio de disponibilidad en 008 no retira la línea de un pedido enviado; la
+  línea sigue pendiente y puede marcarse. Si el plato no se puede preparar, el camarero lo retira o
+  cancela el pedido según 002.
+- **Rationale**: respeta el pedido ya aceptado y evita modificaciones silenciosas; la decisión de
+  2026-11-03 remite el tratamiento a 002.
+- **Alternatives considered**: retirar automáticamente la línea (sorprende a cocina y al cliente);
+  bloquear la baja de la carta mientras haya pedidos (impide gestionar la carta).
