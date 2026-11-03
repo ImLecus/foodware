@@ -184,3 +184,12 @@ Errores: `401` (sin autenticación), `500`.
 - La consulta de la carta y el guardado de un plato deben resolverse por debajo de 1 s; un cambio de
   precio o disponibilidad se refleja en sala en menos de 3 s (SC-002).
 - Los endpoints de escritura no alteran el historial de pedidos ni de cuentas.
+
+### Compatibilidad con pedidos ya enviados (2026-11-03)
+
+- Un cambio de disponibilidad (baja manual o ingrediente agotado) afecta solo a la carta vigente y a
+  pedidos nuevos; no retira ni altera líneas de pedidos ya enviados (FR-016). Si el plato no se
+  puede preparar, el camarero lo retira o cancela el pedido según 002.
+- Cambiar el nombre o la partida de un plato no altera el nombre/partida históricos de las líneas de
+  pedido ni el dashboard (007): la instantánea se fija al pedir (001).
+- La cancelación completa del pedido corresponde a 002; la carta no participa en esa operación.

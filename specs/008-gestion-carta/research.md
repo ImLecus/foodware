@@ -137,3 +137,22 @@ su justificación.
 - **Alternativas consideradas**: guardar una lista de ingredientes en el plato (dificulta consultas y
   validación); persistir y sincronizar la disponibilidad al cambiar el estado (duplica la verdad y
   puede quedar obsoleta, ya descartado en D1).
+
+## D14. Disponibilidad y pedidos ya enviados
+
+- **Decisión**: un cambio de disponibilidad (baja manual o ingrediente agotado) afecta solo a la
+  carta vigente y a los pedidos nuevos. No altera ni retira automáticamente líneas de pedidos ya
+  enviados. Si el plato no se puede preparar, el camarero lo retira o cancela el pedido según 002.
+- **Razón**: respeta el pedido ya aceptado y evita modificaciones silenciosas; la clarificación
+  2026-11-03 remite el tratamiento posterior a 002.
+- **Alternativas consideradas**: retirar automáticamente la línea (sorprende a cocina y al cliente);
+  bloquear la baja mientras haya pedidos (impide gestionar la carta).
+
+## D15. Instantánea histórica de nombre y partida
+
+- **Decisión**: cada línea de pedido guarda `nombre_plato` y `partida_codigo` al pedir (001). Cambiar
+  el nombre o la partida de un plato no altera pedidos pasados ni el histórico de ventas (007).
+- **Razón**: la clarificación 2026-11-03 exige preservar el histórico; el precio ya se fijaba al
+  pedir y el nombre/partida deben seguir la misma regla.
+- **Alternativas consideradas**: unir siempre con el plato actual (distorsiona pedidos y ventas);
+  no mostrar el nombre histórico (pierde legibilidad del ticket y del dashboard).

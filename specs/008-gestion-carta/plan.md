@@ -61,6 +61,20 @@ fijado al pedir, historia 01).
 **Alcance/Escala**: restaurante medio; decenas de platos y un conjunto pequeño de ingredientes;
 pocos administradores y muchas consultas de sala.
 
+## Decisiones de la clarificación 2026-11-03
+
+- **Disponibilidad y pedidos enviados (FR-016)**: un cambio de disponibilidad (baja manual o
+  ingrediente agotado) afecta solo a la carta vigente y a pedidos nuevos; no altera ni retira
+  automáticamente platos de pedidos ya enviados. Si el plato no se puede preparar, el camarero lo
+  retira o cancela el pedido según 002.
+- **Instantánea histórica (FR-003)**: cada línea de pedido conserva el nombre y la partida fijados
+  al pedir (001); cambiar el nombre o la partida de un plato no altera pedidos pasados ni el
+  histórico de ventas (007).
+- **Cancelación**: la cancela 002; la carta no participa en esa operación.
+- **Impacto técnico**: no se añaden tablas ni columnas en 008; la instantánea vive en
+  `lineas_pedido` (001) y la disponibilidad se sigue derivando en lectura. La UI de gestión puede
+  avisar de que el cambio solo afecta a pedidos nuevos.
+
 ## Verificación de la Constitución
 
 *PUERTA: debe pasar antes de la investigación (Fase 0). Se reevalúa tras el diseño (Fase 1).*
@@ -69,7 +83,7 @@ pocos administradores y muchas consultas de sala.
 |-------------------|--------------|--------|
 | I. Simplicidad | CRUD directo de platos e ingredientes y asociación N:M simple; disponibilidad derivada en lectura; sin caché, sin estado calculado persistido ni librerías de formularios | Pasa |
 | II. Español de España y euro | Formato `Intl` es-ES y €; textos y partidas en español | Pasa |
-| III. Cero alcance fantasma | Solo gestión de carta (platos, precios, disponibilidad, ingredientes y asociaciones; FR-001–FR-015); no se implementan pedidos, cierre ni dashboard | Pasa |
+| III. Cero alcance fantasma | Solo gestión de carta (platos, precios, disponibilidad, ingredientes y asociaciones; FR-001–FR-016), incluida la regla de no alterar pedidos enviados; no se implementan pedidos, cierre ni dashboard | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` con escenarios de comprobación desde la interfaz | Pasa |
 | V. Datos con respeto | Solo se gestionan datos de platos e ingredientes; sin datos personales innecesarios ni secretos | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |

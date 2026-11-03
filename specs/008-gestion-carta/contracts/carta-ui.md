@@ -60,6 +60,11 @@ Acceso a `/admin/carta` sin rol administrador: se deniega y no se muestra la ent
   estado afecta a todos los platos asociados (caso límite).
 - El resto de usuarios solo ve la carta vigente y no dispone de controles de edición (FR-001,
   SC-005).
+- **Pedidos ya enviados (2026-11-03)**: la baja de un plato o de un ingrediente no retira platos de
+  pedidos ya enviados; la interfaz puede avisar de que el cambio solo afecta a pedidos nuevos. El
+  camarero gestiona la retirada o cancelación desde 002.
+- **Histórico (2026-11-03)**: cambiar el nombre o la partida no altera lo que muestran los pedidos
+  pasados ni el dashboard; la línea conserva la instantánea del momento de pedir.
 
 ### Accesibilidad y contenido
 
