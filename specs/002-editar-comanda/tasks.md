@@ -123,7 +123,7 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 - [X] T045 [US1] Bloquear edición y cancelación si la cuenta tiene alguna parte `pagada` en `backend/src/services/cuentasService.js` y en el servicio de edición; devolver `409 partes_pagadas`; depende de 006 T035; cubrir en `backend/tests/integration/edicion-partes-pagadas.test.js` per FR-017/FR-016.
 - [X] T046 [P] [US1] Asegurar que las indicaciones se crean en 001 y se corrigen en `backend/src/domain/edicion.js`; actualizar `backend/tests/contract/edicion.test.js` per FR-005.
 - [X] T047 [P] [US1] Añadir una prueba de que un cambio de disponibilidad (008) no retira líneas de un pedido enviado en `backend/tests/integration/edicion-disponibilidad.test.js` per FR-003.
-- [ ] T048 [US1] Registrar la cancelación en `modificaciones` con tipo, momento y usuario; actualizar `backend/src/db/modificaciones.js`, `backend/tests/integration/edicion.test.js`, `specs/002-editar-comanda/contracts/openapi.yaml` y `specs/002-editar-comanda/quickstart.md` per FR-013/SC-009.
+- [X] T048 [US1] Registrar la cancelación en `modificaciones` con tipo, momento y usuario; actualizar `backend/src/db/modificaciones.js`, `backend/tests/integration/edicion.test.js`, `specs/002-editar-comanda/contracts/openapi.yaml` y `specs/002-editar-comanda/quickstart.md` per FR-013/SC-009.
 
 ---
 
