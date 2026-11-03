@@ -105,3 +105,23 @@ Este documento resuelve las incógnitas del *Technical Context* del plan. No que
 - **Alternatives considered**: estado `anulada` (conserva historial, pero añade complejidad y
   migración sin requisito que lo justifique); borrado lógico (mismo coste que el estado y residuos
   en la base de datos).
+
+## 12. Indicaciones o notas por línea
+
+- **Decision**: `lineas_pedido.indicaciones` es un texto opcional que se captura al añadir el plato
+  en la historia 001. La historia 002 lo reutiliza para corregirlo. No se crea una nota general del
+  pedido.
+- **Rationale**: la clarificación 2026-11-03 exige poder anotar «sin cebolla» desde el primer
+  momento y corregirlo después; el dato pertenece a la línea y no cambia el modelo de pedido.
+- **Alternatives considered**: nota única por pedido (pierde la asociación con el plato); solo
+  editable en 002 (el camarero no podría anotarla al tomar el pedido).
+
+## 13. Instantánea de nombre y partida
+
+- **Decision**: al crear la línea se copian `nombre_plato` y `partida_codigo` del plato, además del
+  `precio_centimos` ya fijado. Las consultas históricas usan esa copia, no los datos actuales de la
+  carta.
+- **Rationale**: la clarificación 2026-11-03 pide que un cambio posterior de nombre o partida en la
+  historia 008 no altere el histórico de pedidos y ventas; es coherente con el fijado del precio.
+- **Alternatives considered**: unir siempre con el plato actual (distorsiona el histórico); guardar
+  solo el `plato_id` (no permite mostrar el nombre histórico si el plato se renombra o se retira).

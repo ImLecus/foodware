@@ -234,7 +234,10 @@ components:
 
     LineaPedido:
       type: object
-      required: [id, plato_id, cantidad, precio_centimos, partida]
+      description: >
+        Línea de pedido. `plato_nombre`, `partida` y `precio_centimos` son la instantánea
+        fijada al pedir; no se recalculan si la carta cambia después (FR-018).
+      required: [id, plato_id, plato_nombre, cantidad, precio_centimos, partida]
       properties:
         id: { type: string, format: uuid }
         plato_id: { type: string, format: uuid }
@@ -242,6 +245,7 @@ components:
         cantidad: { type: integer, minimum: 1 }
         precio_centimos: { type: integer, minimum: 1 }
         partida: { $ref: '#/components/schemas/Partida' }
+        indicaciones: { type: string, nullable: true, description: Indicación o nota opcional de la línea }
 
     Pedido:
       type: object
@@ -282,6 +286,7 @@ components:
       properties:
         plato_id: { type: string, format: uuid }
         cantidad: { type: integer, minimum: 1, default: 1 }
+        indicaciones: { type: string, nullable: true, description: Indicación o nota opcional de la línea }
 
     LineaPatch:
       type: object

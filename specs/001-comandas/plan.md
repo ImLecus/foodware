@@ -9,11 +9,14 @@
 ## Resumen
 
 El camarero abre una mesa ocupada y toma el pedido plato a plato, agrupada automáticamente por
-partidas (entrantes, principales, postres). Puede ajustar cantidades y repetir platos mientras la
-pedido está en curso; al confirmarlo, queda registrado como `enviada`, vinculado a su mesa y el
-pedido se remite al resto del sistema ya ordenado por partidas. Si el cliente se marcha o cambia de
-idea antes de confirmar, el camarero anula el pedido en curso: se descarta, la mesa vuelve a quedar
-libre y nada se envía a cocina. El enfoque técnico es una
+partidas (entrantes, principales, postres). Puede ajustar cantidades, repetir platos y añadir una
+indicación o nota opcional por línea mientras el pedido está en curso; al confirmarlo, queda
+registrado como `enviada`, vinculado a su mesa y el pedido se remite al resto del sistema ya
+ordenado por partidas. Cada línea guarda una instantánea del nombre, la partida y el precio del
+plato en el momento de pedir, de modo que los cambios posteriores de la carta no alteran el
+histórico. Si el cliente se marcha o cambia de idea antes de confirmar, el camarero anula el pedido
+en curso: se descarta, la mesa vuelve a quedar libre y nada se envía a cocina. La cancelación de un
+pedido ya enviado y la edición posterior pertenecen a la historia 002. El enfoque técnico es una
 aplicación web con frontend React + Chakra UI y backend ExpressJS sobre Node.js con JavaScript,
 persistencia en SQLite, todo reproducible con Docker. El estado de sala se refresca en vivo
 mediante Server-Sent Events (SSE) sobre el hub compartido del proyecto. La identidad del camarero
@@ -47,6 +50,23 @@ España y precios en euros (€); entorno reproducible con Docker; ningún secre
 
 **Escala/Alcance**: Un único restaurante; decenas de mesas; ~4 camareros; 3 partidas fijas; versión 1.
 
+## Decisiones de la clarificación 2026-11-03
+
+- **Indicaciones por línea**: `lineas_pedido.indicaciones` (texto opcional) se captura al añadir el
+  plato en 001 y se puede corregir después en 002. No es una nota general del pedido: pertenece a
+  la línea concreta (FR-006, escenario 8 de US1).
+- **Instantánea histórica**: al crear la línea se copian `nombre` y `partida` del plato, además del
+  `precio_centimos` que ya se fijaba. Los cambios posteriores de nombre, partida o precio en la
+  carta (008) no alteran pedidos ya realizados ni el histórico de ventas (FR-018, escenario 9 de
+  US1).
+- **Cancelación de pedidos enviados**: la 001 solo anula pedidos `en_curso`. La cancelación de un
+  pedido ya enviado se rige por 002 y no forma parte de esta historia.
+- **Disponibilidad cambiada después de confirmar**: un cambio de disponibilidad en la carta no
+  retira platos de pedidos ya confirmados; su tratamiento posterior corresponde a 002.
+- **Impacto técnico**: migración de `lineas_pedido` para añadir `indicaciones`, `nombre_plato` y
+  `partida_codigo` (o columnas equivalentes de instantánea); el contrato de `NuevaLinea` y
+  `LineaPedido` incorpora `indicaciones` y el nombre/partida fijados. No se crean entidades nuevas.
+
 ## Verificación de la Constitución
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -55,7 +75,7 @@ España y precios en euros (€); entorno reproducible con Docker; ningún secre
 |-------------------|--------------|--------|
 | I. Simplicidad | Stack mínimo (React/Chakra + Express + SQLite), sin ORM ni capas; solo la historia 01 | Pasa |
 | II. Español de España y euro | UI y mensajes en español; importes en € (`Intl.NumberFormat('es-ES')`) | Pasa |
-| III. Cero alcance fantasma | Solo FR-001…FR-019; la anulación se limita a descartar el pedido en curso y liberar la mesa; edición, cocina, señales, cierre, dashboard y carta quedan fuera | Pasa |
+| III. Cero alcance fantasma | Solo FR-001…FR-019, incluidas las indicaciones opcionales de FR-006 y la instantánea de nombre/partida/precio de FR-018; la anulación se limita a descartar el pedido en curso y liberar la mesa; edición, cancelación de enviados, cocina, señales, cierre, dashboard y carta quedan fuera | Pasa |
 | IV. Verificable por no técnica | `quickstart.md` valida desde la interfaz, sin leer código | Pasa |
 | V. Datos con respeto | Solo identidad del camarero y datos del pedido; secretos por variables de entorno | Pasa |
 | VI. Conventional Commits | Aplicable en la fase de implementación | Pasa |
@@ -99,7 +119,7 @@ backend/
 │   │   ├── db.js
 │   │   ├── mesas.js
 │   │   ├── platos.js
-│   │   ├── pedidos.js   # incluye borrado del pedido y sus líneas al anular
+│   │   ├── pedidos.js   # incluye borrado al anular e instantánea nombre/partida/precio
 │   │   └── seed.js
 │   ├── schemas/         # validación de entrada (zod)
 │   │   └── pedidos.js
@@ -116,8 +136,8 @@ backend/
 frontend/
 ├── src/
 │   ├── components/      # piezas de UI (Chakra)
-│   │   ├── Pedido.jsx        # incluye la acción "Anular pedido" antes de confirmar
-│   │   ├── SelectorPlatos.jsx
+│   │   ├── Pedido.jsx        # incluye "Anular pedido" y muestra indicaciones por línea
+│   │   ├── SelectorPlatos.jsx # permite añadir una indicación o nota por plato
 │   │   └── Conexion.jsx      # indicador "sin conexión"
 │   ├── pages/           # pantalla de sala: mesas, pedido en curso
 │   │   └── Mesas.jsx         # refleja la mesa liberada tras la anulación
