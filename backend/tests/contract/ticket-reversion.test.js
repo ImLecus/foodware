@@ -33,8 +33,8 @@ describe('Pago y reversión de partes (US3)', () => {
         modo: 'iguales',
         total_base_centimos: 3250,
         partes: [
-          { orden: 1, comensal: 'Ana', importe_centimos: 1625 },
-          { orden: 2, comensal: 'Luis', importe_centimos: 1625 },
+          { orden: 1, comensal: 'Parte 1', importe_centimos: 1625 },
+          { orden: 2, comensal: 'Parte 2', importe_centimos: 1625 },
         ],
       });
 
@@ -64,7 +64,7 @@ describe('Pago y reversión de partes (US3)', () => {
     expect(respuesta.body.parte).toMatchObject({
       id: ana.id,
       orden: 1,
-      comensal: 'Ana',
+      comensal: 'Parte 1',
       importe_centimos: 1625,
       estado: 'pagada',
     });
