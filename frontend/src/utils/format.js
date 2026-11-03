@@ -14,7 +14,10 @@ export function formatearNumero(numero) {
 
 export function formatearPorcentaje(valor) {
   if (valor === null || valor === undefined) return '';
-  const numero = Number(valor).toLocaleString('es-ES', { maximumFractionDigits: 2 });
+  const numero = Number(valor).toLocaleString('es-ES', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
   return `${numero} %`;
 }
 

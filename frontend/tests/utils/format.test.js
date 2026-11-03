@@ -25,7 +25,7 @@ describe('format.es-ES', () => {
   it('formatea porcentajes en es-ES con coma decimal y espacio antes del símbolo', () => {
     expect(formatearPorcentaje(9.11)).toBe('9,11 %');
     expect(formatearPorcentaje(-4.76)).toBe('-4,76 %');
-    expect(formatearPorcentaje(0)).toBe('0 %');
+    expect(formatearPorcentaje(0)).toBe('0,00 %');
     expect(formatearPorcentaje(null)).toBe('');
   });
 });
