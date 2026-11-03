@@ -162,6 +162,14 @@ export function retirarLinea(db, lineaId) {
   db.prepare('DELETE FROM lineas_pedido WHERE id = ?').run(lineaId);
 }
 
+/** Devuelve una línea lista a pendiente y limpia su momento de listo. */
+export function reiniciarLineaLista(db, lineaId) {
+  db.prepare("UPDATE lineas_pedido SET estado = 'pendiente', listo_en = NULL WHERE id = ?").run(
+    lineaId,
+  );
+  return obtenerLinea(db, lineaId);
+}
+
 /** Confirma el pedido: pasa a `enviada` y fija el momento de confirmación. */
 export function confirmarPedido(db, pedidoId) {
   db.prepare(
@@ -181,6 +189,21 @@ export function anularPedido(db, pedidoId) {
     liberarMesa(db, pedido.mesa_id);
   });
   anular();
+  return pedido.mesa_id;
+}
+
+/**
+ * Cancela un pedido ya enviado sin generar consumo ni cobro. Se conserva el
+ * registro histórico, se marca `cancelada` y se libera la mesa si no tiene otra
+ * comanda (FR-016).
+ */
+export function cancelarPedido(db, pedidoId) {
+  const pedido = db.prepare('SELECT mesa_id FROM pedidos WHERE id = ?').get(pedidoId);
+  const cancelar = db.transaction(() => {
+    db.prepare("UPDATE pedidos SET estado = 'cerrada', cancelada = 1 WHERE id = ?").run(pedidoId);
+    liberarMesa(db, pedido.mesa_id);
+  });
+  cancelar();
   return pedido.mesa_id;
 }
 

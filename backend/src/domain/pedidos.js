@@ -88,7 +88,7 @@ export function serializarPedido(pedido) {
     id: pedido.id,
     mesa_id: pedido.mesa_id,
     camarero_id: pedido.camarero_id,
-    estado: pedido.estado,
+    estado: pedido.cancelada ? 'cancelada' : pedido.estado,
     creada_en: pedido.creado_en,
     confirmada_en: pedido.enviado_en,
     modificada: Boolean(pedido.modificada),
