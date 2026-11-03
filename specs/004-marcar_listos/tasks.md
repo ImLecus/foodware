@@ -258,7 +258,7 @@ Task: "Build kitchen page and components in frontend/src/pages/CocinaPage.jsx, f
 - [X] T053 HIGH Hacer que `useEstadoPlatos` reaccione a `onEstadoConexion`: mostrar el indicador de «sin conexión» y datos no actualizados en `SalaPage` y volver a pedir `estado-platos` al reconectar, sin duplicar ni perder líneas; añadir prueba de reconexión per FR-011, T035, `contracts/events.md` (partial)
 - [X] T054 MEDIUM Reejecutar el quickstart 004 completo tras las correcciones (escenarios 1–12), actualizar `README.md` y `quickstart.md` para el criterio de completado por partida y documentar la verificación per T044, T045, Constitution IV (partial)
 - [X] T055 LOW Envolver `marcarLinea` en una transacción de SQLite y añadir una prueba de doble marcado simultáneo que garantice un único `listoEn` per T019, plan R6, `data-model.md` V-002 (partial)
-- [X] T056 LOW Añadir el mapa de FR-001…FR-016 a las pruebas o a un documento de verificación de la historia, indicando qué test cubre cada requisito per T046 (missing)
+- [X] T056 LOW Añadir el mapa de FR-001…FR-016 a las pruebas o a `specs/004-marcar_listos/verification.md`, indicando qué test cubre cada requisito per T046 (missing)
 
 ---
 
@@ -273,3 +273,14 @@ Task: "Build kitchen page and components in frontend/src/pages/CocinaPage.jsx, f
 
 - [X] T059 Alinear `specs/004-marcar_listos/contracts/openapi.yaml` con la semántica por partida: añadir `partida` opcional a `LineaPedido`, corregir el resumen del ejemplo 200 y la descripción del 409 (partida completada, no pedido completo), y verificar el contrato con la prueba existente per T050, T057, FR-006, FR-014 (`partial`)
 - [X] T060 Actualizar `specs/004-marcar_listos/data-model.md` para documentar que los avisos de pedido completado pueden coexistir hasta su plazo (cola) y que una nueva marca no descarta automáticamente los anteriores, en coherencia con T058 per SC-009, FR-014, `data-model.md` (`partial`)
+
+---
+
+## Phase 10: Convergence — Clarificaciones 2026-11-03
+
+- [ ] T061 [P] Rechazar el marcado/desmarcado de líneas de un pedido `cancelada` con `409 pedido_cancelado` en `backend/src/services/estadoLinea.js` y la ruta de estado; cubrir en `backend/tests/integration/estado-linea.test.js` per FR-017.
+- [ ] T062 [P] Rechazar el marcado/desmarcado mientras 002 mantiene el pedido bloqueado con `423 pedido_bloqueado` en `backend/src/services/estadoLinea.js` y la ruta de estado; cubrir en `backend/tests/integration/estado-linea-bloqueo.test.js` per FR-019.
+- [ ] T063 [US1] Integrar la regla de cantidad de línea lista de 002 con la completitud de cocina: bajar/mantener conserva `listo`; subir vuelve a `pendiente` y limpia `listo_en`; cubrir en `backend/tests/integration/estado-linea-cantidad.test.js` per FR-018.
+- [ ] T064 [P] Añadir una prueba de que un cambio de disponibilidad en 008 no retira ni bloquea el marcado de una línea ya enviada en `backend/tests/integration/estado-linea-disponibilidad.test.js` per FR-019/Q4.
+- [ ] T065 [P] Mostrar `nombrePlato` y `partida` históricos en `frontend/src/components/PedidoCard.jsx` y `frontend/src/components/LineaPlato.jsx`; cubrir en `frontend/tests/components/pedido.test.jsx`.
+- [ ] T066 Actualizar `specs/004-marcar_listos/contracts/openapi.yaml`, `specs/004-marcar_listos/quickstart.md` y `specs/004-marcar_listos/verification.md` con los nuevos errores y escenarios.

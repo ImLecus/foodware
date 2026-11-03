@@ -113,6 +113,20 @@ bloqueo impide la edición simultánea y se libera al enviar, al cancelar/salir 
 
 ---
 
+## Phase 4: Convergence — Clarificaciones 2026-11-03
+
+- [ ] T040 [P] Añadir `cancelada` al enum de `pedidos.estado` en una migración versionada y en `backend/src/db/pedidos.js`; actualizar fixtures y `backend/tests/integration/edicion.test.js`.
+- [ ] T041 [US1] Implementar `POST /pedidos/{pedidoId}/cancelar` en `backend/src/api/pedidos.js` y `backend/src/domain/edicion.js`: transacción que marca `cancelada`, retira el pedido de cocina/sala, libera la mesa si no tiene otra comanda y no genera cobro; cubrir con `backend/tests/contract/edicion.test.js` y `backend/tests/integration/edicion.test.js`.
+- [ ] T042 [P] [US1] Crear `frontend/src/components/CancelarPedido.jsx` e integrar la acción en `frontend/src/components/EditorPedido.jsx`; probar en `frontend/tests/components/edicion.test.jsx`.
+- [ ] T043 [P] [US1] Extender el bloqueo de edición a cocina: comprobar `editando_por` en `backend/src/services/estadoLinea.js` y en la ruta de marcar/desmarcar; responder `423 pedido_bloqueado`; cubrir en `backend/tests/integration/edicion-bloqueo.test.js`.
+- [ ] T044 [US1] Implementar la regla de cantidad de línea lista en `backend/src/domain/edicion.js` y `backend/src/db/pedidos.js`: bajar o mantener conserva `listo`; subir vuelve a `pendiente` y limpia `listo_en`; probar en `backend/tests/integration/edicion-linea-lista.test.js`.
+- [ ] T045 [US1] Bloquear edición y cancelación si la cuenta tiene alguna parte `pagada` en `backend/src/services/cuentasService.js` y en el servicio de edición; devolver `409 partes_pagadas`; cubrir en `backend/tests/integration/edicion-partes-pagadas.test.js`.
+- [ ] T046 [P] [US1] Asegurar que las indicaciones se crean en 001 y se corrigen en `backend/src/domain/edicion.js`; actualizar `backend/tests/contract/edicion.test.js`.
+- [ ] T047 [P] [US1] Añadir una prueba de que un cambio de disponibilidad (008) no retira líneas de un pedido enviado en `backend/tests/integration/edicion-disponibilidad.test.js`.
+- [ ] T048 [US1] Registrar la cancelación en `modificaciones` con tipo, momento y usuario; actualizar `backend/src/db/modificaciones.js`, `backend/tests/integration/edicion.test.js`, `specs/002-editar-comanda/contracts/openapi.yaml` y `specs/002-editar-comanda/quickstart.md`.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

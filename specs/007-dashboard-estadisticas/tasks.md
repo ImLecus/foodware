@@ -268,3 +268,16 @@ Task: "Desgloses y comparación por fila en frontend/src/pages/PaginaDashboard.j
 - [x] T046 Reutilizar `IndicadorTendencia` (icono + color + texto) en cada fila de comparación por camarero y por plato en `frontend/src/pages/PaginaDashboard.jsx`, manteniendo «sin base de comparación» sin porcentaje, con pruebas en `frontend/tests/components/dashboard_comparison.test.jsx`, per SC-003 (partial) — MEDIUM
 - [x] T047 Atribuir en el informe las cuentas históricas sin `camarero_id` mediante `COALESCE(c.camarero_id, pedidos.camarero_id)` en `obtenerDesglosePorCamarero` de `backend/src/services/reportingService.js`, añadiendo el `LEFT JOIN` a `pedidos` por `cuenta.pedido_id` y una prueba de reconciliación en `backend/tests/contract/reports_breakdowns.test.js`, per SC-004 (partial) — MEDIUM
 - [x] T048 Documentar en `specs/007-dashboard-estadisticas/verification.md` la justificación del ajuste de `frontend/tests/App.test.jsx` (historia 008) y corregir las referencias a `reporting_breakdowns.test.js` y `reporting_comparison.test.js`, que no existen, per Constitution III/IV (unrequested) — LOW
+
+---
+
+## Phase 12: Convergence — Clarificaciones 2026-11-03
+
+- [ ] T049 [P] Invertir el `COALESCE` de `obtenerDesglosePorCamarero` en `backend/src/services/reportingService.js` para priorizar `pedidos.camarero_id` y usar `cuentas.camarero_id` solo como respaldo; actualizar `backend/tests/contract/reports_breakdowns.test.js` per FR-014.
+- [ ] T050 [P] Asegurar que una cuenta dividida cuenta una sola vez por `cuentas.total_centimos` en `backend/src/services/reportingService.js` y no suma partes; cubrir en `backend/tests/integration/reports-cuenta-dividida.test.js` per FR-002.
+- [ ] T051 [P] Usar `lineas_pedido.nombre_plato` y `partida_codigo` en `obtenerDesglosePorPlato` de `backend/src/services/reportingService.js`; añadir prueba con plato renombrado en `backend/tests/integration/reports-historico.test.js` per FR-004.
+- [ ] T052 [P] Excluir pedidos `cancelada` y cuentas no cerradas de la agregación en `backend/src/services/reportingService.js`; cubrir en `backend/tests/integration/reports-cancelados.test.js` per FR-008.
+- [ ] T053 [P] Ajustar `formatearPorcentaje` en `frontend/src/utils/format.js` y `IndicadorTendencia.jsx` para dos decimales, coma y signo negativo solo en bajadas; cubrir en `frontend/tests/utils/format.test.js` y `frontend/tests/components/dashboard_comparison.test.jsx` per FR-006/SC-007.
+- [ ] T054 [US2] Actualizar `specs/007-dashboard-estadisticas/contracts/reports-api.md`, `contracts/dashboard-ui.md`, `quickstart.md` y `verification.md` con atribución, cuenta dividida, histórico y formato de porcentaje.
+- [ ] T055 [US2] Añadir una prueba de contrato que cubra la atribución al camarero que abrió el pedido y el respaldo al que cerró en `backend/tests/contract/reports_daily.test.js`.
+- [ ] T056 [US2] Añadir una prueba de integración de cuenta dividida y de histórico de nombre/partida en `backend/tests/integration/reports-cuenta-dividida.test.js` y `backend/tests/integration/reports-historico.test.js`.

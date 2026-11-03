@@ -125,6 +125,17 @@ anular otro pedido en curso y comprobar que la mesa vuelve a libre y el pedido d
 
 ---
 
+## Phase 5: Convergence — Clarificaciones 2026-11-03
+
+- [ ] T049 [P] Añadir la columna `indicaciones` a `lineas_pedido` en una migración versionada de `backend/migrations/` y actualizar `backend/src/db/seed.js` con ejemplos; cubrir la migración en `backend/tests/integration/migraciones.test.js`.
+- [ ] T050 [P] Añadir las columnas de instantánea `nombre_plato` y `partida_codigo` a `lineas_pedido` en `backend/migrations/` y actualizar el seed; probar que se rellenan al crear la línea en `backend/tests/integration/pedidos_historico.test.js`.
+- [ ] T051 [US1] Actualizar `backend/src/db/pedidos.js` para copiar nombre, partida, precio e indicaciones al crear la línea y devolverlos en las consultas; ajustar `backend/tests/integration/pedidos.test.js`.
+- [ ] T052 [P] [US1] Ampliar `backend/src/schemas/pedidos.js` y `backend/src/api/pedidos.js` para aceptar `indicaciones` en `NuevaLinea` y devolver la instantánea en `LineaPedido`; actualizar `backend/tests/contract/pedidos.test.js` y `specs/001-comandas/contracts/openapi.yaml`.
+- [ ] T053 [P] [US1] Añadir el campo de indicaciones en `frontend/src/components/SelectorPlatos.jsx` y mostrarlas en `frontend/src/components/Pedido.jsx`; cubrirlo en `frontend/tests/components/Pedido.test.jsx`.
+- [ ] T054 [US1] Añadir una prueba de regresión en `backend/tests/integration/pedidos_historico.test.js` que cambie nombre/partida/precio del plato y verifique que el pedido conserva la instantánea; actualizar `specs/001-comandas/quickstart.md`.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

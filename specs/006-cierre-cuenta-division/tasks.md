@@ -133,6 +133,18 @@ Aplicación web: `backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/te
 
 ---
 
+## Phase 7: Convergence — Clarificaciones 2026-11-03
+
+- [ ] T034 [P] Excluir los pedidos `cancelada` del cálculo de consumos y del total en `backend/src/services/cuentasService.js` y en las consultas de `backend/src/db/pedidos.js`; cubrir en `backend/tests/integration/cuentas-canceladas.test.js` per FR-002/FR-011.
+- [ ] T035 [US1] Bloquear la edición/cancelación del pedido si la cuenta tiene alguna parte `pagada` y devolver `409 partes_pagadas`; coordinar `backend/src/services/cuentasService.js` con el servicio de edición de 002; cubrir en `backend/tests/integration/partes-pagadas.test.js`.
+- [ ] T036 [P] Sustituir el nombre del comensal por la etiqueta «Parte N» generada desde `orden` en `backend/src/services/divisionService.js` y `backend/src/services/cuentasService.js`; actualizar fixtures y `backend/tests/integration/division-cuenta.test.js` per FR-008.
+- [ ] T037 [P] Añadir una prueba de integración con 007 que verifique que una cuenta dividida cuenta una sola vez por `total_centimos` y se atribuye al camarero que abrió el pedido en `backend/tests/integration/dashboard-cuenta-dividida.test.js` per FR-002/FR-014.
+- [ ] T038 [P] Actualizar `specs/006-cierre-cuenta-division/contracts/api.md` (ejemplos «Parte 1/2/3», dependencia con 002 y dashboard) y `specs/006-cierre-cuenta-division/quickstart.md` con los escenarios O, P, Q y R.
+- [ ] T039 [US2] Quitar el campo de nombre en `frontend/src/components/DivisionCuenta.jsx` y `frontend/src/components/ParteCuenta.jsx`; mostrar «Parte 1», «Parte 2»…; cubrir en `frontend/tests/components/division.test.jsx`.
+- [ ] T040 Actualizar `specs/006-cierre-cuenta-division/verification.md` y ejecutar la suite completa con la regresión de cuentas canceladas y partes pagadas en `backend/tests/` y `frontend/tests/`.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
