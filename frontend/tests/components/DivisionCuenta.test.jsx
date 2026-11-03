@@ -47,6 +47,14 @@ describe('DivisionCuenta', () => {
     expect(screen.getByText(/suma de las partes/i)).toHaveTextContent(/42,50/);
   });
 
+  it('usa etiquetas de parte sin pedir nombres', () => {
+    renderizar();
+
+    expect(screen.getAllByText('Parte 1').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Parte 2').length).toBeGreaterThan(0);
+    expect(screen.queryByLabelText(/comensal/i)).not.toBeInTheDocument();
+  });
+
   it('permite dividir por consumo y repartir un plato entre varias partes', () => {
     renderizar();
 
