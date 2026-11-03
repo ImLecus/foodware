@@ -4,17 +4,18 @@ import { liberarMesa, marcarMesaOcupada } from './mesas.js';
 const LINEA_CAMPOS = `l.id,
                       l.pedido_id,
                       l.plato_id,
-                      p.nombre AS plato_nombre,
+                      COALESCE(l.nombre_plato, p.nombre) AS plato_nombre,
                       l.cantidad,
                       l.precio_centimos,
                       l.indicaciones,
                       l.estado,
                       l.listo_en,
-                      p.partida_codigo AS partida`;
+                      COALESCE(l.partida_codigo, p.partida_codigo) AS partida`;
 
 const LINEA_JOIN = `FROM lineas_pedido l
                       JOIN platos p ON p.id = l.plato_id
-                      JOIN partidas pa ON pa.codigo = p.partida_codigo`;
+                      JOIN partidas pa
+                        ON pa.codigo = COALESCE(l.partida_codigo, p.partida_codigo)`;
 
 function listarLineas(db, pedidoId) {
   return db
@@ -87,8 +88,8 @@ export function listarLineasPendientesDePedido(db, pedidoId) {
     .prepare(
       `SELECT l.id AS linea_id,
               l.pedido_id,
-              p.nombre,
-              p.partida_codigo AS partida,
+              COALESCE(l.nombre_plato, p.nombre) AS nombre,
+              COALESCE(l.partida_codigo, p.partida_codigo) AS partida,
               l.estado,
               l.listo_en
          FROM lineas_pedido l
@@ -130,9 +131,19 @@ export function anadirLinea(db, { pedidoId, plato, cantidad, indicaciones = null
   const id = randomUUID();
   db.prepare(
     `INSERT INTO lineas_pedido
-       (id, pedido_id, plato_id, cantidad, precio_centimos, indicaciones)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-  ).run(id, pedidoId, plato.id, cantidad, plato.precio_centimos, indicaciones);
+       (id, pedido_id, plato_id, nombre_plato, cantidad, precio_centimos,
+        partida_codigo, indicaciones)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    id,
+    pedidoId,
+    plato.id,
+    plato.nombre,
+    cantidad,
+    plato.precio_centimos,
+    plato.partida,
+    indicaciones,
+  );
   return obtenerLinea(db, id);
 }
 

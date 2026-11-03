@@ -52,11 +52,24 @@ export function insertarLinea(
   db,
   { id, pedidoId, platoId = 'plato-entrante', cantidad = 1, estado = 'pendiente' } = {},
 ) {
+  const plato = db
+    .prepare('SELECT nombre, partida_codigo FROM platos WHERE id = ?')
+    .get(platoId);
   db.prepare(
     `INSERT INTO lineas_pedido
-       (id, pedido_id, plato_id, cantidad, precio_centimos, estado, listo_en)
-     VALUES (?, ?, ?, ?, 100, ?, ?)`,
-  ).run(id, pedidoId, platoId, cantidad, estado, estado === 'listo' ? '2026-10-20 10:05:00' : null);
+       (id, pedido_id, plato_id, nombre_plato, cantidad, precio_centimos,
+        partida_codigo, estado, listo_en)
+     VALUES (?, ?, ?, ?, ?, 100, ?, ?, ?)`,
+  ).run(
+    id,
+    pedidoId,
+    platoId,
+    plato?.nombre ?? null,
+    cantidad,
+    plato?.partida_codigo ?? null,
+    estado,
+    estado === 'listo' ? '2026-10-20 10:05:00' : null,
+  );
 }
 
 /** Inserta una cuenta cerrada histórica para probar la reutilización de una mesa. */

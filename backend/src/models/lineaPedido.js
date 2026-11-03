@@ -3,7 +3,9 @@ export function listarLineasDePedido(db, pedidoId) {
   return db
     .prepare(
       `
-      SELECT l.id, pl.nombre AS nombre_plato, pl.partida_codigo AS partida,
+      SELECT l.id,
+             COALESCE(l.nombre_plato, pl.nombre) AS nombre_plato,
+             COALESCE(l.partida_codigo, pl.partida_codigo) AS partida,
              l.cantidad, l.estado, l.listo_en
       FROM lineas_pedido l
       JOIN platos pl ON pl.id = l.plato_id
@@ -23,11 +25,11 @@ export function buscarLineaDePedido(db, pedidoId, lineaId) {
           l.id,
           l.pedido_id AS pedidoId,
           l.plato_id AS platoId,
-          pl.nombre AS nombrePlato,
+          COALESCE(l.nombre_plato, pl.nombre) AS nombrePlato,
           l.cantidad,
           l.estado,
           l.listo_en AS listoEn,
-          pl.partida_codigo AS partida
+          COALESCE(l.partida_codigo, pl.partida_codigo) AS partida
         FROM lineas_pedido l
         JOIN platos pl ON pl.id = l.plato_id
         WHERE l.id = ? AND l.pedido_id = ?
@@ -46,7 +48,7 @@ export function actualizarEstadoLinea(db, lineaId, estado, listoEn) {
 }
 
 export function contarLineasPendientes(db, pedidoId, partida = null) {
-  const filtroPartida = partida ? 'AND pl.partida_codigo = ?' : '';
+  const filtroPartida = partida ? 'AND COALESCE(l.partida_codigo, pl.partida_codigo) = ?' : '';
   const parametros = partida ? [pedidoId, partida] : [pedidoId];
 
   return db
@@ -69,7 +71,7 @@ export function listarLineasDeMesa(db, mesaId) {
       SELECT
         l.id,
         l.pedido_id AS pedidoId,
-        pl.nombre AS nombrePlato,
+        COALESCE(l.nombre_plato, pl.nombre) AS nombrePlato,
         l.cantidad,
         l.estado,
         l.listo_en AS listoEn
