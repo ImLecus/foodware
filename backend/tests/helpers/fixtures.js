@@ -43,9 +43,18 @@ export function insertarPedido(
   { id, mesa = 'mesa-1', enviadoEn = '2026-10-20 10:00:00', modificado = 0 } = {},
 ) {
   db.prepare(
-    `INSERT INTO pedidos (id, mesa_id, camarero_id, estado, modificado, enviado_en, modificado_en)
-     VALUES (?, ?, 'camarero-1', 'enviada', ?, ?, ?)`,
-  ).run(id, mesa, modificado, enviadoEn, modificado ? enviadoEn : null);
+    `INSERT INTO pedidos
+       (id, mesa_id, camarero_id, estado, modificado, enviado_en, modificado_en,
+        cambios_enviados_en)
+     VALUES (?, ?, 'camarero-1', 'enviada', ?, ?, ?, ?)`,
+  ).run(
+    id,
+    mesa,
+    modificado,
+    enviadoEn,
+    modificado ? enviadoEn : null,
+    modificado ? enviadoEn : null,
+  );
 }
 
 export function insertarLinea(
