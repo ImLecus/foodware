@@ -218,7 +218,7 @@ Task: "Desgloses y comparación por fila en frontend/src/pages/PaginaDashboard.j
 
 ## Phase 12: Convergence — Clarificaciones 2026-11-03
 
-- [ ] T049 [P] Invertir el `COALESCE` de `obtenerDesglosePorCamarero` en `backend/src/services/reportingService.js` para priorizar `pedidos.camarero_id` y usar `cuentas.camarero_id` solo como respaldo; depende de 001 T051; actualizar `backend/tests/contract/reports_breakdowns.test.js` per FR-014.
+- [X] T049 [P] Invertir el `COALESCE` de `obtenerDesglosePorCamarero` en `backend/src/services/reportingService.js` para priorizar `pedidos.camarero_id` y usar `cuentas.camarero_id` solo como respaldo; depende de 001 T051; actualizar `backend/tests/contract/reports_breakdowns.test.js` per FR-014.
 - [ ] T050 Asegurar que una cuenta dividida cuenta una sola vez por `cuentas.total_centimos` en `backend/src/services/reportingService.js` y no suma partes; depende de 006 T037; cubrir en `backend/tests/integration/reports-cuenta-dividida.test.js` per FR-002.
 - [ ] T051 Usar `lineas_pedido.nombre_plato` y `partida_codigo` en `obtenerDesglosePorPlato` de `backend/src/services/reportingService.js`; depende de 001 T050; añadir prueba con plato renombrado en `backend/tests/integration/reports-historico.test.js` per FR-004.
 - [ ] T052 Excluir pedidos `cancelada` y cuentas no cerradas de la agregación en `backend/src/services/reportingService.js`; depende de 002 T041; cubrir en `backend/tests/integration/reports-cancelados.test.js` per FR-008.
