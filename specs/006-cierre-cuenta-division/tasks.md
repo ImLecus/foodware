@@ -141,7 +141,7 @@ Aplicación web: `backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/te
 - [X] T037 [P] Añadir una prueba de integración con 007 que verifique que una cuenta dividida cuenta una sola vez por `total_centimos` y se atribuye al camarero que abrió el pedido en `backend/tests/integration/dashboard-cuenta-dividida.test.js`; depende de 007 T049-T050 per FR-002/FR-014.
 - [X] T038 [P] Actualizar `specs/006-cierre-cuenta-division/contracts/api.md` (ejemplos «Parte 1/2/3», dependencia con 002 y dashboard) y `specs/006-cierre-cuenta-division/quickstart.md` con los escenarios O, P, Q y R per FR-008/FR-017.
 - [X] T039 [US2] Quitar el campo de nombre en `frontend/src/components/DivisionCuenta.jsx` y `frontend/src/components/ParteCuenta.jsx`; mostrar «Parte 1», «Parte 2»…; cubrir en `frontend/tests/components/division.test.jsx` per FR-008.
-- [ ] T040 Actualizar `specs/006-cierre-cuenta-division/verification.md` y ejecutar la suite completa con la regresión de cuentas canceladas y partes pagadas en `backend/tests/` y `frontend/tests/` per FR-002/FR-011/FR-017.
+- [X] T040 Actualizar `specs/006-cierre-cuenta-division/verification.md` y ejecutar la suite completa con la regresión de cuentas canceladas y partes pagadas en `backend/tests/` y `frontend/tests/` per FR-002/FR-011/FR-017.
 
 ---
 
