@@ -135,7 +135,7 @@ Aplicación web: `backend/src/`, `backend/tests/`, `frontend/src/`, `frontend/te
 
 ## Phase 7: Convergence — Clarificaciones 2026-11-03
 
-- [ ] T034 [P] Excluir los pedidos `cancelada` del cálculo de consumos y del total en `backend/src/services/cuentasService.js` y en las consultas de `backend/src/db/pedidos.js`; cubrir en `backend/tests/integration/cuentas-canceladas.test.js` per FR-002/FR-011.
+- [X] T034 [P] Excluir los pedidos `cancelada` del cálculo de consumos y del total en `backend/src/services/cuentasService.js` y en las consultas de `backend/src/db/pedidos.js`; cubrir en `backend/tests/integration/cuentas-canceladas.test.js` per FR-002/FR-011.
 - [ ] T035 [US1] Bloquear la edición/cancelación del pedido si la cuenta tiene alguna parte `pagada` y devolver `409 partes_pagadas`; coordinar `backend/src/services/cuentasService.js` con el servicio de edición de 002; depende de T034; cubrir en `backend/tests/integration/partes-pagadas.test.js` per FR-017.
 - [ ] T036 Sustituir el nombre del comensal por el valor de etiqueta «Parte N» generado desde `orden`, manteniendo `comensal` solo como nombre del campo API, en `backend/src/services/divisionService.js` y `backend/src/services/cuentasService.js`; depende de 001 T050 y T034; actualizar fixtures y `backend/tests/integration/division-cuenta.test.js` per FR-008.
 - [ ] T037 [P] Añadir una prueba de integración con 007 que verifique que una cuenta dividida cuenta una sola vez por `total_centimos` y se atribuye al camarero que abrió el pedido en `backend/tests/integration/dashboard-cuenta-dividida.test.js`; depende de 007 T049-T050 per FR-002/FR-014.

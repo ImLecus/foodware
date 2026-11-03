@@ -22,6 +22,8 @@ const CONSUMOS_DE_PEDIDO = `
     JOIN pedidos pe ON pe.id = l.pedido_id
     JOIN platos p ON p.id = l.plato_id
    WHERE l.pedido_id = ?
+     AND pe.cancelada = 0
+     AND pe.estado IN ('en_curso', 'enviada')
    ORDER BY l.rowid
 `;
 
