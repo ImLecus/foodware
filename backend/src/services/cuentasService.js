@@ -421,7 +421,7 @@ export function confirmarDivision(db, mesaId, datos) {
       db.prepare(
         `INSERT INTO cuentas_partes (id, cuenta_id, orden, comensal, importe_centimos)
          VALUES (?, ?, ?, ?, ?)`,
-      ).run(parteId, cuentaId, parte.orden, parte.comensal.trim(), parte.importe_centimos);
+      ).run(parteId, cuentaId, parte.orden, `Parte ${parte.orden}`, parte.importe_centimos);
     }
 
     for (const asignacion of datos.asignaciones) {
