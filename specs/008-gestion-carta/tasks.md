@@ -170,7 +170,7 @@ comprobar que el plato desaparece de la carta de sala sin que el administrador l
 - [X] T064 [P] Asegurar que un cambio de disponibilidad no altera ni retira líneas de pedidos ya enviados en `backend/src/services/cartaService.js` y en las consultas de pedidos; cubrir en `backend/tests/integration/carta-pedidos-enviados.test.js` per FR-016.
 - [X] T065 Usar la instantánea `nombre_plato`/`partida_codigo` en las consultas históricas de pedidos y ventas; depende de 001 T050; añadir prueba en `backend/tests/integration/carta-historico.test.js` per FR-003.
 - [X] T066 [P] Añadir en `frontend/src/pages/PaginaGestionCarta.jsx` un aviso de que la baja solo afecta a pedidos nuevos y que los pedidos enviados se gestionan desde 002; cubrir en `frontend/tests/components/gestion-carta.test.jsx` per FR-016.
-- [ ] T067 [P] Actualizar `specs/008-gestion-carta/contracts/carta-api.md`, `contracts/carta-ui.md` y `quickstart.md` con disponibilidad, histórico y cancelación per FR-003/FR-016.
+- [X] T067 [P] Actualizar `specs/008-gestion-carta/contracts/carta-api.md`, `contracts/carta-ui.md` y `quickstart.md` con disponibilidad, histórico y cancelación per FR-003/FR-016.
 - [ ] T068 Añadir una prueba de integración con 001/002/007 que verifique que un plato renombrado o cambiado de partida conserva su nombre/partida en el pedido y en el dashboard, en `backend/tests/integration/carta-historico.test.js`; depende de 001 T050 y 007 T051 per FR-003/FR-014.
 - [ ] T069 Actualizar `README.md`/verificación de la historia 008 y ejecutar la suite completa per FR-003/FR-016.
 
