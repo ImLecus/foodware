@@ -381,6 +381,7 @@ export function pedidosRouter(db) {
       cancelarPedido(db, pedido.id);
 
       const mesa = obtenerMesa(db, pedido.mesa_id);
+      const estadoMesa = sincronizarAvisoMesa(db, mesa.id, { nuevoPlatoListo: false });
       const numero = numeroDeMesa(mesa.identificador);
       for (const partida of PARTIDAS) {
         emitirPedidoCancelado({
@@ -393,7 +394,13 @@ export function pedidosRouter(db) {
       }
       publicar('pedido-cancelado', { pedidoId: pedido.id, mesaId: pedido.mesa_id });
 
-      res.json({ pedido_id: pedido.id, estado: 'cancelada', mesa_estado: 'libre' });
+      res.json({
+        pedido_id: pedido.id,
+        estado: 'cancelada',
+        mesa_estado: 'libre',
+        completa: estadoMesa.completa,
+        aviso: estadoMesa.aviso,
+      });
     } catch (error) {
       next(error);
     }
