@@ -102,6 +102,13 @@ export default function PaginaGestionCarta() {
           Nuevo plato
         </Button>
       </Stack>
+      <Alert status="info" mb={6}>
+        <AlertIcon />
+        <Text>
+          Los cambios de disponibilidad afectan solo a la carta vigente y a pedidos nuevos. Los
+          pedidos ya enviados se retiran o cancelan desde sala.
+        </Text>
+      </Alert>
       <TablaPlatos
         platos={platos}
         onEditar={(p) => {
