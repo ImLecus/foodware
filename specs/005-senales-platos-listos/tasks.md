@@ -161,8 +161,8 @@
 - [x] T059 [P] Revisar que todos los textos visibles están en español de España en `frontend/src/`
 - [x] T060 Revisar y probar la coherencia del comportamiento sin conexión (indicador, información marcada como no actualizada) y la resincronización en `frontend/src/hooks/useSala.js`
 - [x] T061 [P] Verificar que `.gitignore` excluye `.env` y que no hay secretos en el repositorio (`.gitignore`)
-- [ ] T062 Ejecutar los escenarios de validación A–G de `specs/005-senales-platos-listos/quickstart.md`, incluyendo la comprobación **manual** explícita de SC-001 (identificar los platos listos en ≤ 2 s) y SC-005 (descartar con una sola acción en ≤ 2 s)
-- [ ] T063 Ejecutar los escenarios H, E2 e I (descarte global desde dos pantallas; edición de una comanda ya enviada; cierre de la cuenta de una mesa con aviso activo) de `specs/005-senales-platos-listos/quickstart.md`
+- [X] T062 Ejecutar los escenarios de validación A–G de `specs/005-senales-platos-listos/quickstart.md`, incluyendo la comprobación **manual** explícita de SC-001 (identificar los platos listos en ≤ 2 s) y SC-005 (descartar con una sola acción en ≤ 2 s)
+- [X] T063 Ejecutar los escenarios H, E2 e I (descarte global desde dos pantallas; edición de una comanda ya enviada; cierre de la cuenta de una mesa con aviso activo) de `specs/005-senales-platos-listos/quickstart.md`
 
 ---
 
