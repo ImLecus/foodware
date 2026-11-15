@@ -40,7 +40,15 @@ frontend/
     utils/             Formatos de euro, fecha y hora
   tests/               Pruebas de componentes
 specs/                 Especificaciones, planes y tareas por historia
+docs/                  Entrega: agrupamiento.md y memoria.md
+docs-historias/        Documentación de las historias de usuario
 ```
+
+## Documentación
+
+- [Memoria del proyecto](docs/memoria.md)
+- [Agrupamiento de historias](docs/agrupamiento.md)
+- [Historias de usuario](docs-historias/historias-de-usuario.md)
 
 ## Arranque rápido
 
@@ -370,6 +378,73 @@ en [`specs/006-cierre-cuenta-division/contracts/api.md`](specs/006-cierre-cuenta
 y la validación manual en
 [`specs/006-cierre-cuenta-division/quickstart.md`](specs/006-cierre-cuenta-division/quickstart.md).
 
+## Dashboard de estadísticas (historia 007)
+
+La página `/dashboard` (protegida para el rol `encargado`) muestra el balance del servicio:
+
+1. **Total del día**: importe vendido en el último día natural completado anterior a hoy, en euros
+   y con la fecha visible en formato español. Las cuentas cerradas hoy no se muestran como datos
+   parciales.
+2. **Desglose por camarero**: todos los camareros activos, hayan vendido o no (`0,00 €`), ordenados
+   por importe descendente y, a igualdad, por nombre.
+3. **Desglose por plato**: todos los platos de la carta vigente, vendidos o no (`0,00 €` y `0`
+   unidades), con la misma ordenación.
+4. **Comparación con el día anterior**: diferencia en euros y porcentaje con dos decimales; si el
+   día anterior no tuvo ventas se indica «sin base de comparación» y no se muestra porcentaje.
+5. **Día sin historial**: si no existe ninguna cuenta cerrada anterior, se avisa de que no hay datos
+   anteriores en lugar de comparar.
+
+La atribución de una cuenta es al camarero que abrió/tomó el pedido y, si no consta, al que la
+cerró. El dashboard siempre muestra el último día completado; no hay selector de fecha.
+
+### API de la historia 007 (Dashboard de estadísticas)
+
+| Método | Ruta                 | Descripción                                                                                                                    |
+| ------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `GET`  | `/api/reports/daily` | Informe diario con total, desgloses por camarero/plato y comparación con el día anterior. Requiere sesión con rol `encargado`. |
+
+Sin `date`, el informe usa el último día natural completado **anterior a hoy**; las cuentas cerradas hoy no se muestran como datos parciales. `date` acepta `YYYY-MM-DD` de un día completado (ni hoy ni futuro; si no, `400`). El contrato de referencia está en
+[`specs/007-dashboard-estadisticas/contracts/reports-api.md`](specs/007-dashboard-estadisticas/contracts/reports-api.md)
+y la validación manual en
+[`specs/007-dashboard-estadisticas/quickstart.md`](specs/007-dashboard-estadisticas/quickstart.md).
+
+## Gestión de la carta (historia 008)
+
+La página `/admin` (protegida para el rol `administrador`) permite mantener la carta que consume la
+sala:
+
+1. **Platos**: crear y editar nombre, partida (`entrantes`, `principales`, `postres`) y precio. El
+   precio debe ser mayor que cero y se guarda en céntimos.
+2. **Disponibilidad manual**: activar o desactivar un plato. No existe borrado: la baja se hace con
+   `activo = false` y el plato deja de ofrecerse en sala.
+3. **Ingredientes**: crear y editar ingredientes con estado `disponible` o `agotado`.
+4. **Asociación plato–ingrediente**: cada plato puede tener varios ingredientes; al guardar se
+   sustituye el conjunto completo.
+5. **Disponibilidad combinada**: un plato se ofrece solo si está activo y todos sus ingredientes
+   están disponibles. Si un ingrediente se agota, el plato se oculta con motivo
+   `ingrediente_agotado`; al reponerlo vuelve a ofrecerse si sigue activo. Un plato sin ingredientes
+   depende solo de `activo`.
+6. **Reflejo inmediato**: los cambios de precio o disponibilidad se ven en la carta de sala sin
+   recargar. Un cambio de carta no altera pedidos ya enviados ni cuentas pasadas.
+
+### API de la historia 008 (Gestión de la carta)
+
+| Método  | Ruta                          | Descripción                                                                 |
+| ------- | ----------------------------- | --------------------------------------------------------------------------- |
+| `GET`   | `/api/admin/platos`           | Todos los platos (incluidos los no ofrecibles) con disponibilidad y motivo. |
+| `POST`  | `/api/admin/platos`           | Crea un plato con nombre, partida, precio e ingredientes opcionales.        |
+| `PATCH` | `/api/admin/platos/{id}`      | Edita campos y sustituye el conjunto de ingredientes.                       |
+| `GET`   | `/api/admin/ingredientes`     | Lista los ingredientes con su estado.                                       |
+| `POST`  | `/api/admin/ingredientes`     | Crea un ingrediente (`disponible` por defecto).                             |
+| `PATCH` | `/api/admin/ingredientes/{id}`| Edita nombre y/o estado del ingrediente.                                    |
+| `GET`   | `/api/carta`                  | Carta vigente agrupada por partida; solo platos ofrecibles (cualquier rol). |
+
+Los endpoints `/api/admin/*` exigen rol `administrador` (`401` sin sesión, `403` sin permiso);
+`GET /api/carta` exige sesión de cualquier rol. El contrato de referencia está en
+[`specs/008-gestion-carta/contracts/carta-api.md`](specs/008-gestion-carta/contracts/carta-api.md)
+y la validación manual en
+[`specs/008-gestion-carta/quickstart.md`](specs/008-gestion-carta/quickstart.md).
+
 ## Alcance actual
 
 - **Base compartida + historia 000**: estructura, Docker, SQLite, hub SSE, cliente HTTP/SSE, tema,
@@ -387,13 +462,5 @@ y la validación manual en
 - **Historia 007**: dashboard de estadísticas del servicio (total diario, desgloses por
   camarero/plato y comparación con el día anterior). La corrección de la fecha y de los errores de
   carga se valida en su historia.
-- **Historia 008**: la gestión completa de la carta sigue pendiente; el acceso de administración ya
-  está protegido por rol.
-
-### API de la historia 007 (Dashboard de estadísticas)
-
-| Método | Ruta                 | Descripción                                                                                                                    |
-| ------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `GET`  | `/api/reports/daily` | Informe diario con total, desgloses por camarero/plato y comparación con el día anterior. Requiere sesión con rol `encargado`. |
-
-Sin `date`, el informe usa el último día natural completado **anterior a hoy**; las cuentas cerradas hoy no se muestran como datos parciales. Ruta frontend: `/dashboard` (protegida para `encargado`).
+- **Historia 008**: gestión completa de la carta (platos, precios, ingredientes, asociación
+  plato–ingrediente y disponibilidad combinada), accesible solo para el rol `administrador`.
