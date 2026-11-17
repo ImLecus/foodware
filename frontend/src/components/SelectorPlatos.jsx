@@ -38,64 +38,69 @@ export default function SelectorPlatos({ platos = [], puedeEditar = false, onAna
               {NOMBRES_PARTIDA[partida]}
             </Heading>
             {platosDePartida.map((plato) => (
-              <Flex
-                key={plato.id}
-                align="center"
-                gap={2}
-                py={2}
-                borderBottomWidth="1px"
-                borderColor="gray.100"
-              >
-                <Text flex="1" fontSize="sm">
-                  {plato.nombre}
-                </Text>
-                <Text fontSize="sm" color="gray.600" minW="70px" textAlign="right">
-                  {formatearEuros(plato.precio_centimos)}
-                </Text>
-                <NumberInput
-                  value={cantidadDe(plato.id)}
-                  min={1}
-                  max={99}
-                  size="sm"
-                  maxW="80px"
-                  isDisabled={!puedeEditar}
-                  onChange={(valor) => {
-                    const cantidad = Number(valor);
-                    if (Number.isInteger(cantidad) && cantidad >= 1) {
-                      setCantidades((previas) => ({ ...previas, [plato.id]: cantidad }));
+              <Box key={plato.id} py={2} borderBottomWidth="1px" borderColor="gray.100">
+                <Flex align="baseline" justify="space-between" gap={2} mb={2}>
+                  <Text fontSize="sm">{plato.nombre}</Text>
+                  <Text fontSize="sm" color="gray.600" textAlign="right" whiteSpace="nowrap">
+                    {formatearEuros(plato.precio_centimos)}
+                  </Text>
+                </Flex>
+                <Flex align="center" gap={2} flexWrap="wrap">
+                  <NumberInput
+                    value={cantidadDe(plato.id)}
+                    min={1}
+                    max={99}
+                    size="sm"
+                    maxW="80px"
+                    flexShrink={0}
+                    isDisabled={!puedeEditar}
+                    onChange={(valor) => {
+                      const cantidad = Number(valor);
+                      if (Number.isInteger(cantidad) && cantidad >= 1) {
+                        setCantidades((previas) => ({ ...previas, [plato.id]: cantidad }));
+                      }
+                    }}
+                  >
+                    <NumberInputField aria-label={`Cantidad para ${plato.nombre}`} />
+                  </NumberInput>
+                  <Input
+                    size="sm"
+                    flex="1 1 140px"
+                    minW="120px"
+                    maxW="220px"
+                    placeholder="Indicaciones (opcional)"
+                    aria-label={`Indicaciones para ${plato.nombre}`}
+                    value={indicaciones[plato.id] ?? ''}
+                    isDisabled={!puedeEditar}
+                    onChange={(evento) => {
+                      const valor = evento.target.value;
+                      setIndicaciones((previas) => ({ ...previas, [plato.id]: valor }));
+                    }}
+                  />
+                  <Button
+                    size="sm"
+                    colorScheme="teal"
+                    variant="outline"
+                    height="auto"
+                    minH={8}
+                    py={1}
+                    px={3}
+                    whiteSpace="normal"
+                    flexShrink={0}
+                    maxW="100%"
+                    isDisabled={!puedeEditar}
+                    onClick={() =>
+                      onAnadir?.(
+                        plato.id,
+                        cantidadDe(plato.id),
+                        indicaciones[plato.id]?.trim() || null,
+                      )
                     }
-                  }}
-                >
-                  <NumberInputField aria-label={`Cantidad para ${plato.nombre}`} />
-                </NumberInput>
-                <Input
-                  size="sm"
-                  maxW="180px"
-                  placeholder="Indicaciones (opcional)"
-                  aria-label={`Indicaciones para ${plato.nombre}`}
-                  value={indicaciones[plato.id] ?? ''}
-                  isDisabled={!puedeEditar}
-                  onChange={(evento) => {
-                    const valor = evento.target.value;
-                    setIndicaciones((previas) => ({ ...previas, [plato.id]: valor }));
-                  }}
-                />
-                <Button
-                  size="sm"
-                  colorScheme="teal"
-                  variant="outline"
-                  isDisabled={!puedeEditar}
-                  onClick={() =>
-                    onAnadir?.(
-                      plato.id,
-                      cantidadDe(plato.id),
-                      indicaciones[plato.id]?.trim() || null,
-                    )
-                  }
-                >
-                  Añadir {plato.nombre}
-                </Button>
-              </Flex>
+                  >
+                    Añadir {plato.nombre}
+                  </Button>
+                </Flex>
+              </Box>
             ))}
           </Box>
         );
