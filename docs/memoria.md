@@ -773,13 +773,42 @@ tareas de `tasks.md`, las ramas y los Pull Requests.
 
 ## 11. Demo
 
-La demo se entrega aparte en `DemoSSD_GXX.zip`:
+La demo funcional se entrega en un único vídeo MP4:
 
-- `demo/index.html`: página para ver la demo completa o por historia y escenario.
-- `demo/datos.js`: manifiesto de historias, escenarios y tiempos.
-- `demo/video/`: vídeos `.mp4` y pósteres `.jpg`.
+- **Vídeo de la demo:** [`docs/video/salida/foodware-demo.mp4`](video/salida/foodware-demo.mp4)
+  · 44 min 30 s · 1600 × 900 · H.264 + AAC · 33 MB.
+- **Guía de reproducción y montaje:** [`docs/video/README.md`](video/README.md).
+- **Inventario de casos y caminos:** [`docs/video/casos-y-caminos.md`](video/casos-y-caminos.md).
 
-<!-- TODO: enlazar aquí la demo publicada o indicar cómo abrir demo/index.html. -->
+El vídeo recorre las historias `000`–`008` y termina con un bloque de casos técnicos y de
+borde. Incluye los flujos correctos y los escenarios de error: login incorrecto, acceso
+denegado por rol, mesa ocupada, pedido vacío, cocina filtrada por partida, bloqueos de
+edición, caducidad de sesión, pérdida de conexión, cuentas divididas, pagos por partes,
+ticket final, dashboard sin historial, disponibilidad combinada de la carta y estados
+vacíos, entre otros.
+
+| Hora  | Capítulo                                                        |
+| ----- | --------------------------------------------------------------- |
+| 00:00 | Introducción                                                    |
+| 00:12 | Historia 000 · Autenticación, sesión, roles y control de acceso |
+| 03:22 | Historia 001 · Sala: abrir mesa, tomar pedido y confirmar       |
+| 05:56 | Historia 002 · Editar un pedido enviado y cancelarlo            |
+| 11:36 | Historia 003 · Cocina: pedidos pendientes por partida           |
+| 14:38 | Historias 004 y 005 · Platos listos y señales de mesa completa  |
+| 21:04 | Historia 006 · Cierre, división de cuenta y ticket              |
+| 27:40 | Historia 007 · Dashboard de estadísticas                        |
+| 33:20 | Historia 008 · Gestión de la carta                              |
+| 38:12 | Casos técnicos y de borde                                       |
+| 44:20 | Cierre                                                          |
+
+La demo se ha generado con **Playwright/Chromium** para automatizar y grabar las
+interacciones, y con **ffmpeg** para generar las portadas, unir los capítulos, convertir
+el resultado a MP4 y producir el vídeo final. Los scripts y los clips originales
+están en `tools/video/`. El vídeo no lleva voz en off: usa rótulos explicativos en pantalla
+y dos pitidos en los momentos de aviso de mesa completa. Los casos que no se pueden
+mostrar por la interfaz (`401`/`403`, rechazo por `Origin`, hash de contraseñas,
+autenticación de los canales SSE, migraciones, seed y contratos de API) quedan
+documentados como comprobaciones de API y pruebas en la guía de la demo.
 
 ---
 
