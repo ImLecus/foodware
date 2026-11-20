@@ -23,3 +23,7 @@ backend/data/*.db-*
 Thumbs.db
 .vscode/
 .idea/
+
+# Grabaciones de vídeo
+tools/video/grabaciones/
+docs/video/salida/intermedios/
