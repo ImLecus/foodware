@@ -1,0 +1,33 @@
+import express from 'express';
+import { listarMesasAbiertasParaSala } from '../db/mesas.js';
+import { descartarAvisoMesa } from '../services/avisos.js';
+import { obtenerInstantaneaSala } from '../services/salaMesas.js';
+import { autenticar } from '../middleware/autenticar.js';
+import { requireRole } from '../middleware/authorize.js';
+
+export function salaRouter(db) {
+  const router = express.Router();
+
+  router.use(autenticar(db), requireRole('camarero'));
+
+  router.get('/mesas', (req, res, next) => {
+    try {
+      listarMesasAbiertasParaSala(db);
+      const instantanea = obtenerInstantaneaSala(db);
+      res.json(instantanea);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/avisos/:avisoId/descartar', (req, res, next) => {
+    try {
+      const descarte = descartarAvisoMesa(db, req.params.avisoId);
+      res.json(descarte);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  return router;
+}

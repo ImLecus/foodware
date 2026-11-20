@@ -1,0 +1,357 @@
+openapi: 3.0.3
+info:
+  title: Foodware — API de edición de pedidos (historia 002)
+  version: 1.1.0
+  description: >
+    Contrato de la API para editar un pedido ya enviado: bloqueo de edición (con liberación al
+    enviar, al cancelar/salir y por caducidad de inactividad), añadir/retirar/ajustar líneas,
+    corregir indicaciones y enviar los cambios a cocina de forma explícita. Amplía la API de la
+    historia 001. Los importes se expresan en céntimos enteros.
+
+servers:
+  - url: /api
+
+paths:
+  /pedidos/{pedidoId}:
+    get:
+      summary: Devuelve el pedido con su estado de modificación y bloqueo
+      operationId: obtenerPedido
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+      responses:
+        '200':
+          description: Pedido actualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Pedido' }
+        '404':
+          description: Pedido no encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /pedidos/{pedidoId}/editar:
+    get:
+      summary: Consulta el estado del bloqueo de edición
+      operationId: consultarBloqueo
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+      responses:
+        '200':
+          description: >
+            Estado del bloqueo. `libre` si nadie lo tiene; `bloqueado` si hay un bloqueo vigente;
+            `expirado` si el bloqueo caducó por inactividad y se trata como libre.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BloqueoEdicion' }
+        '404':
+          description: Pedido no encontrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    post:
+      summary: Toma el bloqueo de edición de un pedido enviado
+      operationId: abrirParaEditar
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+      responses:
+        '200':
+          description: >
+            Bloqueo adquirido o renovado por el camarero de la sesión. Si había un bloqueo
+            expirado, se sustituye.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Pedido' }
+        '409':
+          description: El pedido no admite edición (p. ej. cerrada) (FR-012)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423':
+          description: El pedido está bloqueado por otro camarero con bloqueo vigente (FR-015)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      summary: Libera el bloqueo de edición (envío, cancelación o salida)
+      operationId: terminarEdicion
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+      responses:
+        '204':
+          description: >
+            Bloqueo liberado. Idempotente si no había bloqueo o si ya había expirado.
+        '423':
+          description: El bloqueo vigente pertenece a otro camarero
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /pedidos/{pedidoId}/lineas:
+    post:
+      summary: Añade un plato al pedido (en curso o enviada)
+      operationId: anadirLinea
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NuevaLinea' }
+      responses:
+        '201':
+          description: Línea creada (precio fijado en el momento de pedir)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LineaPedido' }
+        '409':
+          description: El pedido no admite cambios o el bloqueo del solicitante expiró
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423':
+          description: El pedido está bloqueado por otro camarero (FR-015)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /pedidos/{pedidoId}/lineas/{lineaId}:
+    patch:
+      summary: Modifica la cantidad o las indicaciones de una línea
+      description: >
+        Si la línea ya estaba `listo`, bajar o mantener la cantidad la mantiene lista; subirla la
+        devuelve a `pendiente` y borra `listo_en` (FR-004). Las indicaciones se corrigen aquí; se
+        crean al añadir el plato en la historia 001.
+      operationId: modificarLinea
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+        - $ref: '#/components/parameters/lineaId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LineaPatch' }
+      responses:
+        '200':
+          description: Línea actualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LineaPedido' }
+        '409':
+          description: El pedido no admite cambios o el bloqueo del solicitante expiró
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423':
+          description: El pedido está bloqueado por otro camarero (FR-015)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      summary: Retira un plato del pedido (sin dejarla vacía)
+      operationId: retirarLinea
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+        - $ref: '#/components/parameters/lineaId'
+      responses:
+        '204':
+          description: Línea retirada
+        '409':
+          description: La operación dejaría el pedido sin platos (FR-011) o el bloqueo del solicitante expiró
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423':
+          description: El pedido está bloqueado por otro camarero (FR-015)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /pedidos/{pedidoId}/enviar-cambios:
+    post:
+      summary: Comunica a cocina los cambios pendientes del pedido
+      operationId: enviarCambios
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+      responses:
+        '200':
+          description: >
+            Cambios enviados; pedido marcado como modificado y bloqueo de edición liberado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PedidoConfirmado' }
+        '409':
+          description: >
+            No hay cambios pendientes, el pedido no admite cambios o el bloqueo del solicitante
+            expiró (`codigo: bloqueo_expirado`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423':
+          description: El pedido está bloqueado por otro camarero (FR-015)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /pedidos/{pedidoId}/cancelar:
+    post:
+      summary: Cancela el pedido completo ya enviado
+      operationId: cancelarPedido
+      parameters:
+        - $ref: '#/components/parameters/pedidoId'
+      responses:
+        '200':
+          description: >
+            Pedido cancelado: deja de estar vigente, se retira de cocina y sala, libera la mesa si
+            no tiene otra comanda y no genera consumo ni cobro (FR-016).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PedidoConfirmado' }
+        '409':
+          description: >
+            El pedido no está `enviada`, la cuenta tiene partes pagadas o el bloqueo del solicitante
+            expiró (`codigo: pedido_cancelado`, `partes_pagadas` o `bloqueo_expirado`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423':
+          description: El pedido está bloqueado por otro camarero (FR-015)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /eventos:
+    get:
+      summary: Suscripción SSE a eventos de estado (tiempo real, hub compartido)
+      operationId: eventos
+      responses:
+        '200':
+          description: Stream `text/event-stream` con eventos de pedido-modificado
+          content:
+            text/event-stream:
+              schema: { type: string }
+
+components:
+  parameters:
+    pedidoId:
+      name: pedidoId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    lineaId:
+      name: lineaId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+    Partida:
+      type: string
+      enum: [entrantes, principales, postres]
+
+    Mesa:
+      type: object
+      required: [id, identificador, estado]
+      properties:
+        id: { type: string, format: uuid }
+        identificador: { type: string, example: 'Mesa 5' }
+        estado: { type: string, enum: [libre, ocupada] }
+
+    LineaPedido:
+      type: object
+      description: >
+        Línea de pedido. `plato_nombre`, `partida` y `precio_centimos` son la instantánea fijada al
+        pedir; `estado`/`listo_en` reflejan la preparación en cocina.
+      required: [id, plato_id, plato_nombre, cantidad, precio_centimos, partida, estado]
+      properties:
+        id: { type: string, format: uuid }
+        plato_id: { type: string, format: uuid }
+        plato_nombre: { type: string }
+        cantidad: { type: integer, minimum: 1 }
+        precio_centimos: { type: integer, minimum: 1 }
+        indicaciones: { type: string, nullable: true }
+        partida: { $ref: '#/components/schemas/Partida' }
+        estado: { type: string, enum: [pendiente, listo] }
+        listo_en: { type: string, format: date-time, nullable: true }
+
+    Pedido:
+      type: object
+      required: [id, mesa_id, estado, modificada, cambios_pendientes, lineas]
+      properties:
+        id: { type: string, format: uuid }
+        mesa_id: { type: string, format: uuid }
+        estado: { type: string, enum: [en_curso, enviada, cerrada, cancelada] }
+        modificada: { type: boolean }
+        cambios_pendientes: { type: boolean }
+        cambios_enviados_en: { type: string, format: date-time, nullable: true }
+        editando_por: { type: string, nullable: true }
+        editando_desde: { type: string, format: date-time, nullable: true }
+        bloqueo_expira_en: { type: string, format: date-time, nullable: true }
+        bloqueo:
+          $ref: '#/components/schemas/BloqueoEdicion'
+        lineas:
+          type: array
+          items: { $ref: '#/components/schemas/LineaPedido' }
+        por_partida:
+          $ref: '#/components/schemas/PedidoPorPartida'
+
+    BloqueoEdicion:
+      type: object
+      description: >
+        Estado del bloqueo de edición. La caducidad se evalúa de forma perezosa: si
+        `expira_en` ya pasó, el estado es `expirado` y el bloqueo se considera libre.
+      required: [estado]
+      properties:
+        estado: { type: string, enum: [libre, bloqueado, expirado] }
+        camarero_id: { type: string, nullable: true }
+        desde: { type: string, format: date-time, nullable: true }
+        ultima_actividad: { type: string, format: date-time, nullable: true }
+        expira_en: { type: string, format: date-time, nullable: true }
+        inactividad_minutos:
+          type: integer
+          minimum: 1
+          description: Periodo configurado (`BLOQUEO_INACTIVIDAD_MINUTOS`, 15 por defecto)
+
+    PedidoPorPartida:
+      type: object
+      description: Líneas agrupadas por partida (FR-010)
+      properties:
+        entrantes: { type: array, items: { $ref: '#/components/schemas/LineaPedido' } }
+        principales: { type: array, items: { $ref: '#/components/schemas/LineaPedido' } }
+        postres: { type: array, items: { $ref: '#/components/schemas/LineaPedido' } }
+
+    PedidoConfirmado:
+      type: object
+      required: [pedido_id, mesa, por_partida]
+      properties:
+        pedido_id: { type: string, format: uuid }
+        mesa: { $ref: '#/components/schemas/Mesa' }
+        modificada: { type: boolean }
+        por_partida: { $ref: '#/components/schemas/PedidoPorPartida' }
+
+    NuevaLinea:
+      type: object
+      required: [plato_id, cantidad]
+      properties:
+        plato_id: { type: string, format: uuid }
+        cantidad: { type: integer, minimum: 1, default: 1 }
+        indicaciones: { type: string, nullable: true }
+
+    LineaPatch:
+      type: object
+      minProperties: 1
+      properties:
+        cantidad: { type: integer, minimum: 1 }
+        indicaciones: { type: string, nullable: true }
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        codigo:
+          type: string
+          nullable: true
+          description: Código estable para que la UI distinga el motivo del rechazo
+          enum: [pedido_no_editable, pedido_bloqueado, bloqueo_expirado, pedido_vacio, sin_cambios, pedido_cancelado, partes_pagadas]
+        detalle: { type: string, nullable: true }

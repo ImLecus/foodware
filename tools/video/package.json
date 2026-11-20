@@ -1,0 +1,13 @@
+{
+  "name": "foodware-video",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Grabación automatizada de la demo de Foodware",
+  "scripts": {
+    "record": "node grabar.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

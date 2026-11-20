@@ -1,0 +1,104 @@
+import { createDb } from '../../src/db/index.js';
+import { insertarSesionesPrueba } from './auth.js';
+
+/** Base en memoria con el catálogo mínimo para las pruebas de la vista de cocina. */
+export function crearBase() {
+  const db = createDb(':memory:');
+
+  db.exec(`
+    INSERT INTO partidas (codigo, nombre, orden) VALUES
+      ('entrantes', 'Entrantes', 1),
+      ('principales', 'Principales', 2),
+      ('postres', 'Postres', 3);
+
+    INSERT INTO usuarios (id, nombre, rol, partida_codigo) VALUES
+      ('cocinero-entrantes', 'Marta', 'cocinero', 'entrantes'),
+      ('cocinero-principales', 'Pablo', 'cocinero', 'principales'),
+      ('cocinero-postres', 'Lucía', 'cocinero', 'postres'),
+      ('cocinero-sin-partida', 'Sin partida', 'cocinero', NULL),
+      ('camarero-1', 'Ana', 'camarero', NULL),
+      ('camarero-2', 'Luis', 'camarero', NULL),
+      ('encargado-1', 'Carmen', 'encargado', NULL),
+      ('admin-1', 'Administración', 'administrador', NULL);
+
+    INSERT INTO mesas (id, identificador, estado) VALUES
+      ('mesa-1', 'Mesa 1', 'ocupada'),
+      ('mesa-2', 'Mesa 2', 'ocupada'),
+      ('mesa-3', 'Mesa 3', 'ocupada'),
+      ('mesa-4', 'Mesa 4', 'ocupada');
+
+    INSERT INTO platos (id, nombre, partida_codigo, precio_centimos) VALUES
+      ('plato-entrante', 'Croquetas', 'entrantes', 850),
+      ('plato-entrante-2', 'Ensalada', 'entrantes', 700),
+      ('plato-principal', 'Paella', 'principales', 1800),
+      ('plato-postre', 'Tarta', 'postres', 600);
+  `);
+
+  insertarSesionesPrueba(db);
+  return db;
+}
+
+export function insertarPedido(
+  db,
+  { id, mesa = 'mesa-1', enviadoEn = '2026-10-20 10:00:00', modificado = 0 } = {},
+) {
+  db.prepare(
+    `INSERT INTO pedidos
+       (id, mesa_id, camarero_id, estado, modificado, enviado_en, modificado_en,
+        cambios_enviados_en)
+     VALUES (?, ?, 'camarero-1', 'enviada', ?, ?, ?, ?)`,
+  ).run(
+    id,
+    mesa,
+    modificado,
+    enviadoEn,
+    modificado ? enviadoEn : null,
+    modificado ? enviadoEn : null,
+  );
+}
+
+export function insertarLinea(
+  db,
+  { id, pedidoId, platoId = 'plato-entrante', cantidad = 1, estado = 'pendiente' } = {},
+) {
+  const plato = db
+    .prepare('SELECT nombre, partida_codigo FROM platos WHERE id = ?')
+    .get(platoId);
+  db.prepare(
+    `INSERT INTO lineas_pedido
+       (id, pedido_id, plato_id, nombre_plato, cantidad, precio_centimos,
+        partida_codigo, estado, listo_en)
+     VALUES (?, ?, ?, ?, ?, 100, ?, ?, ?)`,
+  ).run(
+    id,
+    pedidoId,
+    platoId,
+    plato?.nombre ?? null,
+    cantidad,
+    plato?.partida_codigo ?? null,
+    estado,
+    estado === 'listo' ? '2026-10-20 10:05:00' : null,
+  );
+}
+
+/** Inserta una cuenta cerrada histórica para probar la reutilización de una mesa. */
+export function insertarCuentaCerrada(
+  db,
+  { id = 'cuenta-cerrada', mesaId = 'mesa-1', pedidoId = null, totalCentimos = 0 } = {},
+) {
+  db.prepare(
+    `INSERT INTO cuentas (id, mesa_id, pedido_id, estado, total_centimos, modo_division, cerrada_en)
+     VALUES (?, ?, ?, 'cerrada', ?, 'unico', datetime('now'))`,
+  ).run(id, mesaId, pedidoId, totalCentimos);
+}
+
+/** Inserta una cuenta cerrada en una fecha concreta para pruebas de informes. */
+export function insertarCuentaCerradaEnFecha(
+  db,
+  { id = 'cuenta-fecha', mesaId = 'mesa-1', fecha, totalCentimos = 0, camareroId = null } = {},
+) {
+  db.prepare(
+    `INSERT INTO cuentas (id, mesa_id, camarero_id, estado, total_centimos, abierta_en, cerrada_en)
+     VALUES (?, ?, ?, 'cerrada', ?, ?, ?)`,
+  ).run(id, mesaId, camareroId, totalCentimos, `${fecha} 10:00:00`, `${fecha} 12:00:00`);
+}

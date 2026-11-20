@@ -1,0 +1,175 @@
+import { obtenerMesa } from '../db/mesas.js';
+import {
+  actualizarEstadoLinea,
+  buscarLineaDePedido,
+  contarLineasPendientes,
+  listarLineasDePedido,
+} from '../models/lineaPedido.js';
+import { buscarMesa, numeroDeMesa } from '../models/mesa.js';
+import { buscarPedido } from '../models/pedido.js';
+import { exigirMesa, exigirMesaAbierta } from '../domain/pedidos.js';
+import { ErrorHttp } from '../middleware/error.js';
+import { logger } from '../config/logger.js';
+import {
+  emitirLineaActualizada,
+  emitirPedidoReabierto,
+  emitirPendientesCambiado,
+} from '../realtime/emit.js';
+import { sincronizarAvisoMesa } from './avisos.js';
+import { aISO } from '../utils/fechas.js';
+
+function respuestaLinea(linea, { pedidoCompletado = false, pedidoReabierto = false } = {}) {
+  return {
+    id: linea.id,
+    pedidoId: linea.pedidoId,
+    nombrePlato: linea.nombrePlato,
+    cantidad: linea.cantidad,
+    estado: linea.estado,
+    listoEn: aISO(linea.listoEn),
+    pedidoCompletado,
+    pedidoReabierto,
+  };
+}
+
+function partidasDelPedido(db, pedidoId) {
+  return [...new Set(listarLineasDePedido(db, pedidoId).map((linea) => linea.partida))];
+}
+
+function refrescarPartidas(partidas) {
+  for (const partida of partidas) {
+    emitirPendientesCambiado({ partida });
+  }
+}
+
+/**
+ * Asignación idempotente y atómica del estado de una línea de pedido.
+ * `listo` fija `listoEn` una sola vez; `pendiente` lo limpia.
+ */
+export function marcarLinea(db, { pedidoId, lineaId, estado, partida }) {
+  const ejecutar = db.transaction(() => {
+    if (estado !== 'listo' && estado !== 'pendiente') {
+      throw new ErrorHttp(400, 'El estado debe ser listo o pendiente', 'estado_invalido');
+    }
+
+    const pedido = buscarPedido(db, pedidoId);
+    if (!pedido) {
+      throw new ErrorHttp(404, 'El pedido no existe', 'pedido_no_encontrado');
+    }
+
+    if (pedido.cancelada) {
+      throw new ErrorHttp(409, 'El pedido está cancelado', 'pedido_cancelado');
+    }
+
+    if (pedido.estado === 'cerrada') {
+      throw new ErrorHttp(409, 'La cuenta ya está cerrada', 'cuenta_cerrada');
+    }
+
+    const bloqueoVigente =
+      pedido.editando_por &&
+      pedido.bloqueo_expira_en &&
+      new Date(`${pedido.bloqueo_expira_en.replace(' ', 'T')}Z`).getTime() > Date.now();
+    if (bloqueoVigente) {
+      throw new ErrorHttp(
+        423,
+        'El pedido está siendo editado por un camarero',
+        'pedido_bloqueado',
+      );
+    }
+
+    exigirMesaAbierta(exigirMesa(obtenerMesa(db, pedido.mesa_id)));
+
+    const linea = buscarLineaDePedido(db, pedidoId, lineaId);
+    if (!linea) {
+      throw new ErrorHttp(404, 'La línea no pertenece al pedido', 'linea_no_encontrada');
+    }
+
+    if (partida && linea.partida !== partida) {
+      throw new ErrorHttp(403, 'La línea no pertenece a tu partida', 'partida_ajena');
+    }
+
+    const mesa = buscarMesa(db, pedido.mesa_id);
+    const mesaNumero = numeroDeMesa(mesa?.identificador);
+    const pendientesAntes = contarLineasPendientes(db, pedidoId, linea.partida);
+
+    if (estado === 'listo') {
+      if (pedido.estado !== 'enviada' || pendientesAntes === 0) {
+        throw new ErrorHttp(409, 'El pedido ya está completado', 'pedido_completado');
+      }
+
+      if (linea.estado === 'listo') {
+        return respuestaLinea(linea, { pedidoCompletado: false });
+      }
+
+      const listoEn = new Date().toISOString();
+      actualizarEstadoLinea(db, lineaId, 'listo', listoEn);
+      const pendientesDespues = contarLineasPendientes(db, pedidoId, linea.partida);
+      const respuesta = respuestaLinea(
+        { ...linea, estado: 'listo', listoEn },
+        { pedidoCompletado: pendientesDespues === 0 },
+      );
+
+      emitirLineaActualizada({
+        pedidoId,
+        lineaId,
+        estado: 'listo',
+        listoEn: respuesta.listoEn,
+        mesa: mesaNumero,
+        mesaId: pedido.mesa_id,
+        partida: linea.partida,
+        nombrePlato: linea.nombrePlato,
+        cantidad: linea.cantidad,
+      });
+      respuesta.mesa = sincronizarAvisoMesa(db, pedido.mesa_id, { nuevoPlatoListo: true });
+      refrescarPartidas(partidasDelPedido(db, pedidoId));
+      logger.info('Línea marcada como lista', {
+        pedidoId,
+        lineaId,
+        pedidoCompletado: respuesta.pedidoCompletado,
+      });
+
+      return respuesta;
+    }
+
+    if (linea.estado === 'pendiente') {
+      return respuestaLinea(linea);
+    }
+
+    actualizarEstadoLinea(db, lineaId, 'pendiente', null);
+    const respuesta = respuestaLinea(
+      { ...linea, estado: 'pendiente', listoEn: null },
+      { pedidoReabierto: pendientesAntes === 0 },
+    );
+
+    emitirLineaActualizada({
+      pedidoId,
+      lineaId,
+      estado: 'pendiente',
+      listoEn: null,
+      mesa: mesaNumero,
+      mesaId: pedido.mesa_id,
+      partida: linea.partida,
+      nombrePlato: linea.nombrePlato,
+      cantidad: linea.cantidad,
+    });
+    respuesta.mesa = sincronizarAvisoMesa(db, pedido.mesa_id);
+    refrescarPartidas(partidasDelPedido(db, pedidoId));
+    if (respuesta.pedidoReabierto) {
+      emitirPedidoReabierto({
+        pedidoId,
+        partida: linea.partida,
+        mesa: mesaNumero,
+        mesaId: pedido.mesa_id,
+        lineaId,
+      });
+    }
+    logger.info('Línea devuelta a pendiente', {
+      pedidoId,
+      lineaId,
+      pedidoReabierto: respuesta.pedidoReabierto,
+    });
+
+    return respuesta;
+  });
+
+  return ejecutar();
+}

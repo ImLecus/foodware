@@ -1,0 +1,163 @@
+# Guía de validación (quickstart): Dashboard de estadísticas del servicio
+
+Escenarios ejecutables para comprobar el dashboard de extremo a extremo. No incluye código de
+implementación; el detalle técnico está en `plan.md`, `data-model.md` y `contracts/`.
+
+## Requisitos previos
+
+- Docker con `docker-compose` instalado.
+- Repositorio con el backend y el frontend definidos en `plan.md`.
+- Usuario de prueba con rol `encargado` y, al menos, un usuario con rol `camarero`.
+
+## Puesta en marcha
+
+```bash
+# Levantar backend y frontend
+docker compose up --build
+
+# (Opcional) cargar datos semilla: cuentas cerradas de ayer y de hoy
+# (las de hoy deben quedar fuera del dashboard hasta que termine el día natural)
+docker compose exec backend npm run seed
+```
+
+- Frontend en `http://localhost:5173` (o el puerto definido).
+- API en `http://localhost:3000/api`.
+
+## Pruebas automatizadas
+
+```bash
+# Backend: unidad (agregación) + contrato/integración del endpoint
+docker compose exec backend npm test
+
+# Frontend: pruebas de componente de la página del dashboard
+docker compose exec frontend npm test
+```
+
+Resultado esperado: todas las pruebas en verde (cálculo de totales, diferencias y tendencia;
+contrato del endpoint; estados de la página).
+
+## Escenarios de verificación (desde la interfaz)
+
+### E1. Visión global del total (US1, SC-001, FR-002)
+1. Iniciar sesión como **encargado** y abrir `/dashboard`.
+2. **Esperado**: se ve el total del último día completado **anterior a hoy** en euros en primer plano (`1.287,50 €`), junto a la fecha visible del día mostrado (`13/10/2026`). Si hoy ya se cerró una cuenta, hoy sigue sin aparecer hasta que termine el día.
+
+### E2. Desglose por camarero (US2, FR-003, FR-013)
+1. En el mismo dashboard, mirar la tabla "por camarero".
+2. **Esperado**: aparecen **todos los camareros activos** (no solo los que vendieron) con su número
+   de cuentas e importe; los que no vendieron aparecen con `0,00 €`, las filas van de mayor a menor
+   importe (a igualdad, por nombre) y se mantiene cualquier camarero que vendiera ese día aunque ya
+   no esté activo.
+
+### E3. Desglose por plato (US2, FR-004, FR-013)
+1. Mirar la tabla "por plato".
+2. **Esperado**: aparecen **todos los platos de la carta vigente**, vendidos o no, con partida,
+   cantidad e importe (`0,00 €` y `0` unidades si no se vendió), de mayor a menor importe; se
+   mantiene cualquier plato vendido ese día aunque ya no esté en la carta.
+
+### E4. Comparación con el día anterior (US3, FR-005/FR-006/FR-010, SC-003)
+1. Observar el bloque de comparación.
+2. **Esperado**: diferencia de importe y porcentaje frente a ayer, con indicador "subida"
+   (verde), "bajada" (rojo) o "sin variación" (neutro), con **texto e icono**; además, las
+   diferencias por camarero y por plato.
+
+### E5. Día sin ventas (edge case, FR-007)
+1. Consultar un día sin cuentas cerradas.
+2. **Esperado**: total `0,00 €` y, si no hay día anterior, mensaje "sin datos anteriores para
+   comparar".
+
+### E6. Acceso restringido (FR-001 de contexto, contrato API)
+1. Iniciar sesión como **camarero** e intentar abrir `/dashboard`.
+2. **Esperado**: no aparece la entrada de navegación y la ruta muestra "acceso restringido".
+3. Llamar a `GET /api/reports/daily` sin rol encargado → `403`.
+
+### E7. Consistencia con las cuentas cerradas de un día completado (SC-004, FR-008)
+1. Consultar el dashboard para el último día natural completado (o el día cerrado de los datos semilla).
+2. Sumar manualmente los importes de las cuentas cerradas de ese día.
+3. **Esperado**: el total del dashboard coincide exactamente con esa suma.
+
+### E8. Sin conexión (aclaración de la spec)
+1. Con el dashboard abierto, cortar la red o detener el backend.
+2. Recargar/refrescar.
+3. **Esperado**: mensaje «sin conexión» si falla la red; si el servidor devuelve `400/500`, se muestra el mensaje de error real, no «sin conexión».
+
+### E9. Rendimiento (SC-005)
+1. Con un día de datos representativo, cronometrar la carga del dashboard.
+2. **Esperado**: los datos se muestran en menos de 3 s.
+
+### E11. Cierre de una cuenta hoy (FR-001, aclaración 2026-10-27)
+
+1. Cerrar una cuenta de una mesa hoy.
+2. Abrir/recargar `/dashboard` sin indicar fecha.
+3. **Esperado**: sigue mostrando el último día natural completado anterior a hoy, sin error y sin
+   datos parciales del día en curso.
+4. Consultar explícitamente `GET /api/reports/daily?date=<hoy>`.
+5. **Esperado**: `400`, porque el día en curso no está completado.
+
+### E10. Día anterior sin ventas (FR-011, SC-006)
+1. Preparar los datos con el día anterior sin ninguna cuenta cerrada y el día actual con ventas.
+2. Abrir el dashboard del día actual y observar el bloque de comparación.
+3. **Esperado**: se muestra la diferencia en euros (por ejemplo, `+350,00 €`) con la etiqueta
+   «sin base de comparación»; **no** aparece ningún porcentaje.
+4. **Comprobación de API**: `GET /api/reports/daily?date=<día actual>` devuelve
+   `comparacion.sinBaseComparacion = true` y `comparacion.diferenciaPorcentaje = null`.
+5. **Comprobación por fila**: si un camarero o un plato no vendió ayer y sí hoy, su fila de
+   comparación muestra la diferencia en euros y «sin base de comparación», sin porcentaje
+   (`diferenciaPorcentaje = null`, `sinBaseComparacion = true`).
+
+### E12. Universo de los desgloses sin ventas (FR-003, FR-004)
+1. Disponer de un camarero activo que no haya cerrado ninguna cuenta en el día mostrado y de un
+   plato de la carta vigente que no se haya vendido.
+2. Abrir el dashboard del día.
+3. **Esperado**: ambos aparecen en sus tablas con `0,00 €` (y `0` unidades en el plato), sin
+   omitirse aunque nunca hayan vendido.
+4. **Caso inverso**: un camarero o plato con ventas ese día que ya no esté activo o haya salido de
+   la carta sigue apareciendo con su importe, para que el desglose cuadre con el total.
+
+### E13. Fecha visible y orden de las tablas (FR-012, FR-013)
+1. Abrir el dashboard de un día con varios camareros y platos vendidos.
+2. **Esperado**: la fecha del día consultado aparece junto al total; las filas de ambas tablas van
+   de mayor a menor importe y, a igualdad, por nombre alfabético.
+
+### E14. Atribución al camarero que abrió el pedido (FR-014)
+1. Abrir una mesa con un camarero A y cerrar la cuenta con un camarero B.
+2. Consultar el dashboard del día.
+3. **Esperado**: el importe se atribuye a A (quien abrió/tomó el pedido), no a B; si una cuenta
+   antigua no conserva al camarero del pedido, se usa B.
+
+### E15. Cuenta dividida en el dashboard (FR-002)
+1. Dividir una cuenta, pagar todas las partes y cerrarla.
+2. Consultar el dashboard del día.
+3. **Esperado**: la cuenta cuenta una sola vez por su importe total; las partes pagadas no se suman
+   por separado y el desglose por camarero cuadra con el total.
+
+### E16. Histórico de nombre y partida (FR-004)
+1. Vender un plato y, después, cambiar su nombre o su partida en la carta (008).
+2. Consultar el dashboard del día de la venta.
+3. **Esperado**: el desglose muestra el nombre y la partida que tenía el plato al pedirse, no los
+   datos actuales de la carta.
+
+### E17. Formato del porcentaje (FR-006, SC-007)
+1. Consultar una comparación con subida y otra con bajada.
+2. **Esperado**: dos decimales con coma (`9,11 %`, `-4,76 %`); las subidas no llevan signo positivo
+   y las bajadas sí llevan signo negativo.
+
+## Comprobación del contrato de la API
+
+```bash
+# Como encargado (con credenciales/sesión válidas)
+curl -s "http://localhost:3000/api/reports/daily?date=2026-10-13"
+
+# Esperado: JSON conforme a contracts/reports-api.md
+# - 401 sin autenticación
+# - 403 con rol camarero
+# - 400 con date inválido (p. ej. ?date=2026-13-99)
+```
+
+## Referencias
+
+- Funcionalidad: [spec.md](./spec.md)
+- Decisiones técnicas: [research.md](./research.md)
+- Modelo de datos: [data-model.md](./data-model.md)
+- Contratos: [contracts/reports-api.md](./contracts/reports-api.md),
+  [contracts/dashboard-ui.md](./contracts/dashboard-ui.md)

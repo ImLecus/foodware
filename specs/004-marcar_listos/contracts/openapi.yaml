@@ -1,0 +1,201 @@
+openapi: 3.0.3
+info:
+  title: Foodware API — Marcar platos como listos
+  version: 1.1.0
+  description: >
+    Contratos REST necesarios para la historia 04. Las acciones del cocinero se modelan como
+    asignación idempotente de estado sobre la línea de pedido. El refresco en vivo se documenta en
+    contracts/events.md (SSE).
+servers:
+  - url: /api
+paths:
+  /partidas/{partidaId}/pedidos-pendientes:
+    get:
+      summary: Lista los pedidos pendientes de una partida (pantalla de cocina)
+      parameters:
+        - name: partidaId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Pedidos pendientes ordenados por tiempo de espera (más antiguo primero)
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PedidoCocina" }
+        "404":
+          description: Partida no encontrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /pedidos/{pedidoId}/lineas/{lineaId}/estado:
+    put:
+      summary: Marca o deshace la marca de listo de una línea de pedido
+      description: >
+        Asignación idempotente de estado. `listo` fija `listoEn` la primera vez; repetir no cambia
+        el momento. `pendiente` (deshacer) limpia `listoEn` y devuelve la línea a pendiente. Si al
+        marcar `listo` se completa la partida del cocinero (era la última línea pendiente de esa
+        partida), la respuesta contiene `pedidoId` e `id` de la línea, que el cliente usa para
+        ofrecer el aviso temporal «Pedido completado» con la acción «Deshacer» durante al menos
+        10 s (FR-014, SC-009). Esa acción es otra llamada a esta misma operación con
+        `estado: pendiente`. No se permite marcar líneas de pedidos `cancelada` ni mientras 002
+        mantiene el pedido bloqueado para edición (FR-017, FR-019).
+      parameters:
+        - name: pedidoId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: lineaId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: partida
+          in: query
+          required: true
+          description: Partida del cocinero; debe coincidir con la partida del plato.
+          schema:
+            type: string
+            enum: [entrantes, principales, postres]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado:
+                  type: string
+                  enum: [listo, pendiente]
+            examples:
+              marcarListo:
+                value: { estado: listo }
+              deshacer:
+                value: { estado: pendiente }
+      responses:
+        "200":
+          description: >
+            Estado aplicado. La respuesta identifica la línea y su pedido, de modo que el cliente
+            puede revertir la última marca desde el aviso «Pedido completado».
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LineaPedido" }
+              examples:
+                ultimaLinea:
+                  summary: Marca de la última línea pendiente (la partida se completa)
+                  value:
+                    id: "l-9"
+                    pedidoId: "p-123"
+                    nombrePlato: "Entrecot"
+                    cantidad: 2
+                    estado: "listo"
+                    listoEn: "2026-10-20T20:15:00Z"
+                deshacer:
+                  summary: Reversión de la última marca desde el aviso
+                  value:
+                    id: "l-9"
+                    pedidoId: "p-123"
+                    nombrePlato: "Entrecot"
+                    cantidad: 2
+                    estado: "pendiente"
+                    listoEn: null
+        "400":
+          description: >
+            Falta la partida del cocinero (`partida_requerida`) o el estado no es válido.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403":
+          description: La línea no pertenece a la partida del cocinero (FR-003)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Pedido o línea no encontrados
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: >
+            Se intenta marcar `listo` una línea de una partida que ya está completada (FR-003), la
+            línea pertenece a un pedido `cancelada` (`pedido_cancelado`, FR-017) o el estado no es
+            aplicable. Deshacer una línea `listo` se admite aunque la partida esté completada, para
+            permitir la reversión desde el aviso (FR-014).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "423":
+          description: >
+            El pedido está bloqueado por una edición de sala (002); cocina no puede marcar ni
+            desmarcar hasta que se libere el bloqueo (`pedido_bloqueado`, FR-019).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /mesas/{mesaId}/estado-platos:
+    get:
+      summary: Estado de los platos de la mesa (pantalla del camarero)
+      parameters:
+        - name: mesaId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Platos de la mesa con su estado (pendiente/listo) y momento de listo
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/LineaPedido" }
+        "404":
+          description: Mesa no encontrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  schemas:
+    PedidoCocina:
+      type: object
+      required: [id, mesa, partida, enviadoEn, estado, lineas]
+      properties:
+        id: { type: string }
+        mesa: { type: integer, description: número de mesa }
+        partida: { type: string, enum: [entrantes, principales, postres] }
+        enviadoEn: { type: string, format: date-time }
+        modificadoEn: { type: string, format: date-time, nullable: true }
+        estado: { type: string, enum: [pendiente, completado] }
+        lineas:
+          type: array
+          items: { $ref: "#/components/schemas/LineaPedido" }
+    LineaPedido:
+      type: object
+      description: >
+        Línea de pedido. `nombrePlato` y `partida` son la instantánea fijada al pedir (001); no se
+        recalculan si la carta cambia después (008).
+      required: [id, pedidoId, nombrePlato, cantidad, estado]
+      properties:
+        id: { type: string }
+        pedidoId: { type: string }
+        nombrePlato: { type: string }
+        partida:
+          type: string
+          enum: [entrantes, principales, postres]
+          description: Partida del plato; presente en la lista de pendientes de cocina.
+        cantidad: { type: integer, minimum: 1 }
+        estado: { type: string, enum: [pendiente, listo] }
+        listoEn:
+          type: string
+          format: date-time
+          nullable: true
+          description: momento del marcado; se limpia al deshacer (estado pendiente)
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      properties:
+        codigo: { type: string }
+        mensaje: { type: string, description: mensaje en español de España }
